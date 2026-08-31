@@ -65,6 +65,33 @@ class LayoutHotspotOptimizationTest {
     }
 
     @Test
+    void resolvesScaleHeightThroughNestedPercentageAndDefiniteAncestors() {
+        Size.setViewportOverride(1000, 800);
+        try {
+            Document document = TestDocumentFactory.createDocument();
+            document.body.setAttribute("style", "height:400px;");
+
+            Element borderBoxParent = document.createElement("div");
+            borderBoxParent.setAttribute("style",
+                    "height:50%;box-sizing:border-box;padding:10px;border:2px solid #000;");
+            document.body.appendChild(borderBoxParent);
+
+            Element percentageParent = document.createElement("div");
+            percentageParent.setAttribute("style", "height:50%;");
+            borderBoxParent.appendChild(percentageParent);
+
+            Element child = document.createElement("div");
+            percentageParent.appendChild(child);
+
+            assertEquals(400, Size.getScaleHeight(borderBoxParent), 0.0001);
+            assertEquals(176, Size.getScaleHeight(percentageParent), 0.0001);
+            assertEquals(88, Size.getScaleHeight(child), 0.0001);
+        } finally {
+            Size.clearViewportOverride();
+        }
+    }
+
+    @Test
     void invalidatesStyleDerivedMeasureObjectsWhenTextStyleChanges() {
         Document document = TestDocumentFactory.createDocument();
         Element owner = document.createElement("div");

@@ -3,6 +3,7 @@ package com.sighs.apricityui.layout;
 import com.sighs.apricityui.style.*;
 
 import com.sighs.apricityui.init.Element;
+import com.sighs.apricityui.init.Window;
 import com.sighs.apricityui.style.Style;
 
 import java.util.ArrayList;
@@ -76,7 +77,7 @@ public class Box {
     public void applyMargin(String side, String value) {
         boolean auto = isAuto(value);
         setAutoMargin(side, auto);
-        setMargin(side, auto ? 0d : resolveBoxLength(value));
+        setMargin(side, auto ? 0d : resolveMarginLength(value));
     }
 
     public void applyMarginAll(String value) {
@@ -259,6 +260,12 @@ public class Box {
         return Math.max(0, Size.resolveLength(value, basis, 0));
     }
 
+    private double resolveMarginLength(String value) {
+        if (element == null) return Size.resolveLength(value, 0, 0);
+        double basis = Size.isPercent(value) ? Size.getScaleWidth(element) : 0;
+        return Size.resolveLength(value, basis, 0);
+    }
+
     /**
      * 1-4 值简写展开映射：索引 = 数量-1，值 = 输出位 [TL,TR,BR,BL] 各取源 token 的下标。
      * 1=全同，2=[TL,TR,TL,TR]，3=[TL,TR,BR,TR]，4=[TL,TR,BR,BL]。
@@ -306,7 +313,7 @@ public class Box {
 
     private BoxLength[] parseFourSideBoxLengths(String raw) {
         return parseFourSideShorthand(raw,
-                token -> isAuto(token) ? BoxLength.autoValue() : new BoxLength(resolveBoxLength(token), false),
+                token -> isAuto(token) ? BoxLength.autoValue() : new BoxLength(resolveMarginLength(token), false),
                 BoxLength[]::new, BoxLength.zero());
     }
 
@@ -822,7 +829,7 @@ public class Box {
                                             double start, double end, double duration, double delay) {
         if (Math.abs(start - end) <= 0.0001) return;
         result.add(new Transition(shadowTransitionName(index, component), start, end,
-                duration, delay, System.currentTimeMillis()));
+                duration, delay, Window.window.animationTimeMillis()));
     }
 
     private static String shadowTransitionName(int index, String component) {
@@ -905,7 +912,7 @@ public class Box {
             double s = Transition.parseStyle(subProp, sS.get(subProp));
             double e = Transition.parseStyle(subProp, eS.get(subProp));
             if (Math.abs(s - e) > 0.0001) {
-                res.add(new Transition(subProp, s, e, dur, del, System.currentTimeMillis()));
+                res.add(new Transition(subProp, s, e, dur, del, Window.window.animationTimeMillis()));
             }
         }
     }

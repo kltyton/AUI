@@ -1,105 +1,131 @@
-# Built-in Ore Theme
+# Ore UI
 
-Ore is the framework's built-in pure-CSS theme: MC-style pixel borders, dark stone surfaces, and green/purple/gold accents, suited for action-oriented UIs like settings pages, editors, and container screens. **It only handles styling** — clicking, toggling, submitting, and state management are your own JS/Java's job.
+AUI includes one Ore UI: an AUI-native adaptation of
+[`ShenYuanOR/mcui-oreui`](https://github.com/ShenYuanOR/mcui-oreui) 1.2.2,
+pinned to commit `ec87d29a9516a741e5bd4ac707dcabc704409cb2`.
 
-## Getting Started
+## Use
 
 ```html
 <link rel="stylesheet" href="/apricityui/theme/ore/ore.css">
 <body class="ore-theme">
-    <button class="button button-primary">Apply</button>
+  <div id="app"></div>
+  <script src="runtime/vue.aui.js"></script>
+  <script src="runtime/mcui-oreui.aui.js"></script>
+  <script>
+    var app = Vue.createApp({ template: '<mc-button>Create</mc-button>' });
+    app.use(McUIVue.default);
+    app.mount('#app');
+  </script>
 </body>
 ```
 
-- The leading `/` in href is the AUI logical resource root, not the disk root;
-- All rules are scoped under `.ore-theme` and do not affect UI outside the root node;
-- It ships two local fonts (`OreRegular` for body text, `OreDisplay` for headings/controls), requires no network, and falls back to system fonts if loading fails;
-- It provides a dark canvas background, 16px font size, and box-sizing propagation by default, but it won't fill the screen for you — add `min-height:100vh` yourself for fullscreen;
-- Licensed under MPL-2.0; keep the `license.txt` in the theme directory when redistributing with your mod.
+- Logical directory: `apricityui/theme/ore/`
+- Entry: `ore.css` (loads `ore-components.css`)
+- Root scope: `.ore-theme`
+- Theme tokens: `--ore-*`
+- Upstream component tokens: `--mc-*`
+- Component documentation overview: `apricityui/theme/ore/example.html`
+- Customer single-file product demo: repository-root `mcui-oreui-customer-demo.html`
 
-The showcase page `apricityui/theme/ore/example.html` can be opened directly with `new ApricityScreen(...)` — its six pages demonstrate every component — **look at it before reading the class list in this document**; it's more intuitive than reading tables.
+In game, press F10 and open the mod's single component overview at
+`apricityui/theme/ore/example.html`. It loads several runtime files from the theme
+directory and exercises headers, appbars, buttons, panels, form controls, dropdowns,
+tabs, lists, progress, spinners, modals, keyboard input, and pointer input; its
+32 retained elements are shown on one page and headings only navigate within it.
 
-## Design Tokens
+For a customer delivery, send only the repository-root
+`mcui-oreui-customer-demo.html`. It is not packaged as a mod resource; it is a
+productized single-file frontend demo workbench that naturally combines all 32
+McUI elements into navigation, business-card views, forms, lists, state, overlays, and feedback instead
+of presenting a component documentation overview or itemized component catalog.
+It fully inlines the CSS, fonts, real Ore Vue/McUI runtime, icons, and sounds, runs
+a dedicated demo app, and does not depend on `details/`, `showcase.aui.js`, or the
+documentation shell.
 
-All tunable parameters are `--ore-*` CSS variables on `.ore-theme`. Business pages should reference tokens instead of hard-coding colors, so they can be adjusted uniformly in the Ore editor:
+## Relationship to mcui-oreui
 
-| Group | Tokens |
-| --- | --- |
-| Text | `--ore-ink` (primary text #f4f5f7), `--ore-ink-muted`, `--ore-ink-dark` |
-| Surfaces | `--ore-canvas` (page background #202124), `--ore-surface`, `--ore-surface-deep`, `--ore-surface-soft`, `--ore-edge`, `--ore-edge-light`, `--ore-focus` |
-| Action colors | `--ore-green` (primary action) + `-hover`/`-shadow`, `--ore-purple` (secondary) + same, `--ore-gold`, `--ore-red` (danger) + same, `--ore-blue` |
-| Status colors | `--ore-success` / `--ore-warning` / `--ore-danger` / `--ore-info` |
-| Spacing | `--ore-space-1..5` = 4/8/16/24/32px |
-| Font sizes | `--ore-font-sm/md/lg/xl` = 13/16/20/28px |
+The upstream npm package uses Vue 3, TypeScript, and Vite. Ore UI bundles a
+syntax-adapted Vue 3.5.34 global at `runtime/vue.aui.js` and the mcui runtime at
+`runtime/mcui-oreui.aui.js`; register the components with
+`app.use(McUIVue.default)`. The retained Vue elements are provided by that runtime;
+the customer demo composes them by product-surface responsibility rather than
+presenting an itemized component catalog.
 
-How to override (attach to the theme root or your own class):
+AUI's Java core implements only the generic ECMAScript, DOM, CSSOM, event, and media
+closure. It has no component-specific Java and uses no Chromium, MCEF, JCEF, WebView,
+WebView2, or WebKit. Fonts, sounds, CSS, and page resources continue through AUI's
+resource-loading and drawing pipeline:
 
-```css
-.custom-screen {
-    --ore-green: #4b9f32;
-    --ore-space-3: 18px;
-}
+- OreUI base CSS, mcui component classes, and DOM anatomy are preserved.
+- All built-in selectors are scoped under `.ore-theme`.
+- Fonts use AUI resources; icons and sounds remain embedded in the upstream runtime bundle.
+- Component behavior is provided by the bundled Vue/mcui runtime; use the real
+  `example.html` as the integration reference.
+
+The mod's `example.html` loads bundled `.aui.js` runtime resources from the theme
+directory and does not need an external npm package
+or browser engine. The customer single-file demo only inlines the Vue/McUI runtime
+and runs its own frontend app; it does not reuse the component overview or docs shell.
+
+## Component structure
+
+### Buttons
+
+```html
+<button class="btn middle_btn primary_btn">Create</button>
+<button class="btn middle_btn normal_btn">Cancel</button>
+<button class="btn middle_btn error_btn">Delete</button>
 ```
 
-**The public contract is only `.ore-theme`, `--ore-*`, and the component classes listed below**. The `--ore-edit-*` variables in `ore-edit.css` are generation details — don't depend on them.
+### Panel
 
-## Component Class Cheat Sheet
+```html
+<section class="mc-panel mc-panel--bordered">
+  <header class="mc-panel__header">
+    <div class="mc-panel__title-area">
+      <div class="mc-panel__title">Title</div>
+      <div class="mc-panel__subtitle">Subtitle</div>
+    </div>
+  </header>
+  <div class="mc-panel__body">Content</div>
+</section>
+```
 
-**Layout**: `.container` (centered, max 1180px) / `.container-fluid`; `.grid` twelve columns + `.col-1..12` / `.col-full`; `.stack` (vertical 12px), `.cluster` (horizontal wrapping 10px), `.split` (justify-between).
+### Progress
 
-**Navigation**: `.navbar` + `.navbar-brand` + `.navbar-nav` (maintain `.active` on the active item yourself); `.breadcrumb` (automatically adds `>` separators).
+```html
+<div class="mc-progress mc-progress--success">
+  <div class="mc-progress__header">
+    <span class="mc-progress__label">Loading</span>
+    <span class="mc-progress__value">72%</span>
+  </div>
+  <div class="mc-progress__track">
+    <div class="mc-progress__bar" style="width:72%"></div>
+  </div>
+</div>
+```
 
-**Buttons**: `.button` defaults to the green primary action; variants `.button-primary/-secondary` (purple)/`tertiary` (light)/`-danger` (red)/`-normal` (vanilla gray)/`-small`/`-wide`. `:hover`/`:active`/`[disabled]` states are all covered, but disabling requires the real `disabled` attribute.
+Stateful checkbox, switch, dropdown, tab, and modal structures must maintain
+their ARIA state and keyboard behavior. Use the complete `example.html`
+structure and script rather than copying isolated class names.
 
-**Cards/panels**: `.card` / `.panel` are equivalent, split into `.card-header` / `-body` / `-footer`; top accent bars `.card-accent-green/-purple/-gold`.
+## Resources and license
 
-**Forms**: `.form-group` / `.form-label` / `.form-help` / `.form-input` / `.form-select` / `.form-textarea` / `.input-group` (input + button in a row); validation states `.is-valid` / `.is-invalid` (only change the border — write the error text yourself); wrap radio/checkbox with `.choice-list` + `.choice`.
+`source.md` records the pinned source, adaptation differences, and runtime
+boundary. `license.txt` preserves the upstream MIT license. Fonts, sounds, and
+PNG control assets are local to the theme and require no network access.
+`scripts/ore/refresh-runtime.ps1` rebuilds the Vue/mcui bundles from the pinned
+checkout. `scripts/ore/refresh-integrity.ps1 -Mode Verify` validates every Ore
+release resource except the manifest itself, and the root publication script
+runs that check first.
 
-**Data display**:
+## Known boundaries
 
-- `.table-wrap` + `.table` — **the built-in table lays out as a four-column grid**; if your column count differs, override `grid-template-columns` on `tr` in your own CSS, keeping thead/tbody consistent;
-- `.badge` + `.badge-success/-warning/-danger/-purple`;
-- `.alert` + `.alert-success/-warning/-danger/-info` (only a left color bar, no icon, no close button);
-- `.progress` > `.progress-bar` (set the width yourself via style), `.progress-purple` variant;
-- `.list-group` > `.list-group-item` (`.active` is green).
-
-**MC style**: `.inventory-grid` (nine 44px-cell columns) + `.slot`. **This is only a visual grid** — for real slots use the container system's `<slot>`, see the [Container doc](container).
-
-**Tabs / Modal / Pagination**: `.tabs` + `.tab` (`.active` has a purple border), `.modal-backdrop.open` + `.modal` + `-header/-body/-footer`, `.pagination` + `.page-button`. Again **styling only**: switching panels, opening/closing modals, Escape/backdrop clicks, and page-number logic are all yours to write. For ready-made dialog behavior use the Java-side [DialogWindow](ui-library).
-
-**Utilities**: `.text-left/-center/-right`, `.text-success/-warning/-danger/-info/-muted`, `.font-sm/-lg/-display`, `.hidden`, `.invisible`, `.w-full`, `.m-0`, spacing `mt/mb/p-1..4` (4/8/16/24px).
-
-**Responsive**: two built-in breakpoints at 900px and 560px (grid collapses, navbar goes vertical, buttons go full width, etc.). Check complex tables and fixed-width modals yourself in small windows.
-
-## Ore Editor
-
-`ore-edit.css` is a tokenized theme variant (generated from ore.css) meant for use with the visual editor. **Normal pages just use ore.css** — don't include both.
-
-Java-side entry point `OreEditor`: `open()` / `toggle()` / `close()` / `isOpen()` / `getDocument()` / `openHtml(Path)` (only accepts local files; resource-pack HTML cannot be edited and saved directly).
-
-The editor's THEME panel organizes 35 editable tokens into five groups (Typography/Surfaces/Actions/Feedback/Spacing), the color picker has an Alpha slider, and invalid values are marked `is-invalid` and not applied; it supports resetting a single token / a group / everything, all tracked in the Undo/Redo history.
-
-**Saving and exporting**:
-
-- Projects are stored at `<game directory>/apricity/ore-projects/untitled.ore.json` (theme overrides + document metadata; editor decoration nodes are not written);
-- Exported HTML goes to the same directory: token overrides are written into the body's inline style, and a `ore-edit.css` reference is automatically added to the head; the export is **a normal AUI page with no editor dependency**;
-- `openHtml` strips `<script>` on import (they are not executed as editor code), and `--ore-*` properties in the body's inline style are read as theme overrides — if you want the importer to recognize your theme values, put them in the body inline style.
-
-## Customization Tips
-
-- Put business styles under the `.ore-theme` scope and keep using tokens;
-- When overriding components, also cover `:hover`/`:active`/`[disabled]` — changing only the default background leads to inconsistent states;
-- Load business CSS after ore.css so same-specificity rules override;
-- Use valid CSS values when overriding tokens (any CSS color expression for colors, units required for spacing).
-
-## FAQ
-
-**No effect**: check three things — is the link path correct, does the top-level element have `class="ore-theme"`, and have resources been rescanned.
-
-**Font doesn't look like MC**: the theme directory's `fonts/` resources failed to resolve — check the logs. If colors work but the font is wrong, it's almost certainly this.
-
-**Button clicks do nothing / Modal won't close / Tabs don't switch**: expected behavior — Ore is pure CSS. Write the interactions yourself, or use the [built-in UI library](ui-library).
-
-**Table columns misaligned**: the built-in table is a four-column grid — see the override notes above.
-
-**Colors changed in the editor disappear after export**: don't manually delete the exported HTML's body inline style and ore-edit.css reference, and don't replace the `ore-theme` class.
+- AUI's external image decoder does not currently claim SVG support, so the
+  complete upstream external SVG icon catalog is not bundled. Inline basic SVG
+  remains available.
+- Vue SFC reactivity, `v-model`, and lifecycle behavior are provided by the bundled
+  Vue/mcui runtime; connect business state as shown in `example.html`.
+- Distribution should still apply the project's third-party visual-rights
+  review; MIT covers the upstream code and its accompanying asset statement.

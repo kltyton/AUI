@@ -1,2 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Keep the generated Vue runtime and its refresh tools byte-stable across platforms.
+common/src/main/resources/assets/apricityui/apricity/apricityui/runtime/** text eol=lf
+scripts/runtime/** text eol=lf

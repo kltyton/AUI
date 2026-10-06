@@ -62,7 +62,7 @@ try {
     [IO.File]::WriteAllText($config, @'
 module.exports = {
   comments: false,
-  compact: false,
+  compact: true,
   assumptions: { superIsCallableConstructor: true },
   presets: [['@babel/preset-env', {
     targets: { ie: '11' }, bugfixes: true, modules: false, useBuiltIns: false
@@ -97,6 +97,15 @@ module.exports = {
         throw "Runtime target escaped project: $runtime"
     }
     $fontTarget = Join-Path $runtime 'fonts'
+    $license = Get-Content -LiteralPath (Join-Path $upstream 'LICENSE') -Raw -Encoding utf8
+    $notice = '/*! ' + (($license -replace '\s+', ' ').Trim()) + ' */'
+    $generatedFiles = @($scripts | ForEach-Object { Join-Path $bundle "$_.aui.js" }) + @(
+        $galleryTarget, (Join-Path $bundle 'gallery\style.css'),
+        (Join-Path $bundle 'style.css'), (Join-Path $bundle 'fonts.css'))
+    foreach ($generatedFile in $generatedFiles) {
+        $code = Get-Content -LiteralPath $generatedFile -Raw -Encoding utf8
+        [IO.File]::WriteAllText($generatedFile, $notice + "`n" + $code, [Text.UTF8Encoding]::new($false))
+    }
     New-Item -ItemType Directory -Path $fontTarget -Force | Out-Null
     foreach ($name in $scripts) {
         Copy-Item -LiteralPath (Join-Path $bundle "$name.aui.js") `
@@ -114,20 +123,7 @@ module.exports = {
         Copy-Item -LiteralPath (Join-Path $bundle "fonts\$name") `
             -Destination (Join-Path $fontTarget $name) -Force
     }
-    Copy-Item -LiteralPath (Join-Path $upstream 'LICENSE') `
-        -Destination (Join-Path $runtime 'LICENSE.txt') -Force
-
-    $manifest = Join-Path $runtime 'provenance.sha256'
-    $files = Get-ChildItem -LiteralPath $runtime -Recurse -File |
-        Where-Object { $_.FullName -ne $manifest } |
-        Sort-Object { $_.FullName.Substring($runtime.Length + 1).Replace('\', '/') }
-    $lines = foreach ($file in $files) {
-        $relative = $file.FullName.Substring($runtime.Length + 1).Replace('\', '/')
-        $hash = (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
-        "$hash  $relative"
-    }
-    [IO.File]::WriteAllText($manifest, ($lines -join "`n") + "`n", [Text.UTF8Encoding]::new($false))
-    Write-Host "Refreshed mcui-oreui $actualCommit with $($files.Count) verified resources"
+    Write-Host "Refreshed mcui-oreui $actualCommit"
 } finally {
     $env:TEMP = $previousTemp
     $env:TMP = $previousTmp

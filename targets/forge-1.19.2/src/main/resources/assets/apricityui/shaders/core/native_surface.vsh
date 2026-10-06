@@ -23,4 +23,3 @@ void main() {
     localPosition = vec3(float(corner.x) * Grid.z, cornerHeight(corner), float(corner.y) * Grid.z) + SurfaceOrigin.xyz;
     gl_Position = ProjMat * ModelViewMat * vec4(localPosition, 1.0);
 }
-

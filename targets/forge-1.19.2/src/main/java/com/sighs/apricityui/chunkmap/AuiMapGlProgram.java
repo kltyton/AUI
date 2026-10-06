@@ -68,4 +68,3 @@ final class AuiMapGlProgram implements AutoCloseable {
     void sampler(String name, int unit) { GL20.glUniform1i(uniform(name), unit); }
     @Override public void close() { GL20.glDeleteProgram(program); }
 }
-

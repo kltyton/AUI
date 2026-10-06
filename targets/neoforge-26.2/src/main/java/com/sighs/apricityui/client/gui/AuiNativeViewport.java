@@ -5,6 +5,10 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.sighs.apricityui.ApricityUI;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
@@ -14,6 +18,7 @@ import net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEven
 import org.jspecify.annotations.Nullable;
 
 /** Composites a native GPU scene into one GUI rectangle after its surrounding UI. */
+@EventBusSubscriber(modid = ApricityUI.MODID, value = Dist.CLIENT)
 public final class AuiNativeViewport {
     @FunctionalInterface
     public interface Draw {
@@ -21,6 +26,7 @@ public final class AuiNativeViewport {
         boolean render(RenderTarget target, int width, int height);
     }
 
+    @SubscribeEvent
     public static void register(RegisterPictureInPictureRenderersEvent event) {
         event.register(State.class, Renderer::new);
     }

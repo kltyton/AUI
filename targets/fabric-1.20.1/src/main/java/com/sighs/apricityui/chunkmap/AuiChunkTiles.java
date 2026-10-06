@@ -169,4 +169,3 @@ public final class AuiChunkTiles implements AutoCloseable {
         @Override public int getMinBuildHeight() { return snapshot.minY() * snapshot.verticalStep(); }
     }
 }
-

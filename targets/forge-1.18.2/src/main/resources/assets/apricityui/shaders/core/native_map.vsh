@@ -21,4 +21,3 @@ void main() {
     opacity = float((UV2.x >> 4) & 255) / 255.0;
     cutoff = (UV2.y >> 4) & 255;
 }
-

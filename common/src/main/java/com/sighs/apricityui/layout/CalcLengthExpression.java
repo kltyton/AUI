@@ -23,14 +23,18 @@ final class CalcLengthExpression {
     private CalcLengthExpression() {
     }
 
-    static Double evaluate(String expression, Function<String, Double> lengthResolver) {
-        if (expression == null || expression.isBlank() || lengthResolver == null) return null;
+    static Node compile(String expression) {
+        if (expression == null || expression.isBlank()) return INVALID;
         String source = expression.trim();
         Node node = CACHE.get(source);
         if (node == null) {
             node = new Parser(source).parse();
             CACHE.put(source, node == null ? INVALID : node);
         }
+        return node == null ? INVALID : node;
+    }
+
+    static Double evaluate(Node node, Function<String, Double> lengthResolver) {
         if (node == INVALID) return null;
         Value result = node.evaluate(lengthResolver);
         return result.dimension() == Dimension.LENGTH && Double.isFinite(result.value())
@@ -61,7 +65,7 @@ final class CalcLengthExpression {
         }
     }
 
-    private interface Node {
+    interface Node {
         Value evaluate(Function<String, Double> lengthResolver);
     }
 

@@ -262,17 +262,6 @@ public class FontDrawer {
         return y + (float) Math.max(0.0d, (lineHeight - fontSize) / 2.0d);
     }
 
-    static float lineBoxDrawX(float x, int padTexel, float drawScale) {
-        return x - padTexel * drawScale;
-    }
-
-    static float lineBoxDrawY(float y, double baselineOffset, double lineHeight,
-                              float verticalAnchorTexel, int baselineTexel, float drawScale) {
-        return !Double.isNaN(baselineOffset)
-                ? y + (float) baselineOffset - baselineTexel * drawScale
-                : y + (float) (lineHeight / 2.0d) - verticalAnchorTexel * drawScale;
-    }
-
     private static int fontStyleOf(Text text) {
         int fontStyle = java.awt.Font.PLAIN;
         if (text.isBold()) fontStyle |= java.awt.Font.BOLD;
@@ -484,6 +473,3 @@ public class FontDrawer {
                 1, 1, 0, 0, 1, 1, tintArgb);
     }
 }
-
-
-

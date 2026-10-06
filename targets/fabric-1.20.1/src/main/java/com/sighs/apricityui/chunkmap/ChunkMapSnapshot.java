@@ -17,7 +17,11 @@ public final class ChunkMapSnapshot {
     public record Run(int fromY, int toY, BlockState state) {
     }
     public record BiomeTint(String namespace, String path, float temperature,
-                            int water, int grass, int foliage) {
+                           int water, int grass, int foliage) {
+        void writeCacheKey(java.io.DataOutputStream out) throws java.io.IOException {
+            out.writeUTF(namespace); out.writeUTF(path); out.writeFloat(temperature);
+            out.writeInt(water); out.writeInt(grass); out.writeInt(foliage);
+        }
         static BiomeTint from(Holder<Biome> holder, int worldX, int worldZ) {
             var id = holder.unwrapKey().orElseThrow().location();
             Biome biome = holder.value();
@@ -174,4 +178,3 @@ public final class ChunkMapSnapshot {
         }
     }
 }
-

@@ -16,4 +16,3 @@ void main() {
     float shade = (0.72 + 0.28 * abs(normal.y)) * mix(0.55, 1.0, clamp(Grid.w, 0.0, 1.0));
     fragColor = vec4(color.rgb * shade, 1.0);
 }
-

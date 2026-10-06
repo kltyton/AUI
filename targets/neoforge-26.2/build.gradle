@@ -42,6 +42,11 @@ sourceSets {
 }
 
 tasks.register('prepareCommonSources', Sync) {
+    from('../../common/src/minecraft-26/java')
+    from('../../common/src/client/java') {
+        exclude 'com/sighs/apricityui/chunkmap/AuiMapDepthTarget.java'
+        exclude 'com/sighs/apricityui/chunkmap/AuiSurfaceRenderer.java'
+    }
     from('../../common/src/main/java') {
         exclude 'com/sighs/apricityui/network/**'
         // KeyboardHandler#charTyped 使用 26.x 专用签名，

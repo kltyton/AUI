@@ -100,7 +100,7 @@ ApricityUI also has a more retro-style server-to-client HTML rendering workflow,
 
 ### AI Automation
 
-See [Getting started](../../docs/en/getting-started.md) for page paths, hosts, and debugging.
+Follow the guidance in [agent.md](./agent.md).
 
 The folder `run/screenshots/aui` outputs game screenshots every second and keeps up to 20 images.
 

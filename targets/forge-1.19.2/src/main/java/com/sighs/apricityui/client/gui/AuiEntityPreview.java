@@ -18,4 +18,3 @@ public final class AuiEntityPreview {
 
     public record Model(Entity state, float partialTicks, double x, double y, double z, float width, float height) { }
 }
-

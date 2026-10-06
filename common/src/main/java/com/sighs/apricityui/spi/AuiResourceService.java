@@ -43,5 +43,4 @@ public interface AuiResourceService {
 
     /** Builds the smooth image render type for the given texture, wrapped in a {@link RenderHandle}. */
     RenderHandle smoothRenderType(TextureKey key, boolean blur, boolean depthTest);
-
 }

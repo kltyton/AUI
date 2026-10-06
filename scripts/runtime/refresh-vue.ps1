@@ -26,7 +26,7 @@ try {
     [IO.File]::WriteAllText($config, @'
 module.exports = {
   comments: false,
-  compact: false,
+  compact: true,
   assumptions: { superIsCallableConstructor: true },
   presets: [["@babel/preset-env", {
     targets: { ie: "11" },
@@ -46,6 +46,11 @@ module.exports = {
     $babel = Join-Path $tempRoot 'node_modules/.bin/babel.cmd'
     & $babel $source --out-file $generated --config-file $config
     if ($LASTEXITCODE -ne 0) { throw 'Vue Babel transform failed' }
+
+    $license = Get-Content -LiteralPath (Join-Path $tempRoot 'node_modules/vue/LICENSE') -Raw -Encoding utf8
+    $notice = '/*! ' + (($license -replace '\s+', ' ').Trim()) + ' */'
+    $code = Get-Content -LiteralPath $generated -Raw -Encoding utf8
+    [IO.File]::WriteAllText($generated, $notice + "`n" + $code, [Text.UTF8Encoding]::new($false))
 
     $target = Join-Path $ProjectRoot (
         'common/src/main/resources/assets/apricityui/apricity/apricityui/runtime/vue.aui.js')

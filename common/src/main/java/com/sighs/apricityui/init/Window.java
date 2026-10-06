@@ -68,7 +68,6 @@ public class Window implements com.sighs.apricityui.script.host.AuiScriptHost {
     private final ConcurrentLinkedQueue<Microtask> microtasks = new ConcurrentLinkedQueue<>();
     private final AtomicBoolean microtaskDrainScheduled = new AtomicBoolean();
     private final ThreadLocal<Integer> scriptTaskDepth = ThreadLocal.withInitial(() -> 0);
-    private final Map<String, CanvasBlob> objectUrls = new ConcurrentHashMap<>();
 
     public ClientScheduler.Cancellable setTimeout(Consumer<ClientScheduler.Cancellable> runnable, int delay) {
         Document document = Document.getContextDocument();
@@ -177,6 +176,8 @@ public class Window implements com.sighs.apricityui.script.host.AuiScriptHost {
     public DOMMatrix createDOMMatrix(Object init) {
         return new DOMMatrix(init);
     }
+
+    private final Map<String, CanvasBlob> objectUrls = new ConcurrentHashMap<>();
 
     public BrowserImage createImage() {
         return new BrowserImage();

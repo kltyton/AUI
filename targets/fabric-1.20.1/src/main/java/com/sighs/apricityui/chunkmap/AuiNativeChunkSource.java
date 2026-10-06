@@ -45,6 +45,12 @@ import net.minecraft.resources.ResourceKey;
 
 /** Copies loaded chunks on their owner, or parses existing singleplayer storage without loading chunks. */
 final class AuiNativeChunkSource implements AutoCloseable {
+    static final String CACHE_SUFFIX = "-minecraft-1.21.1-native-3";
+    static final String MODEL_FORMAT = "AUI-native-model-2-minecraft-1.21.1";
+
+    int minY() { return level.getMinBuildHeight(); }
+    int maxY() { return level.getMaxBuildHeight(); }
+
     record Capture(ChunkMapSnapshot snapshot, boolean[] knownColumns) { }
     private record SectionCopy(PalettedContainer<BlockState> states, PalettedContainerRO<Holder<Biome>> biomes) {
         BlockState getBlockState(int x, int y, int z) { return states.get(x, y, z); }
@@ -261,4 +267,3 @@ final class AuiNativeChunkSource implements AutoCloseable {
         closed.set(true); chunks.values().forEach(future -> future.cancel(false)); chunks.clear(); missingUntil.clear(); stored.cancel(false);
     }
 }
-

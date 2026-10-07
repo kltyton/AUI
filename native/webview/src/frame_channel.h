@@ -34,7 +34,7 @@
  *
  * <pre>
  *   header (kHeaderBytes = 256)
- *      0  int32  magic                "KUIC"
+ *      0  int32  magic                "AUIC"
  *      4  int32  version
  *      8  int32  headerBytes
  *     12  int32  arenaBytes
@@ -78,7 +78,7 @@
 class FrameChannel {
 public:
     enum : int32_t {
-        /** {@code "KUIC"} as little-endian bytes, i.e. 'A','U','I','C'. */
+        /** {@code "AUIC"} as little-endian bytes, i.e. 'A','U','I','C'. */
         kMagic = 0x43495541,
         kVersion = 1,
         kHeaderBytes = 256,

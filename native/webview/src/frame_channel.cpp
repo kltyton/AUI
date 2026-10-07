@@ -229,28 +229,9 @@ void FrameChannel::collectDirtyRects(const uint8_t* pixels, int stride) {
             }
             rects_.push_back(Rect{x0, y0, x1 - x0, y1 - y0});
             if (static_cast<int>(rects_.size()) >= kMaxRects) {
-                // Pathological content (noise, a video, a canvas animation): one bounding box
-                // is cheaper than a thousand rectangles and the payload is the same order.
-                int minX = rects_[0].x;
-                int minY = rects_[0].y;
-                int maxX = rects_[0].x + rects_[0].width;
-                int maxY = rects_[0].y + rects_[0].height;
-                for (const Rect& rect : rects_) {
-                    if (rect.x < minX) {
-                        minX = rect.x;
-                    }
-                    if (rect.y < minY) {
-                        minY = rect.y;
-                    }
-                    if (rect.x + rect.width > maxX) {
-                        maxX = rect.x + rect.width;
-                    }
-                    if (rect.y + rect.height > maxY) {
-                        maxY = rect.y + rect.height;
-                    }
-                }
+                // The unvisited tiles may also be dirty, so publish the complete frame.
                 rects_.clear();
-                rects_.push_back(Rect{minX, minY, maxX - minX, maxY - minY});
+                rects_.push_back(Rect{0, 0, width, height});
                 return;
             }
         }
@@ -273,6 +254,7 @@ int FrameChannel::packRects(int cursor, int* payloadBytes, Rect* packed, int cap
         const Rect rect = rects_[cursor];
         const size_t rowBytes = static_cast<size_t>(rect.width) * 4;
         const int rowsFit = static_cast<int>(static_cast<size_t>(budget) / rowBytes);
+        if (rowsFit == 0) break;
         if (rowsFit >= rect.height) {
             packed[count++] = rect;
             budget -= static_cast<int>(rowBytes * rect.height);
@@ -281,9 +263,8 @@ int FrameChannel::packRects(int cursor, int* payloadBytes, Rect* packed, int cap
             continue;
         }
         // One rectangle is taller than a whole packet: take the rows that fit and leave the
-        // rest at this index for the next one. The budget makes rowsFit >= 1 unless a single
-        // row is wider than the packet, which the canvas cap rules out.
-        const int rows = rowsFit < 1 ? 1 : rowsFit;
+        // rest at this index for the next one.
+        const int rows = rowsFit;
         packed[count++] = Rect{rect.x, rect.y, rect.width, rows};
         budget -= static_cast<int>(rowBytes * rows);
         rects_[cursor].y += rows;

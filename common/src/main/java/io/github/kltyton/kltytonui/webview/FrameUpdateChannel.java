@@ -1,5 +1,7 @@
 package io.github.kltyton.kltytonui.webview;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
@@ -26,7 +28,11 @@ import java.nio.IntBuffer;
  */
 public final class FrameUpdateChannel {
 
-    /** {@code "KUIC"} as little-endian bytes; the header's magic. */
+    /** Acquire/release access to naturally aligned little-endian long fields in the mapping. */
+    private static final VarHandle LONG_VIEW = MethodHandles.byteBufferViewVarHandle(
+            long[].class, ByteOrder.LITTLE_ENDIAN);
+
+    /** {@code "AUIC"} as little-endian bytes; the header's magic. */
     private static final int MAGIC = 0x43495541;
     /** Bumped whenever any offset below changes on either side. */
     private static final int VERSION = 1;
@@ -190,26 +196,26 @@ public final class FrameUpdateChannel {
         if (!valid || target == null || buffer == null) {
             return 0;
         }
+        // Consume up to one published endpoint so a concurrent writer cannot extend this drain.
+        final long writeLimit = (long) LONG_VIEW.getAcquire(buffer, OFF_WRITE_OFFSET);
+        final long writeSequenceLimit = (long) LONG_VIEW.getAcquire(buffer, OFF_WRITE_SEQ);
+        long readOffset = (long) LONG_VIEW.getAcquire(buffer, OFF_READ_OFFSET);
         int applied = 0;
-        while (true) {
-            final long readOffset = buffer.getLong(OFF_READ_OFFSET);
-            final long writeOffset = buffer.getLong(OFF_WRITE_OFFSET);
-            if (readOffset == writeOffset) {
-                break;
-            }
+        while (readOffset != writeLimit) {
             final int position = HEADER_BYTES + (int) (readOffset % arenaBytes);
             final int magic = buffer.getInt(position);
             if (magic == PAD_MAGIC) {
                 final int padBytes = buffer.getInt(position + 4);
-                if (padBytes < 8 || readOffset + padBytes > writeOffset) {
-                    resync();
+                if (padBytes < 8 || readOffset + padBytes > writeLimit) {
+                    resync(writeLimit, writeSequenceLimit);
                     break;
                 }
-                buffer.putLong(OFF_READ_OFFSET, readOffset + padBytes);
+                readOffset += padBytes;
+                LONG_VIEW.setRelease(buffer, OFF_READ_OFFSET, readOffset);
                 continue;
             }
             if (magic != PACKET_MAGIC) {
-                resync();
+                resync(writeLimit, writeSequenceLimit);
                 break;
             }
             final long sequence = buffer.getLong(position + 8);
@@ -225,13 +231,13 @@ public final class FrameUpdateChannel {
             final int packetBytes = align8(PACKET_HEADER_BYTES + rectCount * 16 + payloadBytes);
             final long packetEnd = readOffset + packetBytes;
             if (!plausible(packetWidth, packetHeight, rectCount, payloadBytes, payloadOffset)
-                    || packetEnd > writeOffset
+                    || packetEnd > writeLimit
                     || position + packetBytes > HEADER_BYTES + arenaBytes) {
-                // The tail of a packet can still be in flight; anything else is unreadable.
-                if (packetEnd > writeOffset) {
+                // A packet beyond this captured endpoint is left for the next drain pass.
+                if (packetEnd > writeLimit) {
                     break;
                 }
-                resync();
+                resync(writeLimit, writeSequenceLimit);
                 break;
             }
             if (packetWidth != canvasWidth || packetHeight != canvasHeight) {
@@ -264,11 +270,12 @@ public final class FrameUpdateChannel {
                 appliedRects++;
             }
             if (!intact) {
-                resync();
+                resync(writeLimit, writeSequenceLimit);
                 break;
             }
-            buffer.putLong(OFF_READ_OFFSET, packetEnd);
-            buffer.putLong(OFF_READ_SEQ, sequence);
+            readOffset = packetEnd;
+            LONG_VIEW.setRelease(buffer, OFF_READ_OFFSET, readOffset);
+            LONG_VIEW.setRelease(buffer, OFF_READ_SEQ, sequence);
             this.packets++;
             this.rectangles += appliedRects;
             this.payloadBytes += payloadBytes;
@@ -295,10 +302,10 @@ public final class FrameUpdateChannel {
      * Skips to the end of the stream and asks the producer for a full refresh, so a reader
      * that met something it could not parse ends up consistent instead of stuck.
      */
-    private void resync() {
+    private void resync(long writeLimit, long writeSequenceLimit) {
         resyncs++;
-        buffer.putLong(OFF_READ_OFFSET, buffer.getLong(OFF_WRITE_OFFSET));
-        buffer.putLong(OFF_READ_SEQ, buffer.getLong(OFF_WRITE_SEQ));
+        LONG_VIEW.setRelease(buffer, OFF_READ_OFFSET, writeLimit);
+        LONG_VIEW.setRelease(buffer, OFF_READ_SEQ, writeSequenceLimit);
         buffer.putLong(OFF_CONSUMER_RESYNCS, resyncs);
         requestFullRefresh();
     }
@@ -310,20 +317,12 @@ public final class FrameUpdateChannel {
     /**
      * Bulk-copies {@code count} packed pixels into {@code destination}.
      *
-     * <p>An {@link IntBuffer} view is the fast path; a JDK that hands back a big-endian view
-     * (the order is inherited from the parent, but nothing promises it) falls back to
-     * per-pixel reads through the buffer's own order.</p>
+     * <p>ByteBuffer.slice() starts in big-endian order, so set the wire order on the slice
+     * before constructing its IntBuffer view.</p>
      */
     private void readPixels(int byteOffset, int[] destination, int count) {
         final ByteBuffer slice = buffer.duplicate().order(ByteOrder.LITTLE_ENDIAN);
         slice.position(byteOffset).limit(byteOffset + count * 4);
-        final IntBuffer ints = slice.slice().asIntBuffer();
-        if (ints.order() == ByteOrder.LITTLE_ENDIAN) {
-            ints.get(destination, 0, count);
-            return;
-        }
-        for (int index = 0; index < count; index++) {
-            destination[index] = buffer.getInt(byteOffset + index * 4);
-        }
+        slice.slice().order(ByteOrder.LITTLE_ENDIAN).asIntBuffer().get(destination, 0, count);
     }
 }

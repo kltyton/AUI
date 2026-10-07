@@ -127,7 +127,7 @@ public class Iframe extends Element {
     private TextureKey textureLocation;
 
     /**
-     * DOM button indices currently held down over the view.
+     * GLFW button indices currently held down over the view.
      *
      * <p>A press captures the pointer: moves and the release keep being forwarded even once
      * the cursor has left the content box, which is how a drag stays alive.</p>
@@ -656,7 +656,7 @@ public class Iframe extends Element {
             return;
         }
         pressedButtons |= buttonBit(mouse.button);
-        view.mouseButton(mouse.button, true, mouse.clickCount >= 2, modifiersOf(mouse), point[0], point[1]);
+        view.mouseButton(domButton(mouse.button), true, mouse.clickCount >= 2, modifiersOf(mouse), point[0], point[1]);
         consume(event);
     }
 
@@ -671,11 +671,19 @@ public class Iframe extends Element {
         if (point == null) {
             return;
         }
-        view.mouseButton(mouse.button, false, mouse.clickCount >= 2, modifiersOf(mouse), point[0], point[1]);
+        view.mouseButton(domButton(mouse.button), false, mouse.clickCount >= 2, modifiersOf(mouse), point[0], point[1]);
         consume(event);
     }
 
-    /** Bit for one DOM button index; only used to remember which buttons are held. */
+    private static int domButton(int button) {
+        return switch (button) {
+            case 1 -> 2;
+            case 2 -> 1;
+            default -> button;
+        };
+    }
+
+    /** Bit for one GLFW button index; only used to remember which buttons are held. */
     private static int buttonBit(int button) {
         return button >= 0 && button < 8 ? 1 << button : 0;
     }

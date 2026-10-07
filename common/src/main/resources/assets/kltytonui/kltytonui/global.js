@@ -9,7 +9,10 @@ HTMLElement.prototype = Object.create(Element.prototype);
 HTMLInputElement.prototype = Object.create(HTMLElement.prototype);
 SVGElement.prototype = Object.create(Element.prototype);
 MathMLElement.prototype = Object.create(Element.prototype);
-let console = window.getConsole();
+if (typeof console === 'undefined') {
+  this.console = window.getConsole();
+  this.console.debug = this.console.log;
+}
 let localStorage = window.getLocalStorage();
 let sessionStorage = window.getSessionStorage();
 let performance = window.getPerformance();
@@ -1175,7 +1178,6 @@ function MutationObserver(callback) {
 }
 
 try {
-  console.debug = console.log;
   let __auiLocation = __auiCreateLocation(document.getBaseURI());
   __auiInstallValueBridge(window, 'location', () => __auiLocation);
   __auiInstallValueBridge(document, 'location', () => __auiLocation);

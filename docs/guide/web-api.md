@@ -381,7 +381,7 @@ document.addEventListener("DOMContentLoaded", installPage);
 
 **script 双内容**：带 `src` 又写了内联代码的 `<script>`，两个都会执行（带警告）。别依赖浏览器"有 src 就忽略内联"的行为。
 
-**日志前缀**：排查问题搜 `[KUI HTML]` / `[KUI CSS]` / `[KUI JS]` / `[KUI Fetch]` / `[KUI Canvas]` / `[KUI Event]`，一般带资源路径。页面里用 `console.log/debug/warn/error` 和 `console.time/timeEnd`。
+**日志前缀**：排查问题搜 `[KUI HTML]` / `[KUI CSS]` / `[KUI JS]` / `[KUI Fetch]` / `[KUI Canvas]` / `[KUI Event]`，一般带资源路径。独立页面的 `console.log/debug/warn/error` 和 `console.time/timeEnd` 写入 KUI 日志；共享 KubeJS 脚本保留已有的 `console`。
 
 **Top layer**：宿主侧 `setTopLayer(true)` 让弹窗、下拉菜单在当前 Document 内最后绘制、不被祖先 overflow 裁剪。只影响本 Document 内顺序，不会把一个 Document 抬到另一个之上。
 

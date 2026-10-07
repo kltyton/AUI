@@ -127,6 +127,7 @@ logs/
 !/icon.png
 /IdeaSnapshots/
 /.codex_tmp/
+/.tmp/
 /kltytonui/.cache/
 node_modules/
 

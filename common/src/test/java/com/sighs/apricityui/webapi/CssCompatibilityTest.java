@@ -40,6 +40,21 @@ import com.sighs.apricityui.dom.TextNode;
 class CssCompatibilityTest {
 
     @Test
+    void functionalSelectorGroupsKeepNestedArgumentsAndFollowingPseudoClasses() {
+        Document document = TestDocumentFactory.createDocument();
+        Element button = document.createElement("button");
+        document.body.appendChild(button);
+        String grouped = ":where([role=menuitem],:is(button),:is(a[href]))";
+        assertTrue(Selector.matches(button, grouped));
+        assertTrue(Selector.matches(button, grouped + ":not(:disabled)"));
+        button.setAttribute("disabled", "");
+        assertFalse(Selector.matches(button, grouped + ":not(:disabled)"));
+        Element unrelated = document.createElement("span");
+        document.body.appendChild(unrelated);
+        assertFalse(Selector.matches(unrelated, grouped));
+    }
+
+    @Test
     void borderCurrentColorUsesTheElementComputedTextColor() {
         Document document = TestDocumentFactory.createDocument();
         Element parent = document.createElement("div");
@@ -1269,13 +1284,17 @@ class CssCompatibilityTest {
             Size elementSize = Size.of(element);
             Style animated = element.getComputedStyle().clone();
             Animation.updateStyle(element, animated);
-            assertFalse(animated.transform.contains("%"));
+            assertTrue(animated.transform.contains("%"));
             Transform.Translate translate = (Transform.Translate) Transform
                     .parse(animated.transform, elementSize.width(), elementSize.height())
                     .get(0);
 
             assertEquals(-elementSize.width() / 2.0, translate.x(), 0.001);
             assertEquals(-elementSize.height() / 2.0, translate.y(), 0.001);
+            Transform.Translate resized = (Transform.Translate) Transform
+                    .parse(animated.transform, elementSize.width() * 2, elementSize.height() * 2).get(0);
+            assertEquals(-elementSize.width(), resized.x(), 0.001);
+            assertEquals(-elementSize.height(), resized.y(), 0.001);
         } finally {
             Animation.stop(element);
         }

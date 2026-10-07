@@ -114,18 +114,26 @@ publishing {
     }
 
     repositories {
-        def isSnapshot = project.version.toString().toLowerCase().contains('snapshot')
-        def publishUrl = isSnapshot ?
-                'https://maven.sighs.cc/repository/maven-snapshots/' :
-                'https://maven.sighs.cc/repository/maven-releases/'
-
-        maven {
-            name = 'remoteRepo'
-            url = uri(publishUrl)
-            credentials {
-                username = System.getenv('SIGHS_PUBLISH_USER')
-                password = System.getenv('SIGHS_PUBLISH_PASSWORD')
+        def publishUrl = providers.gradleProperty('publish_maven_url')
+                .orElse(providers.environmentVariable('KLTYTONUI_MAVEN_URL'))
+        if (publishUrl.isPresent()) {
+            maven {
+                name = 'remoteRepo'
+                url = uri(publishUrl.get())
+                credentials {
+                    username = System.getenv('KLTYTONUI_MAVEN_USER')
+                    password = System.getenv('KLTYTONUI_MAVEN_PASSWORD')
+                }
             }
+        }
+    }
+}
+
+tasks.named('publish') {
+    doFirst {
+        if (!providers.gradleProperty('publish_maven_url')
+                .orElse(providers.environmentVariable('KLTYTONUI_MAVEN_URL')).isPresent()) {
+            throw new GradleException('Set publish_maven_url or KLTYTONUI_MAVEN_URL before publishing.')
         }
     }
 }

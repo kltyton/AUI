@@ -1,6 +1,6 @@
 # WorldWindow 世界内窗口
 
-WorldWindow 把 HTML Document 渲染成 Minecraft 世界里的一块平面：信息牌、机器外屏、实体头顶标签、漂浮提示。它不是 Screen 也不是 Overlay——有世界坐标、朝向、透视缩放、方块遮挡，交互靠准心射线。页面本身还是普通的 AUI 页面，DOM、事件、表单能力都能用。
+WorldWindow 把 HTML Document 渲染成 Minecraft 世界里的一块平面：信息牌、机器外屏、实体头顶标签、漂浮提示。它不是 Screen 也不是 Overlay——有世界坐标、朝向、透视缩放、方块遮挡，交互靠准心射线。页面本身还是普通的 KUI 页面，DOM、事件、表单能力都能用。
 
 本文的 KubeJS 示例适用于 Forge 1.20.1 和 NeoForge 1.21.1；Java API 可用于其他 target。详见[总览](overview#loader-与脚本支持)。
 
@@ -9,14 +9,14 @@ WorldWindow 把 HTML Document 渲染成 Minecraft 世界里的一块平面：信
 世界窗口推荐 `mode=fixed`，显式声明逻辑尺寸，否则浏览器常见的 1920 宽会直接变成一块巨大的世界面板：
 
 ```html
-<meta name="aui-viewport" content="mode=fixed,width=240,height=96,scale=1">
-<meta name="aui-mouse-events" content="intercept">
+<meta name="kui-viewport" content="mode=fixed,width=240,height=96,scale=1">
+<meta name="kui-mouse-events" content="intercept">
 ```
 
 Java 创建（KubeJS 客户端脚本同 API，坐标直接传 x, y, z）：
 
 ```java
-WorldWindow window = ApricityUI.createWorldWindow(
+WorldWindow window = KltytonUI.createWorldWindow(
         "world/notice.html",
         new Vec3(10.5, 65.0, -4.0),
         32                          // 交互射线距离
@@ -24,10 +24,10 @@ WorldWindow window = ApricityUI.createWorldWindow(
 window.setMaxDisplayDistance(64);   // 相机显示距离
 window.setDepthTest(true);
 
-ApricityUI.removeWorldWindow(window);   // 不用时移除，Document 一起销毁
+KltytonUI.removeWorldWindow(window);   // 不用时移除，Document 一起销毁
 ```
 
-`ApricityUI.createWorldWindow(...)` 会创建 Document **并注册**。手动 `new WorldWindow(...)` 只创建不注册，得自己调 `WorldWindow.addWindow(window)`——只调 `Document.createInWorld(path)` 更是只得到一个 Document，什么都不会显示。这是"资源存在但世界里没窗口"的标准答案。
+`KltytonUI.createWorldWindow(...)` 会创建 Document **并注册**。手动 `new WorldWindow(...)` 只创建不注册，得自己调 `WorldWindow.addWindow(window)`——只调 `Document.createInWorld(path)` 更是只得到一个 Document，什么都不会显示。这是"资源存在但世界里没窗口"的标准答案。
 
 这些是客户端 API。位置数据在服务端的话，先自己同步到客户端。
 
@@ -84,7 +84,7 @@ Follow 不是绑定到摄像机：它把基础位置投影到视线方向，再�
 | `maxDistance`（构造参数 / `setMaxDistance`） | 准心/鼠标射线能摸到多远 |
 | `maxDisplayDistance`（`setMaxDisplayDistance`） | 相机超过这个距离就不渲染、不命中 |
 
-没设实例级显示距离时用全局配置 `config/apricityui-client.toml` 的 `[worldWindow] maxDisplayDistance`（默认 128，设 `2147483647` 表示不限）。`clearMaxDisplayDistanceOverride()` 恢复全局。开 Follow 时距离按本帧跟随位置算。
+没设实例级显示距离时用全局配置 `config/kltytonui-client.toml` 的 `[worldWindow] maxDisplayDistance`（默认 128，设 `2147483647` 表示不限）。`clearMaxDisplayDistanceOverride()` 恢复全局。开 Follow 时距离按本帧跟随位置算。
 
 ## 遮挡与 Z 冲突
 
@@ -127,7 +127,7 @@ reducedDetailDistance = 48
 
 事件类型就是常见的那套（mousemove/down/up/click/dblclick/contextmenu/wheel/over/out/enter/leave + pointer 兼容）。`clientX/clientY` 已经反投影成 Document 逻辑坐标，**别再乘世界缩放、renderScale 或 devicePixelRatio**。
 
-要消费原生输入（可点击的世界按钮通常要），HTML 里加 `<meta name="aui-mouse-events" content="intercept">`，规则见 [ApricityScreen 的 meta 章节](apricity-screen#页面-meta-配置)。
+要消费原生输入（可点击的世界按钮通常要），HTML 里加 `<meta name="kui-mouse-events" content="intercept">`，规则见 [KltytonScreen 的 meta 章节](kltytonui-screen#页面-meta-配置)。
 
 两个限制：
 
@@ -164,7 +164,7 @@ status.setTextContent("HP: " + health);
 
 **大量窗口**：限数量、`maxDisplayDistance` 别给太大、开 LOD。LOD 只省绘制不省布局，远了就主动移除实例。
 
-**调试**：游戏内命令 `/aui worldwindow` 会在准心前方创建测试窗口，可实时调距离、深度、LOD、缩放、Follow/Facing。另有验收页面：世界里放个名叫 `auitest` 的盔甲架，测试生成器会在它头顶建一个 Follow/Facing 窗口。
+**调试**：游戏内命令 `/kui worldwindow` 会在准心前方创建测试窗口，可实时调距离、深度、LOD、缩放、Follow/Facing。另有验收页面：世界里放个名叫 `kuitest` 的盔甲架，测试生成器会在它头顶建一个 Follow/Facing 窗口。
 
 ## 常见问题
 

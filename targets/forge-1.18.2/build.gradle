@@ -43,25 +43,25 @@ sourceSets {
 tasks.register('prepareCommonSources', Sync) {
     from('../../common/src/client/java')
     from('../../common/src/main/java') {
-        exclude 'com/sighs/apricityui/network/chunk/**'
+        exclude 'io/github/kltyton/kltytonui/network/chunk/**'
         // 1.18.2 没有 BuiltInRegistries（Registry.REGISTRY 才是根注册表），本目标另附一份同名实现。
-        exclude 'com/sighs/apricityui/network/serialization/CustomCodecResolver.java'
+        exclude 'io/github/kltyton/kltytonui/network/serialization/CustomCodecResolver.java'
         // 1.18.2 的 FriendlyByteBuf 缺 readGameProfile/readProperty/readInstant/readPublicKey/
         // readGlobalPos/readResourceKey（以及 1.19.2 也缺的那批便捷方法），本目标另附一份
         // 用基础读写实现的同名版本。
-        exclude 'com/sighs/apricityui/network/serialization/ComponentIO.java'
+        exclude 'io/github/kltyton/kltytonui/network/serialization/ComponentIO.java'
         // 1.18.2 的 PoseStack.Pose 还是 com.mojang.math 的矩阵类型，而 common 全程按
         // org.joml 书写；这个文件是唯一的类型换算点，由本目标提供同名实现。
-        exclude 'com/sighs/apricityui/render/PoseMatrices.java'
+        exclude 'io/github/kltyton/kltytonui/render/PoseMatrices.java'
         // 1.18.2 还没有 Component.translatable（TranslatableComponent 到 1.19 才被合并进
         // Component），这个文件里只有这一处版本相关，由本目标提供同名实现。
-        exclude 'com/sighs/apricityui/element/Translation.java'
+        exclude 'io/github/kltyton/kltytonui/element/Translation.java'
         // 跨图 NativeImage#copyRect 是 1.19.3 才有的重载，本目标另附一份逐像素实现。
-        exclude 'com/sighs/apricityui/render/ImageRegionCopy.java'
+        exclude 'io/github/kltyton/kltytonui/render/ImageRegionCopy.java'
         // Rhino 1802 在 Scriptable/SymbolScriptable 和 ScriptRuntime 中不使用现代版的 Context 参数。
-        exclude 'com/sighs/apricityui/script/ecmascript/EcmaProxyObject.java'
-        exclude 'com/sighs/apricityui/script/host/RhinoHostObject.java'
-        exclude 'com/sighs/apricityui/script/StandaloneRhinoRuntime.java'
+        exclude 'io/github/kltyton/kltytonui/script/ecmascript/EcmaProxyObject.java'
+        exclude 'io/github/kltyton/kltytonui/script/host/RhinoHostObject.java'
+        exclude 'io/github/kltyton/kltytonui/script/StandaloneRhinoRuntime.java'
     }
     into "$buildDir/generated/common-main"
 }
@@ -86,79 +86,79 @@ legacyForge {
             gameDirectory = file('run')
 
             systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
-            if (project.hasProperty('auiAutoExitSeconds')) {
-                systemProperty 'apricityui.test.autoExitSeconds', project.property('auiAutoExitSeconds')
+            if (project.hasProperty('kuiAutoExitSeconds')) {
+                systemProperty 'kltytonui.test.autoExitSeconds', project.property('kuiAutoExitSeconds')
             }
-            if (project.hasProperty('auiViewportWidth')) {
-                systemProperty 'apricityui.test.viewport.width', project.property('auiViewportWidth')
+            if (project.hasProperty('kuiViewportWidth')) {
+                systemProperty 'kltytonui.test.viewport.width', project.property('kuiViewportWidth')
             }
-            if (project.hasProperty('auiViewportHeight')) {
-                systemProperty 'apricityui.test.viewport.height', project.property('auiViewportHeight')
+            if (project.hasProperty('kuiViewportHeight')) {
+                systemProperty 'kltytonui.test.viewport.height', project.property('kuiViewportHeight')
             }
-            if (project.hasProperty('auiLogStyles')) {
-                systemProperty 'apricityui.test.logStyles', project.property('auiLogStyles')
+            if (project.hasProperty('kuiLogStyles')) {
+                systemProperty 'kltytonui.test.logStyles', project.property('kuiLogStyles')
             }
-            if (project.hasProperty('auiVerboseLogs')) {
-                systemProperty 'apricityui.test.verboseLogs', project.property('auiVerboseLogs')
+            if (project.hasProperty('kuiVerboseLogs')) {
+                systemProperty 'kltytonui.test.verboseLogs', project.property('kuiVerboseLogs')
             }
-            if (project.hasProperty('auiLogRenderPhases')) {
-                systemProperty 'apricityui.test.logRenderPhases', project.property('auiLogRenderPhases')
+            if (project.hasProperty('kuiLogRenderPhases')) {
+                systemProperty 'kltytonui.test.logRenderPhases', project.property('kuiLogRenderPhases')
             }
-            if (project.hasProperty('auiClientSelfTest')) {
-                systemProperty 'apricityui.clientSelfTest', 'true'
+            if (project.hasProperty('kuiClientSelfTest')) {
+                systemProperty 'kltytonui.clientSelfTest', 'true'
             }
-            if (project.hasProperty('auiClientSelfTestExit')) {
-                systemProperty 'apricityui.clientSelfTest.exitOnFinish', 'true'
+            if (project.hasProperty('kuiClientSelfTestExit')) {
+                systemProperty 'kltytonui.clientSelfTest.exitOnFinish', 'true'
             }
-            if (project.hasProperty('auiClientSelfTestDocument')) {
-                systemProperty 'apricityui.clientSelfTest.documentPath', project.property('auiClientSelfTestDocument')
+            if (project.hasProperty('kuiClientSelfTestDocument')) {
+                systemProperty 'kltytonui.clientSelfTest.documentPath', project.property('kuiClientSelfTestDocument')
             }
-            if (project.hasProperty('auiClientSelfTestMaxCreateMillis')) {
-                systemProperty 'apricityui.clientSelfTest.maxFirstCreateMillis', project.property('auiClientSelfTestMaxCreateMillis')
+            if (project.hasProperty('kuiClientSelfTestMaxCreateMillis')) {
+                systemProperty 'kltytonui.clientSelfTest.maxFirstCreateMillis', project.property('kuiClientSelfTestMaxCreateMillis')
             }
-            if (project.hasProperty('auiClientSelfTestResult')) {
-                systemProperty 'apricityui.clientSelfTest.resultFile', project.property('auiClientSelfTestResult')
+            if (project.hasProperty('kuiClientSelfTestResult')) {
+                systemProperty 'kltytonui.clientSelfTest.resultFile', project.property('kuiClientSelfTestResult')
             }
-            if (project.hasProperty('auiFontStats')) {
-                systemProperty 'apricityui.fontStats.interval', project.property('auiFontStats')
+            if (project.hasProperty('kuiFontStats')) {
+                systemProperty 'kltytonui.fontStats.interval', project.property('kuiFontStats')
             }
-            if (project.hasProperty('auiClientSelfTestWaitForLevel')) {
-                systemProperty 'apricityui.clientSelfTest.waitForLevel', 'true'
+            if (project.hasProperty('kuiClientSelfTestWaitForLevel')) {
+                systemProperty 'kltytonui.clientSelfTest.waitForLevel', 'true'
             }
-            if (project.hasProperty('auiClientSelfTestHoldTicks')) {
-                systemProperty 'apricityui.clientSelfTest.holdTicks', project.property('auiClientSelfTestHoldTicks')
+            if (project.hasProperty('kuiClientSelfTestHoldTicks')) {
+                systemProperty 'kltytonui.clientSelfTest.holdTicks', project.property('kuiClientSelfTestHoldTicks')
             }
-            if (project.hasProperty('auiDevOverlayPath')) {
-                systemProperty 'apricityui.devOverlay.path', project.property('auiDevOverlayPath')
+            if (project.hasProperty('kuiDevOverlayPath')) {
+                systemProperty 'kltytonui.devOverlay.path', project.property('kuiDevOverlayPath')
             }
-            if (project.hasProperty('auiDevOverlayHoldSeconds')) {
-                systemProperty 'apricityui.devOverlay.holdSeconds', project.property('auiDevOverlayHoldSeconds')
+            if (project.hasProperty('kuiDevOverlayHoldSeconds')) {
+                systemProperty 'kltytonui.devOverlay.holdSeconds', project.property('kuiDevOverlayHoldSeconds')
             }
-            if (project.hasProperty('auiAtlasSize')) {
-                systemProperty 'apricityui.fontRaster.atlasSize', project.property('auiAtlasSize')
+            if (project.hasProperty('kuiAtlasSize')) {
+                systemProperty 'kltytonui.fontRaster.atlasSize', project.property('kuiAtlasSize')
             }
-            if (project.hasProperty('auiDevOverlayResourceManager')) {
-                systemProperty 'apricityui.devOverlay.resourceManager', 'true'
+            if (project.hasProperty('kuiDevOverlayResourceManager')) {
+                systemProperty 'kltytonui.devOverlay.resourceManager', 'true'
             }
-            if (project.hasProperty('auiSelectionChurn')) {
-                systemProperty 'apricityui.devOverlay.selectionChurn', project.property('auiSelectionChurn')
+            if (project.hasProperty('kuiSelectionChurn')) {
+                systemProperty 'kltytonui.devOverlay.selectionChurn', project.property('kuiSelectionChurn')
             }
-            if (project.hasProperty('auiSelectionTarget')) {
-                systemProperty 'apricityui.devOverlay.selectionTarget', project.property('auiSelectionTarget')
+            if (project.hasProperty('kuiSelectionTarget')) {
+                systemProperty 'kltytonui.devOverlay.selectionTarget', project.property('kuiSelectionTarget')
             }
-            if (project.hasProperty('auiWindowWidth')) {
+            if (project.hasProperty('kuiWindowWidth')) {
                 programArgument '--width'
-                programArgument project.property('auiWindowWidth').toString()
+                programArgument project.property('kuiWindowWidth').toString()
             }
-            if (project.hasProperty('auiQuickPlaySingleplayer')) {
+            if (project.hasProperty('kuiQuickPlaySingleplayer')) {
                 programArgument '--quickPlaySingleplayer'
-                programArgument project.property('auiQuickPlaySingleplayer').toString()
+                programArgument project.property('kuiQuickPlaySingleplayer').toString()
             }
-            if (project.hasProperty('auiWindowHeight')) {
+            if (project.hasProperty('kuiWindowHeight')) {
                 programArgument '--height'
-                programArgument project.property('auiWindowHeight').toString()
+                programArgument project.property('kuiWindowHeight').toString()
             }
-            if (!project.hasProperty('auiWindowWidth') && !project.hasProperty('auiWindowHeight')) {
+            if (!project.hasProperty('kuiWindowWidth') && !project.hasProperty('kuiWindowHeight')) {
                 programArgument '--earlywindow.maximized'
             }
         }
@@ -207,7 +207,7 @@ mixin {
 jar {
     manifest.attributes([
             "MixinConfigs": "${mod_id}.mixins.json,${mod_id}.rhino.mixins.json",
-            "Automatic-Module-Name": "apricityui"
+            "Automatic-Module-Name": "kltytonui"
     ])
 }
 
@@ -252,7 +252,7 @@ dependencies {
     modCompileOnly ("maven.modrinth:kubejs:MngQb49Q")
     modCompileOnly ("maven.modrinth:rhino:N59eFKIq")
 
-    // Minecraft only adopted JOML in 1.19.3; AUI's shared render code is built on
+    // Minecraft only adopted JOML in 1.19.3; KUI's shared render code is built on
     // org.joml types, so 1.18.2 has to supply the library itself. implementation 覆盖
     // 编译与测试编译；运行期还要进 additionalRuntimeClasspath —— ModDev 的 run 走的是
     // legacy classpath（clientLegacyClasspath.txt），源集的 runtimeClasspath 到不了那里，
@@ -265,7 +265,7 @@ dependencies {
 }
 
 configurations {
-    auiTestModRuntime {
+    kuiTestModRuntime {
         canBeConsumed = false
         canBeResolved = true
         extendsFrom modDevRuntimeDependencies
@@ -391,7 +391,7 @@ def verifyReobfuscatedJar = tasks.register('verifyReobfuscatedJar') {
         File jarFile = reobfuscatedJarFile.get().asFile
         def menuScreenCalls = readClassMethodReferences(
                 jarFile,
-                'com/sighs/apricityui/registry/ClientMenuScreens.class'
+                'io/github/kltyton/kltytonui/registry/ClientMenuScreens.class'
         ).findAll { reference ->
             reference.owner == 'net/minecraft/client/gui/screens/MenuScreens'
         }
@@ -413,7 +413,7 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
-def auiTestLogConfig = layout.buildDirectory.file('tmp/aui-test-log4j2.xml')
+def kuiTestLogConfig = layout.buildDirectory.file('tmp/kui-test-log4j2.xml')
 
 tasks.named('test', Test).configure {
     useJUnitPlatform()
@@ -422,13 +422,13 @@ tasks.named('test', Test).configure {
     // need an actual client still opt in through TestRuntime assumptions and
     // the runClient self-test below.
     classpath = sourceSets.test.output + sourceSets.main.output + configurations.testRuntimeClasspath
-    if (!project.hasProperty('auiTestNoModRuntime') || project.hasProperty('auiTestIncludeModRuntime')) {
-        classpath += configurations.auiTestModRuntime
+    if (!project.hasProperty('kuiTestNoModRuntime') || project.hasProperty('kuiTestIncludeModRuntime')) {
+        classpath += configurations.kuiTestModRuntime
     }
     doFirst {
         File sourceConfig = file("${buildDir}/moddev/clientLog4j2.xml")
         if (sourceConfig.isFile()) {
-            File isolatedConfig = auiTestLogConfig.get().asFile
+            File isolatedConfig = kuiTestLogConfig.get().asFile
             isolatedConfig.parentFile.mkdirs()
             String logDirectory = file('run/logs').absolutePath.replace('\\', '/')
             isolatedConfig.text = sourceConfig.getText('UTF-8').replace('logs/', logDirectory + '/')
@@ -436,7 +436,7 @@ tasks.named('test', Test).configure {
             systemProperty 'log4j2.configurationFile', isolatedConfig.absolutePath
         }
     }
-    ['aui.wpt.input', 'aui.wpt.output'].each { key ->
+    ['kui.wpt.input', 'kui.wpt.output'].each { key ->
         def value = System.getProperty(key)
         if (value != null && !value.isBlank()) {
             systemProperty key, value
@@ -444,12 +444,12 @@ tasks.named('test', Test).configure {
     }
 }
 
-def auiTestResultsDirectory = layout.buildDirectory.dir('test-results/test')
-def auiTestSummaryFile = layout.buildDirectory.file('reports/aui/test-summary.txt')
-def auiClientOnlyTestsFile = file('../../common/src/test/resources/aui-client-only-tests.txt')
+def kuiTestResultsDirectory = layout.buildDirectory.dir('test-results/test')
+def kuiTestSummaryFile = layout.buildDirectory.file('reports/kui/test-summary.txt')
+def kuiClientOnlyTestsFile = file('../../common/src/test/resources/kui-client-only-tests.txt')
 
-def collectAuiTestSummary = {
-    File resultsDirectory = auiTestResultsDirectory.get().asFile
+def collectKuiTestSummary = {
+    File resultsDirectory = kuiTestResultsDirectory.get().asFile
     def summary = [tests: 0, failures: 0, errors: 0, skipped: 0, skippedTests: []]
     if (!resultsDirectory.isDirectory()) return summary
 
@@ -471,8 +471,8 @@ def collectAuiTestSummary = {
     return summary
 }
 
-def writeAuiTestSummary = { Map summary ->
-    File reportFile = auiTestSummaryFile.get().asFile
+def writeKuiTestSummary = { Map summary ->
+    File reportFile = kuiTestSummaryFile.get().asFile
     reportFile.parentFile.mkdirs()
     def report = new StringBuilder()
     report.append("tests=").append(summary.tests)
@@ -489,27 +489,27 @@ def writeAuiTestSummary = { Map summary ->
 
 tasks.named('test', Test).configure {
     doLast {
-        Map summary = collectAuiTestSummary()
-        File reportFile = writeAuiTestSummary(summary)
-        logger.lifecycle("[AUI tests] tests=${summary.tests}, failures=${summary.failures}, errors=${summary.errors}, skipped=${summary.skipped}")
+        Map summary = collectKuiTestSummary()
+        File reportFile = writeKuiTestSummary(summary)
+        logger.lifecycle("[KUI tests] tests=${summary.tests}, failures=${summary.failures}, errors=${summary.errors}, skipped=${summary.skipped}")
         if (summary.skipped > 0) {
-            logger.lifecycle("[AUI tests] skipped cases are recorded in ${reportFile}")
+            logger.lifecycle("[KUI tests] skipped cases are recorded in ${reportFile}")
         }
-        if (project.hasProperty('auiTestRequireNoSkips') && summary.skipped > 0) {
-            throw new GradleException("AUI test run skipped ${summary.skipped} cases; run clientTest or remove the client-only dependency")
+        if (project.hasProperty('kuiTestRequireNoSkips') && summary.skipped > 0) {
+            throw new GradleException("KUI test run skipped ${summary.skipped} cases; run clientTest or remove the client-only dependency")
         }
     }
 }
 
-def verifyAuiTestMatrix = tasks.register('verifyAuiTestMatrix') {
+def verifyKuiTestMatrix = tasks.register('verifyKuiTestMatrix') {
     group = 'verification'
     description = 'Verifies the headless test report and rejects unclassified skipped tests.'
     dependsOn tasks.named('test')
     doLast {
-        Map summary = collectAuiTestSummary()
+        Map summary = collectKuiTestSummary()
         Set<String> expectedClientOnly = [] as Set
-        if (auiClientOnlyTestsFile.isFile()) {
-            expectedClientOnly.addAll(auiClientOnlyTestsFile.readLines('UTF-8')
+        if (kuiClientOnlyTestsFile.isFile()) {
+            expectedClientOnly.addAll(kuiClientOnlyTestsFile.readLines('UTF-8')
                     .collect { it.trim() }
                     .findAll { it && !it.startsWith('#') })
         }
@@ -520,58 +520,58 @@ def verifyAuiTestMatrix = tasks.register('verifyAuiTestMatrix') {
                     && !reason.contains('requires Minecraft runtime class')
         }
         if (!unexpected.isEmpty()) {
-            throw new GradleException("AUI tests contain unclassified skipped cases: "
+            throw new GradleException("KUI tests contain unclassified skipped cases: "
                     + unexpected.collect { it.id }.join(', '))
         }
         Set<String> unlisted = actualSkipped - expectedClientOnly
         Set<String> noLongerSkipped = expectedClientOnly - actualSkipped
         if (!unlisted.isEmpty() || !noLongerSkipped.isEmpty()) {
-            throw new GradleException("AUI client-only test inventory changed; "
+            throw new GradleException("KUI client-only test inventory changed; "
                     + "new=${unlisted.join(', ')} missing=${noLongerSkipped.join(', ')}")
         }
     }
 }
 
-def auiClientTestResultFile = layout.buildDirectory.file('reports/aui/client-test-result.txt').get().asFile
+def kuiClientTestResultFile = layout.buildDirectory.file('reports/kui/client-test-result.txt').get().asFile
 def runClientTask = tasks.named('runClient')
 def clientTest = tasks.register('clientTest') {
     group = 'verification'
     description = 'Runs the Minecraft client integration self-test and requires an explicit PASS result.'
     dependsOn runClientTask
     doLast {
-        if (!auiClientTestResultFile.isFile()) {
-            throw new GradleException("Minecraft client self-test did not produce ${auiClientTestResultFile}")
+        if (!kuiClientTestResultFile.isFile()) {
+            throw new GradleException("Minecraft client self-test did not produce ${kuiClientTestResultFile}")
         }
-        List<String> resultLines = auiClientTestResultFile.readLines('UTF-8')
+        List<String> resultLines = kuiClientTestResultFile.readLines('UTF-8')
         if (resultLines.isEmpty() || resultLines[0].trim() != 'PASS') {
             throw new GradleException("Minecraft client self-test failed: " + resultLines.join(' | '))
         }
-        logger.lifecycle('[AUI clientTest] PASS')
+        logger.lifecycle('[KUI clientTest] PASS')
     }
 }
 
 runClientTask.configure {
     doFirst {
         if (gradle.taskGraph.hasTask(clientTest.get())) {
-            auiClientTestResultFile.parentFile.mkdirs()
-            if (auiClientTestResultFile.exists()) auiClientTestResultFile.delete()
-            systemProperty 'apricityui.clientSelfTest', 'true'
-            systemProperty 'apricityui.clientSelfTest.exitOnFinish', 'true'
-            systemProperty 'apricityui.clientSelfTest.resultFile', auiClientTestResultFile.absolutePath
+            kuiClientTestResultFile.parentFile.mkdirs()
+            if (kuiClientTestResultFile.exists()) kuiClientTestResultFile.delete()
+            systemProperty 'kltytonui.clientSelfTest', 'true'
+            systemProperty 'kltytonui.clientSelfTest.exitOnFinish', 'true'
+            systemProperty 'kltytonui.clientSelfTest.resultFile', kuiClientTestResultFile.absolutePath
         }
     }
 }
 
-clientTest.configure { mustRunAfter verifyAuiTestMatrix }
+clientTest.configure { mustRunAfter verifyKuiTestMatrix }
 
 tasks.register('testMatrix') {
     group = 'verification'
     description = 'Runs headless tests and the Minecraft client integration self-test.'
-    dependsOn verifyAuiTestMatrix, clientTest
+    dependsOn verifyKuiTestMatrix, clientTest
 }
 
 tasks.named('check').configure {
-    dependsOn verifyAuiTestMatrix, verifyReobfuscatedJar
+    dependsOn verifyKuiTestMatrix, verifyReobfuscatedJar
 }
 
 jacoco {

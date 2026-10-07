@@ -6,7 +6,7 @@
 
 ## 目标文档
 
-DevTools 自己也是一个 Document（`devtools/devtools.html`），它检视的是另一个**目标文档**。打开时按这个顺序自动选目标：当前 ApricityScreen → 当前容器 Screen → 最近创建的有效文档。工具栏下方的下拉框手动切换——同路径可以有多个实例，靠 UUID 前缀区分。
+DevTools 自己也是一个 Document（`devtools/devtools.html`），它检视的是另一个**目标文档**。打开时按这个顺序自动选目标：当前 KltytonScreen → 当前容器 Screen → 最近创建的有效文档。工具栏下方的下拉框手动切换——同路径可以有多个实例，靠 UUID 前缀区分。
 
 下拉框右侧的关闭按钮是**移除目标页面**（调 `remove()`），不是"取消检视"。想换页面看用下拉框，别点它。
 
@@ -39,7 +39,7 @@ DevTools 自己也是一个 Document（`devtools/devtools.html`），它检视�
 
 ## Meta 编辑器
 
-工具栏 Meta 按钮编辑当前 HTML 的 meta（只支持可写本地源文件）。能改 charset、三个 aui-* meta 和当前运行时缩放（ZOOM 字段，走 `setViewportZoom` 立即生效）。三个 meta 的含义见 [ApricityScreen 的 meta 章节](apricity-screen#页面-meta-配置)。其他 meta 标签原样保留。保存后触发资源重载。
+工具栏 Meta 按钮编辑当前 HTML 的 meta（只支持可写本地源文件）。能改 charset、三个 kui-* meta 和当前运行时缩放（ZOOM 字段，走 `setViewportZoom` 立即生效）。三个 meta 的含义见 [KltytonScreen 的 meta 章节](kltytonui-screen#页面-meta-配置)。其他 meta 标签原样保留。保存后触发资源重载。
 
 ## Console
 
@@ -63,7 +63,7 @@ DevTools 自己也是一个 Document（`devtools/devtools.html`），它检视�
 
 ## 设置
 
-设置按钮直接编辑 `config/apricityui-client.toml`：debug 开关（autoReload、frameTimingHud、remoteDebug、资源管理器 WorldWindow 模式）、input（viewportZoomPassThrough）、worldWindow（距离、LOD、深度偏移）。各键含义见[模组 API 文档的配置表](apricity-api#客户端配置键)。
+设置按钮直接编辑 `config/kltytonui-client.toml`：debug 开关（autoReload、frameTimingHud、remoteDebug、资源管理器 WorldWindow 模式）、input（viewportZoomPassThrough）、worldWindow（距离、LOD、深度偏移）。各键含义见[模组 API 文档的配置表](kltytonui-api#客户端配置键)。
 
 ## 一个标准调试流程
 

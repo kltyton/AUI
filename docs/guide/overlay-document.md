@@ -1,14 +1,14 @@
 # Overlay Document 使用文档
 
-Overlay 是不依附于任何 Minecraft Screen 的 Document：`ApricityUI.createDocument(path)` 创建后加入全局列表，由客户端在 GUI/HUD 绘制阶段自动渲染。适合做 HUD、Toast、提示条、浮动面板、全屏遮罩、开发工具。不打开新 Screen，也没有容器槽位——要槽位请走[容器文档](container)。
+Overlay 是不依附于任何 Minecraft Screen 的 Document：`KltytonUI.createDocument(path)` 创建后加入全局列表，由客户端在 GUI/HUD 绘制阶段自动渲染。适合做 HUD、Toast、提示条、浮动面板、全屏遮罩、开发工具。不打开新 Screen，也没有容器槽位——要槽位请走[容器文档](container)。
 
 本文的 KubeJS 示例适用于 Forge 1.20.1 和 NeoForge 1.21.1；Java API 可用于其他 target。详见[总览](overview#loader-与脚本支持)。
 
-## 和 ApricityScreen 的区别
+## 和 KltytonScreen 的区别
 
-| | Overlay | ApricityScreen |
+| | Overlay | KltytonScreen |
 | --- | --- | --- |
-| 创建 | `ApricityUI.createDocument(path)` | `new ApricityScreen(path)` |
+| 创建 | `KltytonUI.createDocument(path)` | `new KltytonScreen(path)` |
 | 替换当前 Screen | 否 | 是 |
 | 游戏内无 Screen 时 | 显示 | — |
 | 打开 Screen 后 | 普通 Overlay 隐藏；持久化的继续显示 | 作为当前 Screen 绘制 |
@@ -23,7 +23,7 @@ Overlay 是不依附于任何 Minecraft Screen 的 Document：`ApricityUI.create
 <html>
 <head>
     <meta charset="utf-8">
-    <meta name="aui-viewport" content="mode=browser">
+    <meta name="kui-viewport" content="mode=browser">
 </head>
 <body>
     <div id="status">Loading...</div>
@@ -38,7 +38,7 @@ private static Document document;
 
 public static void open() {
     if (document != null && document.isActive()) return;
-    document = ApricityUI.createDocument("overlays/status.html");
+    document = KltytonUI.createDocument("overlays/status.html");
     if (document == null) return;
     Element status = document.getElementById("status");
     if (status != null) status.setTextContent("Ready");
@@ -51,16 +51,16 @@ public static void close() {
 }
 ```
 
-创建和修改必须在客户端线程；网络回调里先 `Minecraft.getInstance().execute(...)`。KubeJS 客户端脚本里是同一组 API（`ApricityUI.createDocument(...)`），页面自己的脚本则直接用页面内的 `document`。
+创建和修改必须在客户端线程；网络回调里先 `Minecraft.getInstance().execute(...)`。KubeJS 客户端脚本里是同一组 API（`KltytonUI.createDocument(...)`），页面自己的脚本则直接用页面内的 `document`。
 
 ## API
 
 ```java
-Document ApricityUI.createDocument(String path)        // 资源不存在返回 null
-void     ApricityUI.removeDocument(String path)        // 移除该路径的全部实例
-ArrayList<Document> ApricityUI.getDocument(String path)
-Document ApricityUI.getDocumentByUUID(String uuid)
-List<Document> ApricityUI.getAllDocument()
+Document KltytonUI.createDocument(String path)        // 资源不存在返回 null
+void     KltytonUI.removeDocument(String path)        // 移除该路径的全部实例
+ArrayList<Document> KltytonUI.getDocument(String path)
+Document KltytonUI.getDocumentByUUID(String uuid)
+List<Document> KltytonUI.getAllDocument()
 ```
 
 同一路径可以建多个实例，所以 `getDocument` 返回列表、`removeDocument(path)` 会一刀切。只想关自己那个，就保存返回值调 `document.remove()`。
@@ -73,7 +73,7 @@ Document 常用方法：`getPath()`、`getUuid()`、`isActive()`、`isDisposed()
 | --- | --- | --- |
 | 游戏内，无 Screen | 显示 | 显示 |
 | 打开原版 Screen | 隐藏 | 显示 |
-| 打开 ApricityScreen / 容器 Screen | 隐藏 | 由该 Screen 代为绘制 |
+| 打开 KltytonScreen / 容器 Screen | 隐藏 | 由该 Screen 代为绘制 |
 
 ```java
 overlay.setReloadPersistent(true);   // Toast、全局通知这类要一直显示
@@ -114,14 +114,14 @@ dialog.setTopLayer(true);
 
 输入按从前到后的顺序分发给各 Document，没命中或没消费就往下传。事件坐标是逻辑坐标，别乘缩放。
 
-要在 Overlay 里放全屏 Canvas 或自己读鼠标：尺寸用 `document.getViewportSize()`，鼠标用 `document.getMouseDocumentPosition()`（GUI scale ≥ 6 时 MC GUI 坐标和文档坐标不再一致，换算细节见 [gui 模式的坐标换算](apricity-screen#gui-模式的坐标换算)）。
+要在 Overlay 里放全屏 Canvas 或自己读鼠标：尺寸用 `document.getViewportSize()`，鼠标用 `document.getMouseDocumentPosition()`（GUI scale ≥ 6 时 MC GUI 坐标和文档坐标不再一致，换算细节见 [gui 模式的坐标换算](kltytonui-screen#gui-模式的坐标换算)）。
 
 两个常用模式：
 
-**模态遮罩**——meta 开拦截（见 [ApricityScreen 的 meta 章节](apricity-screen#页面-meta-配置)），遮罩盖满视口：
+**模态遮罩**——meta 开拦截（见 [KltytonScreen 的 meta 章节](kltytonui-screen#页面-meta-配置)），遮罩盖满视口：
 
 ```html
-<meta name="aui-mouse-events" content="intercept">
+<meta name="kui-mouse-events" content="intercept">
 ```
 
 ```css
@@ -135,7 +135,7 @@ dialog.setTopLayer(true);
 .toast { pointer-events: auto; }
 ```
 
-Ctrl+滚轮的缩放目标按最上层命中 Document 选；`config/apricityui-client.toml` 里 `[input] viewportZoomPassThrough = true` 时，没声明 intercept 的持久化 Overlay 会被缩放逻辑跳过。
+Ctrl+滚轮的缩放目标按最上层命中 Document 选；`config/kltytonui-client.toml` 里 `[input] viewportZoomPassThrough = true` 时，没声明 intercept 的持久化 Overlay 会被缩放逻辑跳过。
 
 ## 常见模式
 

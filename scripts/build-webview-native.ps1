@@ -1,13 +1,13 @@
 <#
 .SYNOPSIS
-Builds the ApricityUI offscreen WebView2 host (Windows x64) and drops the DLL into
+Builds the KltytonUI offscreen WebView2 host (Windows x64) and drops the DLL into
 common's resources so it ships inside every target jar.
 
 .DESCRIPTION
 The WebView2 SDK (Windows SDK + Microsoft.Web.WebView2 NuGet package) is not a
 repository dependency: this script downloads the NuGet package into the git-ignored
 build/ tree on first use, configures CMake against it, builds, and copies the result
-to common/src/main/resources/assets/apricityui/native/windows-x64/.
+to common/src/main/resources/assets/kltytonui/native/windows-x64/.
 
 .EXAMPLE
 powershell -ExecutionPolicy Bypass -File scripts/build-webview-native.ps1
@@ -16,6 +16,8 @@ powershell -ExecutionPolicy Bypass -File scripts/build-webview-native.ps1
 param(
     [string]$Configuration = "Release",
     [string]$SdkVersion = "1.0.4191.47",
+    [string]$SdkCacheDirectory,
+    [string]$BuildDirectory,
     [switch]$SkipCopy
 )
 
@@ -23,11 +25,11 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $nativeDir = Join-Path $repoRoot "native\webview"
-$sdkRoot = Join-Path $repoRoot "build\tmp\webview-sdk"
+$sdkRoot = if ($SdkCacheDirectory) { [IO.Path]::GetFullPath($SdkCacheDirectory) } else { Join-Path $repoRoot "build\tmp\webview-sdk" }
 $packageDir = Join-Path $sdkRoot "sdk"
-$buildDir = Join-Path $repoRoot "build\webview-native"
-$outputDll = Join-Path $buildDir "out\apricityui_webview.dll"
-$resourceDir = Join-Path $repoRoot "common\src\main\resources\assets\apricityui\native\windows-x64"
+$buildDir = if ($BuildDirectory) { [IO.Path]::GetFullPath($BuildDirectory) } else { Join-Path $repoRoot "build\webview-native" }
+$outputDll = Join-Path $buildDir "out\kltytonui_webview.dll"
+$resourceDir = Join-Path $repoRoot "common\src\main\resources\assets\kltytonui\native\windows-x64"
 
 function Get-WebView2Sdk {
     if (Test-Path (Join-Path $packageDir "build\native\include\WebView2.h")) {
@@ -42,7 +44,12 @@ function Get-WebView2Sdk {
         Invoke-WebRequest -Uri $url -OutFile $nupkg -UseBasicParsing
     }
     Write-Host "Extracting $nupkg ..."
-    if (Test-Path $packageDir) { Remove-Item -Recurse -Force $packageDir }
+    if (Test-Path $packageDir) {
+        if (-not [IO.Path]::GetFullPath($packageDir).StartsWith([IO.Path]::GetFullPath($sdkRoot) + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
+            throw "SDK extraction target is outside its cache directory"
+        }
+        Remove-Item -LiteralPath $packageDir -Recurse -Force
+    }
     Expand-Archive -Path $nupkg -DestinationPath $packageDir -Force
 }
 
@@ -55,6 +62,9 @@ function Get-VcVarsPath {
     if (-not $install) {
         throw "No Visual Studio installation with the MSVC C++ toolset was found."
     }
+    $cmakeBin = Join-Path $install "Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin"
+    $ninjaBin = Join-Path $install "Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja"
+    $env:PATH = "$cmakeBin;$ninjaBin;$env:PATH"
     return Join-Path $install "VC\Auxiliary\Build\vcvars64.bat"
 }
 
@@ -72,7 +82,7 @@ Assert-JavaHome
 $vcvars = Get-VcVarsPath
 
 Write-Host "Configuring CMake ..."
-cmd /c "`"$vcvars`" && cmake -S `"$nativeDir`" -B `"$buildDir`" -G `"Visual Studio 17 2022`" -A x64 -DWEBVIEW2_SDK_DIR=`"$packageDir`""
+cmd /c "`"$vcvars`" && cmake -S `"$nativeDir`" -B `"$buildDir`" -G Ninja -DCMAKE_BUILD_TYPE=$Configuration -DWEBVIEW2_SDK_DIR=`"$packageDir`""
 if ($LASTEXITCODE -ne 0) { throw "CMake configure failed." }
 
 Write-Host "Building ($Configuration) ..."
@@ -84,7 +94,7 @@ if (-not (Test-Path $outputDll)) { throw "Expected DLL not produced: $outputDll"
 if (-not $SkipCopy) {
     New-Item -ItemType Directory -Force -Path $resourceDir | Out-Null
     Copy-Item -Force $outputDll $resourceDir
-    Write-Host "Copied -> $resourceDir\apricityui_webview.dll"
+    Write-Host "Copied -> $resourceDir\kltytonui_webview.dll"
 }
 
 $info = Get-Item $outputDll

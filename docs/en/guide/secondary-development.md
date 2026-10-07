@@ -1,6 +1,6 @@
 # Secondary Development: Custom Elements and KubeJS Bindings
 
-For mod authors who want to add things to AUI. Three extension points: custom DOM elements, KubeJS global bindings, and the frame-timing HUD. KubeJS bindings are currently registered only on Forge 1.20.1 and NeoForge 1.21.1; page scripts execute only on Forge 1.20.1, NeoForge 1.21.1, and NeoForge 26.1. For page-side APIs see the [Web API doc](web-api); for usage of the built-in extension tags see the [Extension Elements doc](extension-elements).
+For mod authors who want to add things to KUI. Three extension points: custom DOM elements, KubeJS global bindings, and the frame-timing HUD. KubeJS bindings are currently registered only on Forge 1.20.1 and NeoForge 1.21.1; page scripts execute only on Forge 1.20.1, NeoForge 1.21.1, and NeoForge 26.1. For page-side APIs see the [Web API doc](web-api); for usage of the built-in extension tags see the [Extension Elements doc](extension-elements).
 
 ## Two Boundaries to Hold First
 
@@ -8,7 +8,7 @@ For mod authors who want to add things to AUI. Three extension points: custom DO
 
 ```java
 Minecraft.getInstance().execute(() -> {
-    Document document = ApricityUI.createDocument("overlays/status.html");
+    Document document = KltytonUI.createDocument("overlays/status.html");
     if (document != null && document.body != null) {
         document.body.setTextContent("ready");
     }
@@ -58,14 +58,14 @@ public final class MyPanel extends Element {
 Then register the scan package during mod initialization (constructor or earlier):
 
 ```java
-ApricityUIRegistry.scanPackage("com.example.mod.ui");
+KltytonUIRegistry.scanPackage("com.example.mod.ui");
 // or scanPackages("com.example.mod.ui", "com.example.mod.client.element");
 ```
 
 Key points and pitfalls:
 
 - Tag names are registered uppercase and are case-insensitive; **include a mod prefix** (`EXAMPLE-PANEL`) to avoid collisions; re-registering the same tag overwrites the earlier one, and scan order is not a stable priority;
-- Annotation scanning is provided by the loader target: Forge/NeoForge use their mod scan metadata, while Fabric scans mod class files. `scanPackage` collects the given package and its subpackages; call it before AUI element registration — registering after the first Document is created won't retroactively convert already-parsed pages;
+- Annotation scanning is provided by the loader target: Forge/NeoForge use their mod scan metadata, while Fabric scans mod class files. `scanPackage` collects the given package and its subpackages; call it before KUI element registration — registering after the first Document is created won't retroactively convert already-parsed pages;
 - Don't read attributes in the constructor; do initialization in `onInitFromDom`; instantiation failure falls back to a plain Element (the page still works, the extended behavior is gone), but exceptions in `onInitFromDom` and drawing have no such safety net;
 - Element registration is not hot-reloadable — restart the client after changing registration logic; **Reload Resources** only rescans resources;
 - Elements that don't need custom drawing don't need to override `drawPhase`; CSS works as usual;
@@ -73,14 +73,14 @@ Key points and pitfalls:
 
 ## Registering KubeJS Bindings
 
-This section applies only to the Forge 1.20.1 and NeoForge 1.21.1 targets; Fabric targets and NeoForge 26.1 currently do not register AUI's KubeJS bindings.
+This section applies only to the Forge 1.20.1 and NeoForge 1.21.1 targets; Fabric targets and NeoForge 26.1 currently do not register KUI's KubeJS bindings.
 
 Add `@KJSBindings` to a static-method class, and the class enters scripts as a global object:
 
 ```java
-@KJSBindings(value = "ExampleAui", modId = "examplemod", isClient = true)
-public final class ExampleAuiBindings {
-    private ExampleAuiBindings() {}
+@KJSBindings(value = "ExampleKui", modId = "examplemod", isClient = true)
+public final class ExampleKuiBindings {
+    private ExampleKuiBindings() {}
 
     public static String hello(String name) {
         return "Hello, " + name;
@@ -90,7 +90,7 @@ public final class ExampleAuiBindings {
 
 ```javascript
 // in the page script
-console.log(ExampleAui.hello("Apricity"));
+console.log(ExampleKui.hello("Kltyton"));
 ```
 
 Register during mod initialization: `KubeJS.scanPackage("com.example.mod.kjs")`.
@@ -104,22 +104,22 @@ After changing annotations or scan packages, restart KubeJS/the client — **Rel
 
 ## frameTimingHud: Frame-Timing HUD
 
-`config/apricityui-client.toml`:
+`config/kltytonui-client.toml`:
 
 ```toml
 [debug]
 frameTimingHud = true
 ```
 
-Shows the most recent 120 AUI frame samples in the top-left corner:
+Shows the most recent 120 KUI frame samples in the top-left corner:
 
 ```text
 max 2.31 ms  min 0.42 ms  avg 0.88 ms  g 12 img 3 sb 7  ly 0 tf 1  item 26 x0.08/0.31 ms
 ```
 
-`max/min/avg` are AUI document rendering times; `g`/`img`/`sb` are the latest frame's flush counts for Graph batches, image batches, and the shared `BufferSource`; `ly`/`tf` are the counts of full-document layout commits and targeted transform commits; the `item` section only appears when the frame painted item nodes (such as `<item>`), and lists draw count, mean time, and worst single-draw time. It only measures the AUI drawing segment — it is not total frame time or FPS, and does not include script execution cost.
+`max/min/avg` are KUI document rendering times; `g`/`img`/`sb` are the latest frame's flush counts for Graph batches, image batches, and the shared `BufferSource`; `ly`/`tf` are the counts of full-document layout commits and targeted transform commits; the `item` section only appears when the frame painted item nodes (such as `<item>`), and lists draw count, mean time, and worst single-draw time. It only measures the KUI drawing segment — it is not total frame time or FPS, and does not include script execution cost.
 
-To get the same frame data into the log rather than only on screen, add `-Dapricityui.fontStats.interval=900` (emits one `[AUI FontStats]` line every N AUI frame boundaries, with fields sourced from the same snapshot, including `imageFlushes`/`graphFlushes`).
+To get the same frame data into the log rather than only on screen, add `-Dkltytonui.fontStats.interval=900` (emits one `[KUI FontStats]` line every N KUI frame boundaries, with fields sourced from the same snapshot, including `imageFlushes`/`graphFlushes`).
 
 How to use it: keep the page stable until the window fills up → note `avg`/`max` and the batch counts → change only one variable → compare again. High `g`/`img` means batches are being interrupted or aren't being merged, high `sb` means the shared buffer is being flushed too often, and the `item` mean/peak tells you whether item nodes are the hotspot — all clues for locating the problem, not conclusions. **`ly` is the number to watch**: a full layout commit rebuilds the whole document's geometry and re-runs layout measurement, so on a normal page it should stay at 0; if it is above 0 every frame, something keeps marking the entire document as needing relayout — check first whether a rule such as `:hover` changes a layout-affecting property (`width`/`padding`/`font-size`; colour, background and `opacity` do not, and `transform` alone goes through `tf` instead of `ly`). Extension elements should cache invariant geometry/texture state; don't do heavy work in `drawPhase`.
 
@@ -127,7 +127,7 @@ How to use it: keep the page stable until the window fills up → note `avg`/`ma
 
 **Custom tag is still a plain Element**: is the class inside the scanned package or its subpackages? Does it have a `public (Document)` constructor? Was scanPackage called early enough? Restart the client to verify after changes.
 
-**Page initialization errors after registration**: read the AUI error log with the path and tag name. Is attribute initialization written in the constructor — move it to `onInitFromDom`. When drawing, check sizes, resource handles, and document validity.
+**Page initialization errors after registration**: read the KUI error log with the path and tag name. Is attribute initialization written in the constructor — move it to `onInitFromDom`. When drawing, check sizes, resource handles, and document validity.
 
 **KJS global object doesn't exist**: is KubeJS loaded? Was scanPackage called? Is the mod for modId present? Does the script's runtime side match `isClient`? Restart after changes.
 

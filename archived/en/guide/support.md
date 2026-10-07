@@ -1,8 +1,8 @@
 ### Support Status
 
-Short version: ApricityUI tries to move toward the Web, but it is not a browser.
+Short version: KltytonUI tries to move toward the Web, but it is not a browser.
 
-The best mental model is not "if a webpage can do it, ApricityUI can too", but "ApricityUI supports a practical subset that keeps becoming more Web-like".
+The best mental model is not "if a webpage can do it, KltytonUI can too", but "KltytonUI supports a practical subset that keeps becoming more Web-like".
 
 If you write against full browser expectations, you will probably hit rough edges.
 
@@ -137,15 +137,15 @@ So you are not starting from a blank sheet, but you also should not treat it lik
 
 These variables are useful in `slot` and `container` scenarios:
 
-- `--aui-slot-size`
-- `--aui-slot-render-bg`
-- `--aui-slot-render-item`
-- `--aui-slot-icon-scale`
-- `--aui-slot-z`
-- `--aui-slot-interactive`
-- `--aui-slot-cycle`
-- `--aui-slot-cycle-interval`
-- `--aui-container-columns`
+- `--kui-slot-size`
+- `--kui-slot-render-bg`
+- `--kui-slot-render-item`
+- `--kui-slot-icon-scale`
+- `--kui-slot-z`
+- `--kui-slot-interactive`
+- `--kui-slot-cycle`
+- `--kui-slot-cycle-interval`
+- `--kui-container-columns`
 
 If you are building container UI, these are worth memorizing.
 
@@ -201,11 +201,11 @@ Do not treat it like a complete browser:
 
 There are also in-world window interfaces on the client KJS side:
 
-- `ApricityUI.createInWorldDocument()`
-- `ApricityUI.createWorldWindow()`
-- `ApricityUI.createFollowFacingWorldWindow()`
-- `ApricityUI.removeWorldWindow()`
-- `ApricityUI.clearWorldWindows()`
+- `KltytonUI.createInWorldDocument()`
+- `KltytonUI.createWorldWindow()`
+- `KltytonUI.createFollowFacingWorldWindow()`
+- `KltytonUI.removeWorldWindow()`
+- `KltytonUI.clearWorldWindows()`
 
 These are very convenient for client-side visualization scripts.
 
@@ -213,20 +213,20 @@ These are very convenient for client-side visualization scripts.
 
 ### Unified Java Entry Points
 
-If you are developing a mod and do not want to remember separate APIs for `Document`, networking, and `WorldWindow`, you can now mostly go through `ApricityUI` directly.
+If you are developing a mod and do not want to remember separate APIs for `Document`, networking, and `WorldWindow`, you can now mostly go through `KltytonUI` directly.
 
 Common ones include:
 
-- `ApricityUI.createDocument()`
-- `ApricityUI.createInWorldDocument()`
-- `ApricityUI.removeDocument()`
-- `ApricityUI.openScreen()`
-- `ApricityUI.closeScreen()`
-- `ApricityUI.bind()`
-- `ApricityUI.createWorldWindow()`
-- `ApricityUI.createFollowFacingWorldWindow()`
-- `ApricityUI.removeWorldWindow()`
-- `ApricityUI.clearWorldWindows()`
+- `KltytonUI.createDocument()`
+- `KltytonUI.createInWorldDocument()`
+- `KltytonUI.removeDocument()`
+- `KltytonUI.openScreen()`
+- `KltytonUI.closeScreen()`
+- `KltytonUI.bind()`
+- `KltytonUI.createWorldWindow()`
+- `KltytonUI.createFollowFacingWorldWindow()`
+- `KltytonUI.removeWorldWindow()`
+- `KltytonUI.clearWorldWindows()`
 
 That helps keep the JS-side and Java-side documentation aligned.
 

@@ -44,7 +44,7 @@ Supported text forms:
 | Minecraft Ingredient JSON | Minecraft's Ingredient JSON expression, such as `{"item":"minecraft:apple"}` or `{"tag":"minecraft:logs"}` |
 | ItemStack SNBT | One item stack; fields follow the target Minecraft version |
 
-Up to 128 candidates are kept, with duplicates removed. `#apricityui:furnace_fuels` is a built-in fuel candidate tag that collects items according to Minecraft burn time.
+Up to 128 candidates are kept, with duplicates removed. `#kltytonui:furnace_fuels` is a built-in fuel candidate tag that collects items according to Minecraft burn time.
 
 Multiple candidates cycle by default. Cycling pauses while the pointer is over the `<ingredient>` or its current item.
 
@@ -52,8 +52,8 @@ Multiple candidates cycle by default. Cycling pauses while the pointer is over t
 | --- | --- | --- |
 | `cycle` | On | Set to `false`, `0`, `no`, `off`, `disabled`, or `none` to stop cycling; `true`, `1`, `yes`, `on`, and `enabled` are also accepted |
 | `cycle-interval` | `1000` | Positive integer milliseconds; minimum `200`. Legacy alias: `rotate-interval` |
-| `--aui-ingredient-cycle` | Unset | CSS cycle toggle; `--aui-slot-cycle` is also recognized |
-| `--aui-ingredient-cycle-interval` | Unset | Positive integer milliseconds; `--aui-slot-cycle-interval` is also recognized |
+| `--kui-ingredient-cycle` | Unset | CSS cycle toggle; `--kui-slot-cycle` is also recognized |
+| `--kui-ingredient-cycle-interval` | Unset | Positive integer milliseconds; `--kui-slot-cycle-interval` is also recognized |
 
 CSS custom properties take precedence over HTML attributes. A single candidate does not cycle. Invalid expressions or expressions with no matching items render empty.
 
@@ -76,7 +76,7 @@ Write the recipe ID as the element's text. `type` is required and must match the
 | `smithing` | Smithing template, input, addition, and output |
 | `fallback` | Other recipes: up to eight inputs and the output |
 
-Generated `<slot>` elements are for display only: they occupy no menu slots and cannot be clicked or manipulated. They use the regular `<slot>` CSS properties. The recipe uses CSS Grid by default; adjust its gap, slot size, and column count with `--aui-recipe-gap`, `--aui-recipe-slot-size`, and `--aui-recipe-columns`. Generated slots carry role classes such as `aui-recipe-input` and `aui-recipe-output`, which can be styled separately.
+Generated `<slot>` elements are for display only: they occupy no menu slots and cannot be clicked or manipulated. They use the regular `<slot>` CSS properties. The recipe uses CSS Grid by default; adjust its gap, slot size, and column count with `--kui-recipe-gap`, `--kui-recipe-slot-size`, and `--kui-recipe-columns`. Generated slots carry role classes such as `kui-recipe-input` and `kui-recipe-output`, which can be styled separately.
 
 If `type` is missing or invalid, the recipe cannot be found, or the type does not match, an error is logged and written to `data-recipe-error`; on success that attribute is empty. The layout type is written to `data-recipe-layout` and can be used in CSS selectors. A preview cannot be generated when no client world or recipe manager is available.
 

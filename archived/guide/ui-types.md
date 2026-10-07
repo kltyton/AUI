@@ -21,15 +21,15 @@ Overlay 是最轻的一种。
 KJS 或客户端脚本常用入口：
 
 ```javascript
-let doc = ApricityUI.createDocument("demo/index.html")
-ApricityUI.removeDocument("demo/index.html")
+let doc = KltytonUI.createDocument("demo/index.html")
+KltytonUI.removeDocument("demo/index.html")
 ```
 
 Java 侧现在也可以直接走主类入口：
 
 ```java
-ApricityUI.createDocument("demo/index.html");
-ApricityUI.removeDocument("demo/index.html");
+KltytonUI.createDocument("demo/index.html");
+KltytonUI.removeDocument("demo/index.html");
 ```
 
 如果你更喜欢直接操作底层对象，也还是可以：
@@ -66,15 +66,15 @@ Screen 就是更标准的“打开一个界面”。
 KJS：
 
 ```javascript
-ApricityUI.openScreen("demo/index.html")
-ApricityUI.closeScreen()
+KltytonUI.openScreen("demo/index.html")
+KltytonUI.closeScreen()
 ```
 
 Java：
 
 ```java
-ApricityUI.openScreen("demo/index.html");
-ApricityUI.closeScreen();
+KltytonUI.openScreen("demo/index.html");
+KltytonUI.closeScreen();
 ```
 
 这适合：
@@ -91,7 +91,7 @@ ApricityUI.closeScreen();
 ```javascript
 // 容器信息由模板中的 <container> 元素声明
 // 客户端 openScreen 会自动提取并发送到服务端
-ApricityUI.openScreen("demo/index.html")
+KltytonUI.openScreen("demo/index.html")
 ```
 
 Java 写法也是同一套接口：
@@ -99,7 +99,7 @@ Java 写法也是同一套接口：
 ```java
 // 容器信息由模板中的 <container> 元素声明
 // 客户端 openScreen 会自动提取并发送到服务端
-ApricityUI.openScreen("demo/index.html");
+KltytonUI.openScreen("demo/index.html");
 ```
 
 这里有个关键点：
@@ -166,21 +166,21 @@ ApricityUI.openScreen("demo/index.html");
 真正要显示出来，还需要挂进 `WorldWindow`：
 
 ```java
-WorldWindow window = ApricityUI.createWorldWindow("demo/world.html", position, 180, 100, 16);
+WorldWindow window = KltytonUI.createWorldWindow("demo/world.html", position, 180, 100, 16);
 window.setMaxDisplayDistance(32);
 
 // 需要时移除
-ApricityUI.removeWorldWindow(window);
+KltytonUI.removeWorldWindow(window);
 ```
 
 如果你是在 KJS 客户端脚本里用，现在也有对应接口：
 
 ```javascript
-let window = ApricityUI.createWorldWindow("demo/world.html", 0, 65, 0, 180, 100, 16)
+let window = KltytonUI.createWorldWindow("demo/world.html", 0, 65, 0, 180, 100, 16)
 window.setMaxDisplayDistance(32)
 
 // 需要时移除
-ApricityUI.removeWorldWindow(window)
+KltytonUI.removeWorldWindow(window)
 ```
 
 这个平面支持：
@@ -192,14 +192,14 @@ ApricityUI.removeWorldWindow(window)
 5. 独立的最大显示距离。
 
 如果没有调用 `setMaxDisplayDistance()`，窗口使用客户端配置文件
-`config/apricityui-client.toml` 中 `[worldWindow] maxDisplayDistance` 的全局默认值；
+`config/kltytonui-client.toml` 中 `[worldWindow] maxDisplayDistance` 的全局默认值；
 默认值为 `128` 格。需要不限制距离时可设置为 `2147483647`。
 实例调用 `setMaxDisplayDistance(distance)` 后会覆盖全局值。调用
 `clearMaxDisplayDistanceOverride()` 可以恢复跟随全局配置。
 
 默认缩放是 `0.02f`，也就是大约 50 像素对应 1 格方块。
 
-LOD 默认关闭。需要全局启用时，在 `config/apricityui-client.toml` 的
+LOD 默认关闭。需要全局启用时，在 `config/kltytonui-client.toml` 的
 `[worldWindow]` 中设置：
 
 ```toml
@@ -246,7 +246,7 @@ window.setDisplayPrecision(WorldWindowDisplayPrecision.REDUCED);
 Java：
 
 ```java
-FollowFacingWorldWindow window = ApricityUI.createFollowFacingWorldWindow(
+FollowFacingWorldWindow window = KltytonUI.createFollowFacingWorldWindow(
     "demo/follow.html",
     position,
     180,
@@ -259,7 +259,7 @@ FollowFacingWorldWindow window = ApricityUI.createFollowFacingWorldWindow(
 KJS：
 
 ```javascript
-let window = ApricityUI.createFollowFacingWorldWindow(
+let window = KltytonUI.createFollowFacingWorldWindow(
     "demo/follow.html",
     0, 65, 0,
     180, 100,

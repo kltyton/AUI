@@ -1,6 +1,6 @@
 # Extension Elements
 
-Beyond standard HTML, AUI registers a set of extension tags. They are all ordinary DOM elements that participate normally in CSS, layout, hit-testing, and script manipulation. They solve one common class of problem: **drawing game resources and animations into the page**.
+Beyond standard HTML, KUI registers a set of extension tags. They are all ordinary DOM elements that participate normally in CSS, layout, hit-testing, and script manipulation. They solve one common class of problem: **drawing game resources and animations into the page**.
 
 For the capability boundaries of standard elements see [HTML/CSS Coverage](html-css-coverage); for item and recipe displays see [Minecraft Item and Recipe Elements](mc-elements); for containers and real slots see the [Container doc](container); for the full behaviour of `<iframe>` see [WebView and iframe](webview); for registering your own elements see the [Secondary Development doc](secondary-development) — none of that is repeated here.
 
@@ -64,7 +64,7 @@ For a horizontal atlas, single-frame size = width/steps × height; the reverse f
 ## translation: Localized Text
 
 ```html
-<translation>container.apricityui.title</translation>
+<translation>container.kltytonui.title</translation>
 ```
 
 The text content is an MC translation key, rendered in the current language. textContent is the key itself. There is no parameter interpolation — assemble parameterized translations on the script side and use a normal text element.

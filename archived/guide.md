@@ -6,20 +6,20 @@
 
 其中，叠加层是最简单的，你只需要在想要的时机创建或关闭Document即可，Java和JS都一样：
 ```javascript
-Document ApricityUI.createDocument(String path)
-Document ApricityUI.removeDocument(String path)
+Document KltytonUI.createDocument(String path)
+Document KltytonUI.removeDocument(String path)
 ```
 方法传入一个HTML文件的字符串路径，创建一个Document并返回，Document被创建完、加载完后就会立刻加入绘制队列。
 最简单的例子，你可以在玩家手持弓时，将背包中所有类型的箭及其数量绘制在屏幕右下方。
-此外，你也可以使用ApricityUI类中的其他方法来获取当前存在的Document，例如用于读取或修改其它模组提供的UI。
+此外，你也可以使用KltytonUI类中的其他方法来获取当前存在的Document，例如用于读取或修改其它模组提供的UI。
 是的，同时可以存在任意数量的Document，只要不互相遮挡就没什么影响，就算有，你也可以手动调整他们的位置。
 同一个路径的Document也可以同时存在多个，虽然并不推荐这么做。
 
 而创建界面其实就是创建晴雪UI自带的空白Screen，并为这个Screen绑定一个Document，创建时一起创建，关闭时一起关闭。
 你可以在客户端调用这些方法来管理界面：
 ```javascript
-ApricityUI.openScreen(String path)
-ApricityUI.closeScreen()
+KltytonUI.openScreen(String path)
+KltytonUI.closeScreen()
 ```
 
 如果你只做 UI 预览（无服务端槽位绑定），直接使用上面的 `openScreen(path)` 即可。
@@ -29,7 +29,7 @@ ApricityUI.closeScreen()
 ```javascript
 // 容器信息由模板中的 <container> 元素声明
 // 客户端 openScreen 会自动提取并发送到服务端
-ApricityUI.openScreen("demo/index.html")
+KltytonUI.openScreen("demo/index.html")
 ```
 
 其中 `main` / `player` 等容器名必须与模板里的顶层 `<container id="...">` 对应，容器声明由模板驱动。
@@ -74,21 +74,21 @@ ApricityUI.openScreen("demo/index.html")
 
 `global.css` 默认变量（可在容器或 slot 层覆盖）：
 
-- `--aui-slot-size`：槽位像素尺寸（整数）；
-- `--aui-slot-render-bg`：是否渲染槽位背景（1/0）；
-- `--aui-slot-render-item`：是否渲染物品（1/0）；
-- `--aui-slot-icon-scale`：图标缩放（浮点）；
-- `--aui-slot-z`：槽位层级（整数）；
-- `--aui-slot-interactive`：是否允许交互（1/0）；
-- `--aui-slot-cycle` / `--aui-slot-cycle-interval`：virtual 槽位轮播开关与间隔；
-- `--aui-container-columns`：可选，显式指定容器列数；未设置时由运行时按 `min(9, slotCount)` 注入默认列数。
+- `--kui-slot-size`：槽位像素尺寸（整数）；
+- `--kui-slot-render-bg`：是否渲染槽位背景（1/0）；
+- `--kui-slot-render-item`：是否渲染物品（1/0）；
+- `--kui-slot-icon-scale`：图标缩放（浮点）；
+- `--kui-slot-z`：槽位层级（整数）；
+- `--kui-slot-interactive`：是否允许交互（1/0）；
+- `--kui-slot-cycle` / `--kui-slot-cycle-interval`：virtual 槽位轮播开关与间隔；
+- `--kui-container-columns`：可选，显式指定容器列数；未设置时由运行时按 `min(9, slotCount)` 注入默认列数。
 
 示例可直接参考：
 
 - `run/kubejs/server_scripts/example.js`（钻石/绿宝石/紫水晶碎片/下界之星触发示例）
-- `run/apricity/test/index.html`（纯 UI 虚拟槽位，顶层可无 container）
-- `run/apricity/test/saveddata_player.html`（saveddata + playerinv 双容器绑定）
-- `run/apricity/test/virtual_container.html`（虚拟容器：有 container，但仅 virtual slot）
-- `run/apricity/test/recipe_showcase.html`（recipe 预览展示）
+- `run/kltytonui/test/index.html`（纯 UI 虚拟槽位，顶层可无 container）
+- `run/kltytonui/test/saveddata_player.html`（saveddata + playerinv 双容器绑定）
+- `run/kltytonui/test/virtual_container.html`（虚拟容器：有 container，但仅 virtual slot）
+- `run/kltytonui/test/recipe_showcase.html`（recipe 预览展示）
 
 未完待续……

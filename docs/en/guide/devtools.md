@@ -6,7 +6,7 @@ Open/close: bind a key for "Toggle DevTools" in MC's controls settings (unbound 
 
 ## Target document
 
-DevTools itself is also a Document (`devtools/devtools.html`), and what it inspects is another **target document**. When opened, it auto-selects a target in this order: current ApricityScreen → current container Screen → most recently created valid document. Use the dropdown below the toolbar to switch manually — multiple instances can share the same path and are distinguished by UUID prefix.
+DevTools itself is also a Document (`devtools/devtools.html`), and what it inspects is another **target document**. When opened, it auto-selects a target in this order: current KltytonScreen → current container Screen → most recently created valid document. Use the dropdown below the toolbar to switch manually — multiple instances can share the same path and are distinguished by UUID prefix.
 
 The close button to the right of the dropdown **removes the target page** (calls `remove()`); it does not "stop inspecting". Use the dropdown to look at a different page — don't click it.
 
@@ -39,7 +39,7 @@ After saving, the source file has changed but the current document **is not rebu
 
 ## Meta editor
 
-The toolbar Meta button edits the current HTML's metas (only for writable local source files). You can change the charset, the three aui-* metas, and the current runtime zoom (the ZOOM field, applied immediately via `setViewportZoom`). For the meaning of the three metas, see [the meta section of ApricityScreen](apricity-screen#page-meta-configuration). Other meta tags are preserved as-is. Saving triggers a resource reload.
+The toolbar Meta button edits the current HTML's metas (only for writable local source files). You can change the charset, the three kui-* metas, and the current runtime zoom (the ZOOM field, applied immediately via `setViewportZoom`). For the meaning of the three metas, see [the meta section of KltytonScreen](kltytonui-screen#page-meta-configuration). Other meta tags are preserved as-is. Saving triggers a resource reload.
 
 ## Console
 
@@ -63,7 +63,7 @@ Plus simple arithmetic and literals. Enter executes, Up/Down arrows cycle histor
 
 ## Settings
 
-The settings button directly edits `config/apricityui-client.toml`: debug switches (autoReload, frameTimingHud, remoteDebug, Resource Manager WorldWindow mode), input (viewportZoomPassThrough), worldWindow (distance, LOD, depth offset). For the meaning of each key, see [the config table in the mod API docs](apricity-api#client-config-keys).
+The settings button directly edits `config/kltytonui-client.toml`: debug switches (autoReload, frameTimingHud, remoteDebug, Resource Manager WorldWindow mode), input (viewportZoomPassThrough), worldWindow (distance, LOD, depth offset). For the meaning of each key, see [the config table in the mod API docs](kltytonui-api#client-config-keys).
 
 ## A standard debugging workflow
 

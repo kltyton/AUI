@@ -1,13 +1,13 @@
-# AUI 异步线程计划
+# KUI 异步线程计划
 
 ## 目标
 
-AUI 可以注册自己的后台线程池，用来处理不依赖 Minecraft 主线程、不触碰 OpenGL、不直接修改 live DOM 的工作。目标是把 IO、解析、解码和纯计算从 MC client tick/render 热路径移走，同时保持所有 Document、Element、layout、render cache 的最终应用仍在主线程完成。
+KUI 可以注册自己的后台线程池，用来处理不依赖 Minecraft 主线程、不触碰 OpenGL、不直接修改 live DOM 的工作。目标是把 IO、解析、解码和纯计算从 MC client tick/render 热路径移走，同时保持所有 Document、Element、layout、render cache 的最终应用仍在主线程完成。
 
 核心模型：
 
 ```text
-AUI Worker Thread Pool
+KUI Worker Thread Pool
   -> 生成不可变结果
   -> Main Thread Apply Queue
   -> FrameTaskScheduler 按预算应用
@@ -47,13 +47,13 @@ AUI Worker Thread Pool
 
 ## 线程组件设计
 
-### `AuiWorker`
+### `KuiWorker`
 
 固定大小线程池，线程名建议为：
 
 ```text
-ApricityUI-Worker-1
-ApricityUI-Worker-2
+KltytonUI-Worker-1
+KltytonUI-Worker-2
 ...
 ```
 
@@ -65,7 +65,7 @@ max(1, min(2, availableProcessors / 2))
 
 初期不要开太多线程，避免和 MC、资源加载、显卡驱动线程抢 CPU。
 
-### `AuiTask<T>`
+### `KuiTask<T>`
 
 后台任务只做纯计算：
 
@@ -80,7 +80,7 @@ Input snapshot -> Result
 - refresh generation
 - resource generation
 
-### `AuiMainThreadQueue`
+### `KuiMainThreadQueue`
 
 后台任务完成后，把 apply 动作投递到主线程队列。apply 动作也不应一次性无限执行，而是交给 `FrameTaskScheduler` 分帧消费。
 
@@ -92,12 +92,12 @@ Input snapshot -> Result
 
 ### Phase 1: 统一线程池和 apply 队列
 
-- 新增 `AuiWorker`。
+- 新增 `KuiWorker`。
 - 新增主线程 apply queue。
 - 所有异步结果带 generation。
 - `FrameScheduler.tick()` 中按顺序执行：
   1. async resource apply
-  2. `AuiMainThreadQueue`
+  2. `KuiMainThreadQueue`
   3. `FrameTaskScheduler`
   4. document commit
 
@@ -188,7 +188,7 @@ Input snapshot -> Result
 每次异步化后用 JFR 验证：
 
 - `Render thread` / client tick 中是否减少 long task。
-- AUI 热点是否从 IO/parse/decode 转移出去。
+- KUI 热点是否从 IO/parse/decode 转移出去。
 - 主线程 apply 是否仍有单帧尖峰。
 - 是否出现 layout/hit-test/render cache dirty 后的错位或事件滞后。
 

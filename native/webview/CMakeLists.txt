@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.20)
-project(apricityui_webview LANGUAGES CXX)
+project(kltytonui_webview LANGUAGES CXX)
 
 if(NOT WIN32)
     message(FATAL_ERROR "The offscreen WebView2 host is Windows-only.")
 endif()
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 
@@ -29,13 +29,13 @@ if(NOT EXISTS "${WINSDK_INCLUDE_DIR}/cppwinrt/winrt/base.h")
     message(FATAL_ERROR "C++/WinRT headers not found under ${WINSDK_INCLUDE_DIR}")
 endif()
 
-add_library(apricityui_webview SHARED
+add_library(kltytonui_webview SHARED
         src/webview_host.cpp
         src/frame_channel.cpp
         src/frame_stream.cpp
         src/jni_bridge.cpp)
 
-target_include_directories(apricityui_webview PRIVATE
+target_include_directories(kltytonui_webview PRIVATE
         "${WEBVIEW2_INCLUDE}"
         "${JAVA_INCLUDE_PATH}"
         "${JAVA_INCLUDE_PATH2}"
@@ -43,7 +43,7 @@ target_include_directories(apricityui_webview PRIVATE
         "${WINSDK_INCLUDE_DIR}/winrt"
         "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-target_compile_definitions(apricityui_webview PRIVATE UNICODE _UNICODE NOMINMAX
+target_compile_definitions(kltytonui_webview PRIVATE UNICODE _UNICODE NOMINMAX
         WINVER=0x0A00 _WIN32_WINNT=0x0A00)
 
 # The sources carry UTF-8 comments; without this MSVC reads them in the system code page
@@ -51,10 +51,10 @@ target_compile_definitions(apricityui_webview PRIVATE UNICODE _UNICODE NOMINMAX
 if(MSVC)
     # /utf-8: the sources carry UTF-8 comments.
     # /bigobj: C++/WinRT projections instantiate a lot of templates.
-    target_compile_options(apricityui_webview PRIVATE /utf-8 /bigobj)
+    target_compile_options(kltytonui_webview PRIVATE /utf-8 /bigobj)
 endif()
 
-target_link_libraries(apricityui_webview PRIVATE
+target_link_libraries(kltytonui_webview PRIVATE
         "${WEBVIEW2_LIB_DIR}/WebView2LoaderStatic.lib"
         windowscodecs.lib
         dcomp.lib
@@ -71,15 +71,15 @@ target_link_libraries(apricityui_webview PRIVATE
         winmm.lib
         windowsapp.lib)
 
-set_target_properties(apricityui_webview PROPERTIES
+set_target_properties(kltytonui_webview PROPERTIES
         PREFIX ""
-        OUTPUT_NAME "apricityui_webview"
+        OUTPUT_NAME "kltytonui_webview"
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/out")
 
 # Multi-config generators (Visual Studio, Xcode) append the configuration name;
 # pin every configuration to the same directory so the packaging script has one
 # stable path.
 foreach(config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
-    set_target_properties(apricityui_webview PROPERTIES
+    set_target_properties(kltytonui_webview PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY_${config} "${CMAKE_BINARY_DIR}/out")
 endforeach()

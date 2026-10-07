@@ -1,26 +1,26 @@
 ---
-title: 使用 AUI 实现玩家消息气泡显示功能
-description: 这个示例使用了 AUI 中的 WorldWindow 类，通过 ClientChatReceivedEvent 监听玩家聊天消息，在玩家头顶显示影像气泡，仅做参考。
+title: 使用 KUI 实现玩家消息气泡显示功能
+description: 这个示例使用了 KUI 中的 WorldWindow 类，通过 ClientChatReceivedEvent 监听玩家聊天消息，在玩家头顶显示影像气泡，仅做参考。
 last_update:
   date: 3/15/2026
   author: 
 ---
 
-# 使用 AUI 实现玩家消息气泡显示功能
+# 使用 KUI 实现玩家消息气泡显示功能
 
-这个示例使用了 AUI 中的`WorldWindow`类，通过监听`ClientChatReceivedEvent`获取玩家聊天消息，在玩家头顶添加一个[影像](/ApricityUI/guide/ui-types#影像)气泡来显示消息内容，仅做参考。
+这个示例使用了 KUI 中的`WorldWindow`类，通过监听`ClientChatReceivedEvent`获取玩家聊天消息，在玩家头顶添加一个[影像](/KltytonUI/guide/ui-types#影像)气泡来显示消息内容，仅做参考。
 
 `PlayerMessageDisplay.java`
 
 ```java
-package com.sighs.apricityui.dev;
+package io.github.kltyton.kltytonui.dev;
 
-import com.sighs.apricityui.ApricityUI;
-import com.sighs.apricityui.init.Drawer;
-import com.sighs.apricityui.init.Element;
-import com.sighs.apricityui.instance.WorldWindow;
-import com.sighs.apricityui.style.Size;
-import com.sighs.apricityui.style.Text;
+import io.github.kltyton.kltytonui.KltytonUI;
+import io.github.kltyton.kltytonui.init.Drawer;
+import io.github.kltyton.kltytonui.init.Element;
+import io.github.kltyton.kltytonui.instance.WorldWindow;
+import io.github.kltyton.kltytonui.style.Size;
+import io.github.kltyton.kltytonui.style.Text;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -41,7 +41,7 @@ import net.minecraftforge.fml.common.Mod;
 
 import java.util.*;
 
-@Mod.EventBusSubscriber(modid = ApricityUI.MODID, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = KltytonUI.MODID, value = Dist.CLIENT)
 public class PlayerMessageDisplay {
     private static final Map<UUID, WorldWindow> messageWindows = new HashMap<>();
     private static final Map<UUID, Player> trackedPlayers = new HashMap<>();
@@ -65,7 +65,7 @@ public class PlayerMessageDisplay {
     private static final long MESSAGE_FADE_MS = 2_000L;
     private static final long MESSAGE_TOTAL_MS = MESSAGE_VISIBLE_MS + MESSAGE_FADE_MS;
 
-    private static final String documentPath = ApricityUI.MODID + "/player_message.html";
+    private static final String documentPath = KltytonUI.MODID + "/player_message.html";
 
     private record ContentSize(float textWidth, float textHeight) {
     }
@@ -344,7 +344,7 @@ public class PlayerMessageDisplay {
 }
 ```
 
-`assets/apricityui/apricity/player_message.html`
+`assets/kltytonui/kltytonui/player_message.html`
 
 ```html
 <body>

@@ -44,7 +44,7 @@
 | Minecraft Ingredient JSON | 使用 Minecraft 的 Ingredient JSON 表达式，如 `{"item":"minecraft:apple"}` 或 `{"tag":"minecraft:logs"}` |
 | ItemStack SNBT | 一个物品栈；字段格式按目标 Minecraft 版本 |
 
-候选最多保留 128 个，重复项会合并。`#apricityui:furnace_fuels` 是内置的燃料候选标签，会按 Minecraft 燃烧时间收集物品。
+候选最多保留 128 个，重复项会合并。`#kltytonui:furnace_fuels` 是内置的燃料候选标签，会按 Minecraft 燃烧时间收集物品。
 
 有多个候选时默认轮播；鼠标悬停在 `<ingredient>` 或当前物品上时暂停。
 
@@ -52,8 +52,8 @@
 | --- | --- | --- |
 | `cycle` | 开启 | 设为 `false`、`0`、`no`、`off`、`disabled` 或 `none` 关闭轮播；也接受 `true`、`1`、`yes`、`on`、`enabled` |
 | `cycle-interval` | `1000` | 正整数毫秒；最小 `200`。旧别名：`rotate-interval` |
-| `--aui-ingredient-cycle` | 未设置 | CSS 轮播开关；也识别 `--aui-slot-cycle` |
-| `--aui-ingredient-cycle-interval` | 未设置 | 正整数毫秒；也识别 `--aui-slot-cycle-interval` |
+| `--kui-ingredient-cycle` | 未设置 | CSS 轮播开关；也识别 `--kui-slot-cycle` |
+| `--kui-ingredient-cycle-interval` | 未设置 | 正整数毫秒；也识别 `--kui-slot-cycle-interval` |
 
 CSS 自定义属性优先于 HTML 属性。单候选不会轮播。无效表达式或没有匹配物品时显示空位。
 
@@ -76,7 +76,7 @@ CSS 自定义属性优先于 HTML 属性。单候选不会轮播。无效表达�
 | `smithing` | 锻造模板、输入、添加物和输出 |
 | `fallback` | 其他配方：最多八个输入和输出 |
 
-预览生成的 `<slot>` 是展示用途，不占用菜单槽位，也不能点击或取放物品。它使用普通 `<slot>` 的 CSS 属性；配方本身默认使用 CSS Grid，间距、槽位尺寸和列数可通过 `--aui-recipe-gap`、`--aui-recipe-slot-size`、`--aui-recipe-columns` 调整。生成槽位带有 `aui-recipe-input`、`aui-recipe-output` 等角色类，可按角色覆写样式。
+预览生成的 `<slot>` 是展示用途，不占用菜单槽位，也不能点击或取放物品。它使用普通 `<slot>` 的 CSS 属性；配方本身默认使用 CSS Grid，间距、槽位尺寸和列数可通过 `--kui-recipe-gap`、`--kui-recipe-slot-size`、`--kui-recipe-columns` 调整。生成槽位带有 `kui-recipe-input`、`kui-recipe-output` 等角色类，可按角色覆写样式。
 
 无效或缺失的 `type`、找不到配方、类型不匹配时会记录日志，并把错误写入 `data-recipe-error`；成功时该属性为空。布局类型写入 `data-recipe-layout`，可用于 CSS 选择器。当前没有可用世界或配方管理器时无法生成预览。
 

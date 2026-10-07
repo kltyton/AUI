@@ -2,7 +2,7 @@
 
 ### UI Types
 
-ApricityUI mainly has three common UI forms:
+KltytonUI mainly has three common UI forms:
 
 1. Overlay
 2. Screen
@@ -21,13 +21,13 @@ You only need to create or remove a `Document`.
 Java and JS use the same style of entry points:
 
 ```javascript
-Document ApricityUI.createDocument(String path)
-Document ApricityUI.removeDocument(String path)
+Document KltytonUI.createDocument(String path)
+Document KltytonUI.removeDocument(String path)
 ```
 
 These methods take the string path of an HTML file, create a `Document`, and once loading completes, it joins the render queue immediately.
 
-You can also use other methods on `ApricityUI` to inspect existing documents or interact with UI created by another module.
+You can also use other methods on `KltytonUI` to inspect existing documents or interact with UI created by another module.
 
 Multiple documents can exist at the same time. As long as they do not overlap too badly, that is usually fine. If they do, you can still adjust their positions manually.
 
@@ -37,13 +37,13 @@ Even documents created from the same path can coexist, though that is generally 
 
 ### 2. Screen
 
-A Screen is effectively an ApricityUI-managed blank screen with a bound `Document`.
+A Screen is effectively an KltytonUI-managed blank screen with a bound `Document`.
 
 You can manage it with:
 
 ```javascript
-ApricityUI.openScreen(String path)
-ApricityUI.closeScreen()
+KltytonUI.openScreen(String path)
+KltytonUI.closeScreen()
 ```
 
 If you only need UI preview without real server-side container binding, `openScreen(path)` is enough.
@@ -55,7 +55,7 @@ automatically extracts container declarations and sends them to the server:
 ```javascript
 // Container info is declared by <container> elements in the template
 // Client openScreen automatically extracts and sends declarations to the server
-ApricityUI.openScreen("demo/index.html")
+KltytonUI.openScreen("demo/index.html")
 ```
 
 The names such as `main` and `player` must match the top-level `<container id="...">` values in the template.
@@ -100,21 +100,21 @@ Unified slot semantics:
 
 Default `global.css` variables:
 
-- `--aui-slot-size`: slot size in pixels
-- `--aui-slot-render-bg`: whether to render slot background (`1/0`)
-- `--aui-slot-render-item`: whether to render item (`1/0`)
-- `--aui-slot-icon-scale`: icon scale
-- `--aui-slot-z`: slot z-index
-- `--aui-slot-interactive`: whether interaction is allowed (`1/0`)
-- `--aui-slot-cycle` / `--aui-slot-cycle-interval`: virtual slot cycling toggle and interval
-- `--aui-container-columns`: optional explicit column count; if omitted, runtime injects `min(9, slotCount)`
+- `--kui-slot-size`: slot size in pixels
+- `--kui-slot-render-bg`: whether to render slot background (`1/0`)
+- `--kui-slot-render-item`: whether to render item (`1/0`)
+- `--kui-slot-icon-scale`: icon scale
+- `--kui-slot-z`: slot z-index
+- `--kui-slot-interactive`: whether interaction is allowed (`1/0`)
+- `--kui-slot-cycle` / `--kui-slot-cycle-interval`: virtual slot cycling toggle and interval
+- `--kui-container-columns`: optional explicit column count; if omitted, runtime injects `min(9, slotCount)`
 
 Useful examples:
 
 - `run/kubejs/server_scripts/example.js`
-- `run/apricity/test/index.html`
-- `run/apricity/test/saveddata_player.html`
-- `run/apricity/test/virtual_container.html`
-- `run/apricity/test/recipe_showcase.html`
+- `run/kltytonui/test/index.html`
+- `run/kltytonui/test/saveddata_player.html`
+- `run/kltytonui/test/virtual_container.html`
+- `run/kltytonui/test/recipe_showcase.html`
 
 To be continued.

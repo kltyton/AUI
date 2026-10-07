@@ -1,6 +1,6 @@
 // Standalone build for the shared source tree.
 //
-// AUI's common/ contains Minecraft/Forge/KubeJS types, so it cannot be the
+// KUI's common/ contains Minecraft/Forge/KubeJS types, so it cannot be the
 // loader-neutral Java-8 module of the upstream framework. It compiles against
 // the same legacyforge + mod dependency classpath as the Forge target. Targets
 // do NOT include this as a Gradle subproject; they compile common sources via
@@ -56,7 +56,7 @@ dependencies {
 }
 
 configurations {
-    auiTestModRuntime {
+    kuiTestModRuntime {
         canBeConsumed = false
         canBeResolved = true
         extendsFrom modDevRuntimeDependencies
@@ -65,7 +65,7 @@ configurations {
 
 tasks.named('test', Test).configure {
     useJUnitPlatform()
-    classpath = sourceSets.test.output + sourceSets.main.output + configurations.testRuntimeClasspath + configurations.auiTestModRuntime
+    classpath = sourceSets.test.output + sourceSets.main.output + configurations.testRuntimeClasspath + configurations.kuiTestModRuntime
     // Tests resolve shared resource paths like `../../common/src/main/resources/...`
     // relative to the Forge target's working directory. Run from the same CWD so
     // standalone `gradlew -p common test` behaves identically to the target test task.

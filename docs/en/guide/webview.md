@@ -1,6 +1,6 @@
 # WebView and iframe
 
-AUI is not itself a browser — HTML parsing, CSS layout, and painting are all a self-built engine. But when a page needs to **actually run a web page** (a third-party site, video, a complex interface not worth reimplementing in AUI), the framework keeps an escape hatch: the `<iframe>` tag is backed by the **operating system's own web view** (WebView2 / Edge Runtime on Windows), rendered offscreen and painted into the page as a texture.
+KUI is not itself a browser — HTML parsing, CSS layout, and painting are all a self-built engine. But when a page needs to **actually run a web page** (a third-party site, video, a complex interface not worth reimplementing in KUI), the framework keeps an escape hatch: the `<iframe>` tag is backed by the **operating system's own web view** (WebView2 / Edge Runtime on Windows), rendered offscreen and painted into the page as a texture.
 
 This chapter covers the full behaviour of `<iframe>`, the architecture and performance characteristics of the WebView backend, and what it can and cannot do. For the capability boundaries of standard elements see [HTML/CSS Coverage](html-css-coverage); for a quick look at `<iframe>` as an extension element see the [extension elements doc](extension-elements) — neither is repeated here.
 
@@ -8,12 +8,12 @@ This chapter covers the full behaviour of `<iframe>`, the architecture and perfo
 
 | Need | Use |
 | --- | --- |
-| In-game HUDs, panels, settings pages | AUI native elements |
-| Interacting with game data / items / block entities | AUI native elements + [containers](container) |
+| In-game HUDs, panels, settings pages | KUI native elements |
+| Interacting with game data / items / block entities | KUI native elements + [containers](container) |
 | Running a real web page, third-party web content | `<iframe>` |
 | Playing video, reaching externally updated docs | `<iframe>` |
 
-- The content of an `<iframe>` lives **outside AUI**: there is no AUI DOM inside it, and AUI scripts cannot read it. It is "a texture plus forwarded input", not a composable component;
+- The content of an `<iframe>` lives **outside KUI**: there is no KUI DOM inside it, and KUI scripts cannot read it. It is "a texture plus forwarded input", not a composable component;
 - Each instance is a whole offscreen browser. Memory use is high, so it is **a poor fit for Overlays and in-world windows** — reserve it for full-screen pages and larger panels;
 - Only Windows x64 has the backend; everywhere else it is an empty placeholder (see [Platform and availability](#platform-and-availability)).
 
@@ -26,7 +26,7 @@ This chapter covers the full behaviour of `<iframe>`, the architecture and perfo
 
 - `src` must be an **absolute URL** (`https:`, `file:`, …). The engine has no document base URL, so a relative path is handed to the browser as-is and resolves to nothing;
 - a browser instance is only started when the `src` attribute is present; an `<iframe>` without `src` costs no process and is just a placeholder box;
-- confirm the backend with `AuiServices.webView()` first (see [Platform and availability](#platform-and-availability)); when it is unavailable the element degrades to an empty box.
+- confirm the backend with `KuiServices.webView()` first (see [Platform and availability](#platform-and-availability)); when it is unavailable the element degrades to an empty box.
 
 ## Attributes
 
@@ -88,7 +88,7 @@ The transfer cost therefore follows the **changed area**, not the canvas size. E
 
 - **pointer move / press / release**: forwarded while the pointer is inside the content box, or while a button is down (drag pointer capture), with the coordinate clamped to the box; the pressed state travels with the moves (otherwise Chromium reads a drag as a hover). A drag keeps being forwarded once the cursor leaves the content box, the release is always delivered, and `mouseLeave` is held back while a button is down;
 - **pointer moves are coalesced**: only the newest position is kept and forwarded once per host loop (during a drag more than half the samples are merged away, counted as `coalesced=`); buttons, wheel and leave carry order and are never coalesced;
-- **wheel**: forwarded to the page; a page with its own wheel listener stops AUI from scrolling the parent container. Note the iframe only stops propagation and does not hand the wheel to the native side, so if the host document does **not** declare `aui-mouse-events: intercept` the wheel can still leak through to the game (see the [ApricityScreen meta section](apricity-screen#page-meta-configuration)). The wheel is converted by sign only, always **one notch**, horizontal wheel is not forwarded, and a `deltaY` of 0 counts as up; hovering an iframe and holding **Ctrl+wheel** is consumed by AUI's page zoom first and never reaches the page (unless the page's meta turns off `user-scalable`, see [Browser features](browser-features#page-zoom));
+- **wheel**: forwarded to the page; a page with its own wheel listener stops KUI from scrolling the parent container. Note the iframe only stops propagation and does not hand the wheel to the native side, so if the host document does **not** declare `kui-mouse-events: intercept` the wheel can still leak through to the game (see the [KltytonScreen meta section](kltytonui-screen#page-meta-configuration)). The wheel is converted by sign only, always **one notch**, horizontal wheel is not forwarded, and a `deltaY` of 0 counts as up; hovering an iframe and holding **Ctrl+wheel** is consumed by KUI's page zoom first and never reaches the page (unless the page's meta turns off `user-scalable`, see [Browser features](browser-features#page-zoom));
 - **keyboard**: once the iframe is its document's focused element, `keydown`/`keyup` go to the page and are **swallowed**, so Minecraft hotkeys do not fire at the same time. Text only lands if an editable element **inside the page** holds DOM focus (click the page's input first), exactly as in a real browser; with nothing focused the characters are **dropped silently** (the page gives no feedback at all);
 - **there is no native key injection API**: keys are synthesised as **DOM events inside the page**, so a browser default action never happens implicitly and the framework applies it explicitly (backspace/delete/arrows in inputs are handled; Enter inserts a newline in a `textarea` and submits the enclosing form in a single-line input, as in a browser); IME composition is delivered as already-committed text, with no composition process.
 
@@ -97,7 +97,7 @@ The transfer cost therefore follows the **changed area**, not the canvas size. E
 - after `src` is set, the instance is created on a **background thread** (a few hundred milliseconds the first time, without stalling a frame); `status()` reads `starting` in the meantime;
 - changing `src` navigates the existing instance instead of rebuilding it; to force a reload, set the same value again with `setAttribute("src", ...)` (the element does not de-duplicate);
 - `removeAttribute("src")`, removing the element from the document, and **closing the whole document** all release the instance (browser, host thread, decode thread, shared section);
-- browser data (cookies, localStorage) lives under `game directory/apricity/.cache/webview` and survives restarts. It sits in the cache area **outside the page root** (next to the network cache at `apricity/.cache/network`): `apricity/` is what people author pages in and what the resource scan and dev reload walk, while a browser profile is tens of thousands of files of machine state that churns continuously (and whose cache entries carry exactly the `.html/.css/.js` extensions dev reload watches) — inside the resource tree it would be listed as resources and would trip spurious reloads. Directories whose name starts with a dot are skipped by both the scan and the watcher (see [Resource Manager](resource-manager));
+- browser data (cookies, localStorage) lives under `game directory/kltytonui/.cache/webview` and survives restarts. It sits in the cache area **outside the page root** (next to the network cache at `kltytonui/.cache/network`): `kltytonui/` is what people author pages in and what the resource scan and dev reload walk, while a browser profile is tens of thousands of files of machine state that churns continuously (and whose cache entries carry exactly the `.html/.css/.js` extensions dev reload watches) — inside the resource tree it would be listed as resources and would trip spurious reloads. Directories whose name starts with a dot are skipped by both the scan and the watcher (see [Resource Manager](resource-manager));
 - **an unavailable backend is sticky**: once creation fails or the instance goes invalid, that element stays a placeholder forever and is not retried (not even after `src` changes).
 
 ## Popups and navigation
@@ -109,12 +109,12 @@ The transfer cost therefore follows the **changed area**, not the canvas size. E
 
 - **Windows x64 only**: other platforms, and JVMs that are not 64-bit x86, have no backend;
 - the system needs the **WebView2 Runtime** installed; a missing runtime, or one too old for offscreen hosting, fails as well;
-- check with `AuiServices.webView()`:
+- check with `KuiServices.webView()`:
 
 ```java
-AuiServices.webView().isAvailable();        // is the backend usable
-AuiServices.webView().backendName();        // "webview2"
-AuiServices.webView().unavailableReason();  // why it is unavailable
+KuiServices.webView().isAvailable();        // is the backend usable
+KuiServices.webView().backendName();        // "webview2"
+KuiServices.webView().unavailableReason();  // why it is unavailable
 ```
 
   The reasons include: not Windows (`offscreen WebView2 hosting is Windows-only`), not 64-bit x86 (`needs a 64-bit x86 JVM`), the bundled native library missing, `native library not loaded`, `WebView2 runtime is not installed`, and a runtime that is too old;
@@ -123,7 +123,7 @@ AuiServices.webView().unavailableReason();  // why it is unavailable
 ## Limitations
 
 - relative paths, `srcdoc` and `sandbox` are not supported;
-- `window.parent` / `postMessage` inside the page point at the browser's own tree and are **not** wired to AUI; `contentWindow` / `contentDocument` are not exposed either;
+- `window.parent` / `postMessage` inside the page point at the browser's own tree and are **not** wired to KUI; `contentWindow` / `contentDocument` are not exposed either;
 - the page is composited opaque; there is no alpha channel;
 - ZoomFactor is clamped by WebView2 to 0.25 – 5 and the SDK cannot widen it;
 - **there is no scripting-facing webview API**: on the JS side only the generic DOM attributes / events are available (`getAttribute`/`setAttribute`); on the Java side there is no `reload()` / `navigate()` either — change the attribute instead.
@@ -155,13 +155,13 @@ AuiServices.webView().unavailableReason();  // why it is unavailable
 
 ## FAQ
 
-**The page is blank**: check the backend first (`AuiServices.webView().unavailableReason()`). Not Windows, a missing WebView2 Runtime, or a non-x64 JVM all degrade to an empty box; a relative `src` resolves to nothing as well.
+**The page is blank**: check the backend first (`KuiServices.webView().unavailableReason()`). Not Windows, a missing WebView2 Runtime, or a non-x64 JVM all degrade to an empty box; a relative `src` resolves to nothing as well.
 
-**Typing does nothing after clicking the input**: read `focus=` in `Iframe.status()`. `no` means the iframe is not its document's focused element (so AUI never forwards the characters); `yes` yet still nothing lands means the page itself has no focused element — usually because **the click missed the field**: a fixed-width site (mcmod.cn lays its content out at about 1200px) pushes its inputs past the right edge of a narrow viewport, and `box=` in `status()` is the page's CSS viewport, so anything smaller means the field has to be scrolled into view first.
+**Typing does nothing after clicking the input**: read `focus=` in `Iframe.status()`. `no` means the iframe is not its document's focused element (so KUI never forwards the characters); `yes` yet still nothing lands means the page itself has no focused element — usually because **the click missed the field**: a fixed-width site (mcmod.cn lays its content out at about 1200px) pushes its inputs past the right edge of a narrow viewport, and `box=` in `status()` is the page's CSS viewport, so anything smaller means the field has to be scrolled into view first.
 
-**Ctrl+wheel zoomed the whole page instead of scrolling the web page**: Ctrl+wheel is consumed by AUI's viewport zoom before it is forwarded to the iframe. To let the wheel reach the page, turn off the host page's user zoom first (`<meta name="aui-viewport" content="user-scalable=false">`, see [Browser features](browser-features#page-zoom)).
+**Ctrl+wheel zoomed the whole page instead of scrolling the web page**: Ctrl+wheel is consumed by KUI's viewport zoom before it is forwarded to the iframe. To let the wheel reach the page, turn off the host page's user zoom first (`<meta name="kui-viewport" content="user-scalable=false">`, see [Browser features](browser-features#page-zoom)).
 
-**The wheel also switched the game hotbar**: the host document does not declare `aui-mouse-events: intercept`, so the native wheel leaked through to the game. Add that meta (see the [ApricityScreen meta section](apricity-screen#page-meta-configuration)).
+**The wheel also switched the game hotbar**: the host document does not declare `kui-mouse-events: intercept`, so the native wheel leaked through to the game. Add that meta (see the [KltytonScreen meta section](kltytonui-screen#page-meta-configuration)).
 
 **A large iframe looks soft**: the 4096 px per-axis cap or by-area downscaling kicked in (`raster capped by area` in `status()`). That is intentional — it protects the frame rate and trades only sharpness; the page's CSS viewport stays exact.
 

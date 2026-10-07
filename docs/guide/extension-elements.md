@@ -1,6 +1,6 @@
 # 扩展元素
 
-AUI 在标准 HTML 之外注册了一组扩展标签，都是普通 DOM 元素，能正常参与 CSS、布局、命中测试和脚本操作。它们解决一类共同问题：**把游戏资源和动画画进页面**。
+KUI 在标准 HTML 之外注册了一组扩展标签，都是普通 DOM 元素，能正常参与 CSS、布局、命中测试和脚本操作。它们解决一类共同问题：**把游戏资源和动画画进页面**。
 
 标准元素的能力边界见 [HTML/CSS 覆盖面](html-css-coverage)，物品与配方展示见[MC 物品与配方元素](mc-elements)，容器/真实槽位见[容器文档](container)，`<iframe>` 的完整行为见 [WebView 与 iframe](webview)，注册自己的元素见[二次开发文档](secondary-development)，这里都不重复。
 
@@ -64,7 +64,7 @@ AUI 在标准 HTML 之外注册了一组扩展标签，都是普通 DOM 元素�
 ## translation：本地化文本
 
 ```html
-<translation>container.apricityui.title</translation>
+<translation>container.kltytonui.title</translation>
 ```
 
 文本内容就是 MC 翻译键，按当前语言渲染。textContent 是键本身。没有参数插值——带参数的翻译在脚本侧拼好再用普通文本元素。

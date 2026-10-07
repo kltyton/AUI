@@ -1,21 +1,21 @@
 ---
-title: Implementing Mob Health Display With AUI
-description: This example uses AUI's WorldWindow class to attach image-based health bars to mobs that need them. It is intended as a reference only.
+title: Implementing Mob Health Display With KUI
+description: This example uses KUI's WorldWindow class to attach image-based health bars to mobs that need them. It is intended as a reference only.
 last_update:
   date: 2/27/2026
   author: Terry_MC
 ---
 
-# Implementing Mob Health Display With AUI
+# Implementing Mob Health Display With KUI
 
-This example uses AUI's `WorldWindow` class. It adds an in-world image UI health bar above each mob that needs one. This is for reference only.
+This example uses KUI's `WorldWindow` class. It adds an in-world image UI health bar above each mob that needs one. This is for reference only.
 
 `MobHealthDisplay.java`
 
 ```java
 package top.terry_mc.mobhealthdisplay;
 
-import com.sighs.apricityui.instance.WorldWindow;
+import io.github.kltyton.kltytonui.instance.WorldWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -164,7 +164,7 @@ public class MobHealthDisplay {
 }
 ```
 
-`assets/apricityui/apricity/mobhealthdisplay/mob_health.html`
+`assets/kltytonui/kltytonui/mobhealthdisplay/mob_health.html`
 
 ```html
 <body>

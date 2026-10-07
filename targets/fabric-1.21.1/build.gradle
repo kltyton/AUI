@@ -32,7 +32,7 @@ java {
 }
 
 loom {
-    accessWidenerPath = file("src/main/resources/apricityui.accesswidener")
+    accessWidenerPath = file("src/main/resources/kltytonui.accesswidener")
     mixin {
         defaultRefmapName = "${mod_id}.refmap.json"
     }
@@ -53,7 +53,7 @@ tasks.register('prepareCommonSources', Sync) {
     from('../../common/src/client/java')
     from('../../common/src/main/java') {
         // Fabric 1.21.1 has its own payload-based network implementation.
-        exclude 'com/sighs/apricityui/network/**'
+        exclude 'io/github/kltyton/kltytonui/network/**'
     }
     into "$buildDir/generated/common-main"
 }

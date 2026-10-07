@@ -21,7 +21,7 @@ java {
 }
 
 loom {
-    accessWidenerPath = file("src/main/resources/apricityui.accesswidener")
+    accessWidenerPath = file("src/main/resources/kltytonui.accesswidener")
 }
 
 // common/ is a shared source tree that also compiles standalone
@@ -41,14 +41,14 @@ sourceSets {
 tasks.register('prepareCommonSources', Sync) {
     from('../../common/src/minecraft-26/java')
     from('../../common/src/client/java') {
-        exclude 'com/sighs/apricityui/chunkmap/AuiMapDepthTarget.java'
+        exclude 'io/github/kltyton/kltytonui/chunkmap/KuiMapDepthTarget.java'
     }
     from('../../common/src/main/java') {
         // Fabric 26.1 has its own payload-based network implementation.
-        exclude 'com/sighs/apricityui/network/**'
+        exclude 'io/github/kltyton/kltytonui/network/**'
         // 26.1 的 KeyboardHandler#charTyped 签名改为 (long, CharacterEvent)，
         // 该 target 提供自己的 CommonKeyboardHandlerMixin（见 src/main/java）。
-        exclude 'com/sighs/apricityui/mixin/CommonKeyboardHandlerMixin.java'
+        exclude 'io/github/kltyton/kltytonui/mixin/CommonKeyboardHandlerMixin.java'
     }
     into "$buildDir/generated/common-main"
 }
@@ -115,19 +115,19 @@ tasks.named('test', Test).configure {
 
 // Render smoke test: `./gradlew -p targets/fabric-26.1 runClient -PauiSelfTest`
 // binds the resource-manager shortcut, presses it, validates the panel and
-// screenshots the main target to run/aui-selftest.png, writes
-// run/aui-selftest-result.txt and exits.
+// screenshots the main target to run/kui-selftest.png, writes
+// run/kui-selftest-result.txt and exits.
 // Optional: `-PauiSelfTestScenario=metaDialog` additionally opens DevTools on
 // the panel and clicks the title-bar meta button, so the screenshot shows the
 // meta dialog with its dimmed backdrop.
 tasks.matching { it.name == 'runClient' }.configureEach {
-    if (project.hasProperty('auiSelfTest')) {
-        systemProperty 'apricityui.clientSelfTest', 'true'
-        systemProperty 'apricityui.clientSelfTest.exitOnFinish', 'true'
-        systemProperty 'apricityui.clientSelfTest.resultFile', file('run/aui-selftest-result.txt').absolutePath
-        systemProperty 'apricityui.clientSelfTest.screenshotFile', file('run/aui-selftest.png').absolutePath
-        if (project.hasProperty('auiSelfTestScenario')) {
-            systemProperty 'apricityui.clientSelfTest.scenario', project.property('auiSelfTestScenario').toString()
+    if (project.hasProperty('kuiSelfTest')) {
+        systemProperty 'kltytonui.clientSelfTest', 'true'
+        systemProperty 'kltytonui.clientSelfTest.exitOnFinish', 'true'
+        systemProperty 'kltytonui.clientSelfTest.resultFile', file('run/kui-selftest-result.txt').absolutePath
+        systemProperty 'kltytonui.clientSelfTest.screenshotFile', file('run/kui-selftest.png').absolutePath
+        if (project.hasProperty('kuiSelfTestScenario')) {
+            systemProperty 'kltytonui.clientSelfTest.scenario', project.property('kuiSelfTestScenario').toString()
         }
     }
 }

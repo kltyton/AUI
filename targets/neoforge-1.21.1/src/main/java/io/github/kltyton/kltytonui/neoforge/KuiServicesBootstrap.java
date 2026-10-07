@@ -1,0 +1,33 @@
+package io.github.kltyton.kltytonui.neoforge;
+
+import io.github.kltyton.kltytonui.dom.ForgeDocumentExpander;
+import io.github.kltyton.kltytonui.spi.KuiServices;
+
+/**
+ * Registers the loader-side service implementations.
+ *
+ * <p>Loaded lazily by {@link KuiServices} on first access, so headless test JVMs
+ * that have this class on the classpath receive the real implementations while
+ * environments without the loader fall back to the safe defaults.</p>
+ */
+public final class KuiServicesBootstrap {
+    static {
+        KuiServices.setNetwork(NetworkService.INSTANCE);
+        KuiServices.setExpander(new ForgeDocumentExpander());
+        KuiServices.setConfig(ConfigService.INSTANCE);
+        KuiServices.setScript(ScriptService.INSTANCE);
+        // Render/Items 引用客户端专属类（blaze3d/Minecraft），只能在客户端注册
+        // （见 ClientServicesBootstrap）；否则专用服务器加载本类时会
+        // NoClassDefFoundError 并导致整个服务器崩溃。
+    }
+
+    private KuiServicesBootstrap() {
+    }
+
+    /**
+     * Explicit trigger from the mod entry point. Referencing this method forces
+     * the static initializer above to run, registering the real services.
+     */
+    public static void init() {
+    }
+}

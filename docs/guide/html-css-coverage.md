@@ -1,6 +1,6 @@
 # HTML / CSS 覆盖面
 
-AUI 是自研的 HTML/CSS 引擎，不是内嵌浏览器。这篇回答一个问题：**哪些网页写法能直接搬过来，哪些会被静默降级或忽略**。
+KUI 是自研的 HTML/CSS 引擎，不是内嵌浏览器。这篇回答一个问题：**哪些网页写法能直接搬过来，哪些会被静默降级或忽略**。
 
 三档标注：
 
@@ -14,7 +14,7 @@ AUI 是自研的 HTML/CSS 引擎，不是内嵌浏览器。这篇回答一个问
 
 ## 迁移速查
 
-赶时间只看这一节。把浏览器页面搬进 AUI 前，按优先级检查：
+赶时间只看这一节。把浏览器页面搬进 KUI 前，按优先级检查：
 
 1. **UA 样式为零**：h1-h6、p、ul/li 的样式全部自己写；别用 br/hr 表达布局；
 2. **布局避开**：float、sticky、grid 的 areas/auto-flow/命名线、负 margin、表格布局；
@@ -31,7 +31,7 @@ AUI 是自研的 HTML/CSS 引擎，不是内嵌浏览器。这篇回答一个问
 - ✅ 属性各种写法、注释、doctype 剥离、自闭合与 void 标签、script/style raw text、总是合成 html/head/body；
 - 🟡 命名实体只有 `amp apos gt lt nbsp quot` 六个 + 数字实体；有弹栈错误恢复，但**没有浏览器的隐含标签生成**——不会自动闭合 `<p>`、不补 `<tbody>`；
 - 🟡 `<script>` 带 src 又写内联时**两个都执行**（非标准）；没有 defer/async/module；
-- `<head>` 子节点（title 等）不进 DOM，没有 `document.title`；`<meta>` 只读 aui-viewport、aui-mouse-events 两个 aui-* 专用配置（见 [meta 章节](apricity-screen#页面-meta-配置)），charset 固定 UTF-8。
+- `<head>` 子节点（title 等）不进 DOM，没有 `document.title`；`<meta>` 只读 kui-viewport、kui-mouse-events 两个 kui-* 专用配置（见 [meta 章节](kltytonui-screen#页面-meta-配置)），charset 固定 UTF-8。
 
 ## HTML 元素
 

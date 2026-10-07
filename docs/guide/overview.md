@@ -1,6 +1,6 @@
-# ApricityUI 总览
+# KltytonUI 总览
 
-ApricityUI 是一个 Minecraft 模组：用 HTML、CSS、JavaScript 写游戏 UI。它不是内嵌浏览器——HTML 解析、CSS 布局和绘制由 AUI 自己实现。页面脚本的运行能力依赖 loader target，详见本文的兼容矩阵。
+KltytonUI 是一个 Minecraft 模组：用 HTML、CSS、JavaScript 写游戏 UI。它不是内嵌浏览器——HTML 解析、CSS 布局和绘制由 KUI 自己实现。页面脚本的运行能力依赖 loader target，详见本文的兼容矩阵。
 
 这篇是全部能力的地图，每个方向都链到对应的专题文档。
 
@@ -10,20 +10,20 @@ ApricityUI 是一个 Minecraft 模组：用 HTML、CSS、JavaScript 写游戏 UI
 
 | 宿主 | 场景 | 文档 |
 | --- | --- | --- |
-| `ApricityScreen` | 全屏 GUI：设置页、主菜单式界面 | [ApricityScreen](apricity-screen) |
-| `ApricityContainerScreen` | 容器界面：背包、机器、存储，带真实槽位 | [容器文档](container) |
+| `KltytonScreen` | 全屏 GUI：设置页、主菜单式界面 | [KltytonScreen](kltytonui-screen) |
+| `KltytonContainerScreen` | 容器界面：背包、机器、存储，带真实槽位 | [容器文档](container) |
 | `WorldWindow` | 世界内平面：信息牌、机器外屏、实体头顶标签 | [WorldWindow](world-window) |
 | Overlay Document | 悬浮层：HUD、Toast、常驻面板 | [Overlay 文档](overlay-document) |
 
 四种宿主里跑的是同一套页面：同样的 DOM、CSS、脚本能力，只是显示位置和输入路径不同。
 
-页面行为由 meta 控制——逻辑视口（`aui-viewport`）、鼠标拦截（`aui-mouse-events`）等。完整说明集中在 [ApricityScreen 的 meta 章节](apricity-screen#页面-meta-配置)。
+页面行为由 meta 控制——逻辑视口（`kui-viewport`）、鼠标拦截（`kui-mouse-events`）等。完整说明集中在 [KltytonScreen 的 meta 章节](kltytonui-screen#页面-meta-配置)。
 
 ## Loader 与脚本支持
 
 仓库当前包含以下 target。此表反映源码中的实现与 CI 配置，不代表每个 target 都已作为发布文件提供：
 
-| Target | MC | 页面脚本 | KubeJS 的 `ApricityUI` 绑定 | CI JDK |
+| Target | MC | 页面脚本 | KubeJS 的 `KltytonUI` 绑定 | CI JDK |
 | --- | --- | --- | --- | --- |
 | Forge | 1.20.1 | 支持 | 提供 | 21 |
 | Fabric | 1.20.1 | 当前不执行 | 不提供 | 17 |
@@ -50,19 +50,19 @@ Java 的 common API 与 HTML/CSS 渲染在这些 target 中共用。Fabric targe
 
 ## 容器：和真实物品打交道
 
-容器页面能把 HTML 槽位绑定到真实数据源——玩家背包、方块实体 capability、实体 capability、世界级 SavedData 持久库存。HTML 负责结构和样式，服务端菜单负责物品逻辑和安全校验；shift-click、拖拽、权限都走 MC 原生菜单规则。打开方式只有一条正路：服务端 `ApricityUI.menu(player, path).bind(...)`。细节：[容器文档](container)。
+容器页面能把 HTML 槽位绑定到真实数据源——玩家背包、方块实体 capability、实体 capability、世界级 SavedData 持久库存。HTML 负责结构和样式，服务端菜单负责物品逻辑和安全校验；shift-click、拖拽、权限都走 MC 原生菜单规则。打开方式只有一条正路：服务端 `KltytonUI.menu(player, path).bind(...)`。细节：[容器文档](container)。
 
 ## 资源从哪来
 
-页面和资源（CSS、图片、字体、数据 JSON）用**逻辑路径**引用，如 `screens/home.html`。资源有三层来源：模组 jar 内置、资源包、本地 `apricity/` 目录，上层覆盖下层；远程资源走受限 HTTPS 管线。资源管理器与资源重载操作默认未绑定，需在 MC 控制设置中自行绑定。资源管理器可浏览、预览、新建、改 meta、查引用。规则：[资源管理](resource-manager)。
+页面和资源（CSS、图片、字体、数据 JSON）用**逻辑路径**引用，如 `screens/home.html`。资源有三层来源：模组 jar 内置、资源包、本地 `kltytonui/` 目录，上层覆盖下层；远程资源走受限 HTTPS 管线。资源管理器与资源重载操作默认未绑定，需在 MC 控制设置中自行绑定。资源管理器可浏览、预览、新建、改 meta、查引用。规则：[资源管理](resource-manager)。
 
 ## 怎么打开页面
 
-**Java**：统一入口 `com.sighs.apricityui.ApricityUI`——`createDocument`、`new ApricityScreen(path)`、`menu(player, path).bind(...)`、`createWorldWindow(...)`。
+**Java**：统一入口 `io.github.kltyton.kltytonui.KltytonUI`——`createDocument`、`new KltytonScreen(path)`、`menu(player, path).bind(...)`、`createWorldWindow(...)`。
 
-**KubeJS**：全局 `ApricityUI` 的客户端/服务端绑定仅在 Forge 1.20.1 和 NeoForge 1.21.1 提供，方法集按侧隔离（客户端管 Document/Toast/WorldWindow，服务端管容器）。模组也可在支持的环境注册自己的 KJS 绑定。
+**KubeJS**：全局 `KltytonUI` 的客户端/服务端绑定仅在 Forge 1.20.1 和 NeoForge 1.21.1 提供，方法集按侧隔离（客户端管 Document/Toast/WorldWindow，服务端管容器）。模组也可在支持的环境注册自己的 KJS 绑定。
 
-完整 API 表和线程/空值/刷新规则：[模组专属 API](apricity-api)。
+完整 API 表和线程/空值/刷新规则：[模组专属 API](kltytonui-api)。
 
 ## 调试和工具
 
@@ -70,9 +70,9 @@ Java 的 common API 与 HTML/CSS 渲染在这些 target 中共用。Fabric targe
 
 **外部调试协议**：游戏内开 `remoteDebug` 后，本机 WebSocket（`127.0.0.1:25321`）可以查 DOM、读样式、模拟点击输入。仓库自带 Node 客户端和 MCP 桥，AI 工具可以直连运行中的页面。另有两个截图脚本做视觉回归。见[附加工具](tools)。
 
-**帧耗时 HUD**：`debug.frameTimingHud` 显示 AUI 渲染耗时和批次统计，定位性能问题用。见[二次开发](secondary-development)。
+**帧耗时 HUD**：`debug.frameTimingHud` 显示 KUI 渲染耗时和批次统计，定位性能问题用。见[二次开发](secondary-development)。
 
-**WPT 布局对比**：把 Web Platform Tests 的 CSS 布局页面在 Chromium 和 AUI 里各采一遍几何快照做 diff，用来验证布局引擎的浏览器一致性。见 [WPT](wpt)。
+**WPT 布局对比**：把 Web Platform Tests 的 CSS 布局页面在 Chromium 和 KUI 里各采一遍几何快照做 diff，用来验证布局引擎的浏览器一致性。见 [WPT](wpt)。
 
 ## 给模组作者的扩展点
 
@@ -90,7 +90,7 @@ Java 的 common API 与 HTML/CSS 渲染在这些 target 中共用。Fabric targe
 
 | 主题 | 文档 |
 | --- | --- |
-| 全屏页面、三个 meta 的权威说明 | [apricity-screen.md](apricity-screen) |
+| 全屏页面、三个 meta 的权威说明 | [kltytonui-screen.md](kltytonui-screen) |
 | 悬浮层 / HUD | [overlay-document.md](overlay-document) |
 | 容器和真实槽位 | [container.md](container) |
 | MC 物品与配方元素 | [mc-elements.md](mc-elements) |
@@ -101,7 +101,7 @@ Java 的 common API 与 HTML/CSS 渲染在这些 target 中共用。Fabric targe
 | WebView / iframe | [webview.md](webview) |
 | 缩放、选择、剪贴板等辅助行为 | [browser-features.md](browser-features) |
 | 资源路径和资源管理器 | [resource-manager.md](resource-manager) |
-| KJS / Java 模组 API | [apricity-api.md](apricity-api) |
+| KJS / Java 模组 API | [kltytonui-api.md](kltytonui-api) |
 | Ore 主题和可视化编辑器 | [ore-theme.md](ore-theme) |
 | McUI 主题 | [mcui-theme.md](mcui-theme) |
 | Java 组件库 | [ui-library.md](ui-library) |

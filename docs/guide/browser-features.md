@@ -1,17 +1,17 @@
 # 浏览器辅助功能
 
-AUI 不是浏览器，但给页面配了一层浏览器式的辅助行为：缩放、文字选择、剪贴板、表单默认动作、滚动。这篇讲这些行为本身和它们的边界。
+KUI 不是浏览器，但给页面配了一层浏览器式的辅助行为：缩放、文字选择、剪贴板、表单默认动作、滚动。这篇讲这些行为本身和它们的边界。
 
-页面的 viewport/字体/鼠标拦截三个 meta 的完整说明在 [ApricityScreen 文档](apricity-screen#页面-meta-配置)，DOM 和 JS API 的细节在 [Web API 文档](web-api)，这里都不重复。
+页面的 viewport/字体/鼠标拦截三个 meta 的完整说明在 [KltytonScreen 文档](kltytonui-screen#页面-meta-配置)，DOM 和 JS API 的细节在 [Web API 文档](web-api)，这里都不重复。
 
 ## 页面缩放
 
-`ApricityScreen` 和容器 Screen 都支持浏览器式缩放：Ctrl+滚轮、Ctrl+`+`/`-` 缩放，Ctrl+`0` 恢复初始值。范围、步进、是否允许用户缩放都由 `aui-viewport` meta 里的 `zoom/min-zoom/max-zoom/zoom-step/user-scalable` 控制。
+`KltytonScreen` 和容器 Screen 都支持浏览器式缩放：Ctrl+滚轮、Ctrl+`+`/`-` 缩放，Ctrl+`0` 恢复初始值。范围、步进、是否允许用户缩放都由 `kui-viewport` meta 里的 `zoom/min-zoom/max-zoom/zoom-step/user-scalable` 控制。
 
 要**禁用缩放**，把 `user-scalable` 设为 `false`：
 
 ```html
-<meta name="aui-viewport" content="mode=browser,user-scalable=false">
+<meta name="kui-viewport" content="mode=browser,user-scalable=false">
 ```
 
 此时 Ctrl+滚轮、Ctrl+`+`/`-`、Ctrl+`0` 全部失效——Ctrl+滚轮退化为普通滚轮，页面照常滚动。
@@ -20,10 +20,10 @@ AUI 不是浏览器，但给页面配了一层浏览器式的辅助行为：缩�
 
 几个要点：
 
-- 缩放值按页面路径存到 `config/apricityui/viewport-zoom.properties`，重开页面会记住。排查"页面怎么还是放大的"时先想到它；
+- 缩放值按页面路径存到 `config/kltytonui/viewport-zoom.properties`，重开页面会记住。排查"页面怎么还是放大的"时先想到它；
 - `user-scalable=false` 只禁用户快捷键，Java/DevTools 的 `document.setViewportZoom(...)` 不受限；
 - **运行时改 meta 的 content 不会重新应用**——meta 只在 Document 创建和 `refresh()` 时读取；
-- Overlay 挡住缩放时，开 `config/apricityui-client.toml` 的 `[input] viewportZoomPassThrough = true`，没声明拦截的 Overlay 会被缩放逻辑跳过。它只影响缩放，不会让点击穿透真正拦截输入的 Overlay。
+- Overlay 挡住缩放时，开 `config/kltytonui-client.toml` 的 `[input] viewportZoomPassThrough = true`，没声明拦截的 Overlay 会被缩放逻辑跳过。它只影响缩放，不会让点击穿透真正拦截输入的 Overlay。
 
 ## 开发按键
 
@@ -50,7 +50,7 @@ AUI 不是浏览器，但给页面配了一层浏览器式的辅助行为：缩�
 | `user-select: all` | 点击选中整段 |
 | `user-select: none` | 禁止选择 |
 
-这是 AUI 自己的选择实现，不是浏览器的 Selection/Range——页面里拿不到 `Selection`/`Range` 对象（见 [Web API 文档](web-api)），跨单元拼接等细节别按浏览器规范写。
+这是 KUI 自己的选择实现，不是浏览器的 Selection/Range——页面里拿不到 `Selection`/`Range` 对象（见 [Web API 文档](web-api)），跨单元拼接等细节别按浏览器规范写。
 
 快捷键：拖拽选择、Ctrl+A 全选、Ctrl+C 复制、Esc 清除选区；输入控件另有 Ctrl+X 剪切、Ctrl+V 粘贴、Ctrl+Z 撤销。焦点变化不清除选区。只有 Esc、点击不可选择区域、或在选区外开始新选择会清掉它；点击已选中文本内部不会折叠选区——它会成为选区拖拽的起点。
 
@@ -77,7 +77,7 @@ Operation.setClipboardText(value);
 - 文本框 Enter 提交所在 form，textarea 的 Enter 换行；
 - number 支持方向键和滚轮步进，range 支持方向键；
 - select 全套键盘操作（方向/Home/End/PgUp/PgDn/Enter/Space/Esc/前缀搜索）；
-- checkbox/radio 切换，file 走系统文件选择器，color 走 AUI 颜色选择器。
+- checkbox/radio 切换，file 走系统文件选择器，color 走 KUI 颜色选择器。
 
 `preventDefault()` 可以拦这些默认动作。别在监听器里对同一个控件再 `click()`，会一次按键触发两次。
 
@@ -92,9 +92,9 @@ Operation.setClipboardText(value);
 
 ## 和真实浏览器的差异
 
-| 能力 | AUI 行为 |
+| 能力 | KUI 行为 |
 | --- | --- |
-| 网络/导航 | fetch 走 AUI 资源桥；location 的导航方法是空操作 |
+| 网络/导航 | fetch 走 KUI 资源桥；location 的导航方法是空操作 |
 | 剪贴板 | Ctrl 快捷键 + Java 的 `Operation`，没有 `navigator.clipboard` |
 | 文本选择 | 文档级选区，跨内联子元素和多个元素；没有 Selection/Range JS API |
 | Meta | 创建/刷新时读取，运行时改 DOM 属性不重新应用 |

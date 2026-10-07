@@ -4,8 +4,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $tempBase = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
-$tempRoot = Join-Path $tempBase ('aui-vue-runtime-' + [Guid]::NewGuid().ToString('N'))
-$previousPlugin = $env:AUI_RHINO_SEMANTICS_PLUGIN
+$tempRoot = Join-Path $tempBase ('kui-vue-runtime-' + [Guid]::NewGuid().ToString('N'))
+$previousPlugin = $env:KUI_RHINO_SEMANTICS_PLUGIN
 $previousNodePath = $env:NODE_PATH
 $previousNpmCache = $env:npm_config_cache
 
@@ -34,15 +34,15 @@ module.exports = {
     modules: false,
     useBuiltIns: false
   }]],
-  plugins: [process.env.AUI_RHINO_SEMANTICS_PLUGIN]
+  plugins: [process.env.KUI_RHINO_SEMANTICS_PLUGIN]
 };
 '@, [Text.UTF8Encoding]::new($false))
 
-    $env:AUI_RHINO_SEMANTICS_PLUGIN = (Resolve-Path (
+    $env:KUI_RHINO_SEMANTICS_PLUGIN = (Resolve-Path (
         Join-Path $PSScriptRoot 'rhino-semantics.cjs')).Path
     $env:NODE_PATH = Join-Path $tempRoot 'node_modules'
     $source = Join-Path $tempRoot 'node_modules/vue/dist/vue.global.prod.js'
-    $generated = Join-Path $tempRoot 'vue.aui.js'
+    $generated = Join-Path $tempRoot 'vue.kui.js'
     $babel = Join-Path $tempRoot 'node_modules/.bin/babel.cmd'
     & $babel $source --out-file $generated --config-file $config
     if ($LASTEXITCODE -ne 0) { throw 'Vue Babel transform failed' }
@@ -53,11 +53,11 @@ module.exports = {
     [IO.File]::WriteAllText($generated, $notice + "`n" + $code, [Text.UTF8Encoding]::new($false))
 
     $target = Join-Path $ProjectRoot (
-        'common/src/main/resources/assets/apricityui/apricity/apricityui/runtime/vue.aui.js')
+        'common/src/main/resources/assets/kltytonui/kltytonui/kltytonui/runtime/vue.kui.js')
     Copy-Item -LiteralPath $generated -Destination $target -Force
     Write-Host "Refreshed $target"
 } finally {
-    $env:AUI_RHINO_SEMANTICS_PLUGIN = $previousPlugin
+    $env:KUI_RHINO_SEMANTICS_PLUGIN = $previousPlugin
     $env:NODE_PATH = $previousNodePath
     $env:npm_config_cache = $previousNpmCache
     $resolved = [IO.Path]::GetFullPath($tempRoot)

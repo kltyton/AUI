@@ -4,7 +4,7 @@
 
 ### 1.1 本路线负责什么
 
-- 继续以 AUI 内置 Ore 主题为唯一核心和默认样式。
+- 继续以 KUI 内置 Ore 主题为唯一核心和默认样式。
 - 在现有 `ore.css` 中追加新的组件样式、状态样式和编号变体。
 - 保留现有 HTML class、CSS 自定义属性、字体、尺寸和默认视觉。
 - 吸收外部项目有价值的 token、CSS 属性组合、扁平视觉和静态组件样式。
@@ -276,7 +276,7 @@ disabled 状态必须覆盖 hover 和 active，不能出现禁用按钮仍然变
 - 可独立使用的颜色、边框、阴影、尺寸和排版属性组合。
 - 与现有 Ore DOM 结构兼容的组件规则。
 - 具有明确视觉差异的 Flat 组件样式。
-- AUI 解析器能够处理的伪类、媒体查询和属性选择器。
+- KUI 解析器能够处理的伪类、媒体查询和属性选择器。
 
 ### 6.2 直接舍弃的内容
 
@@ -286,7 +286,7 @@ disabled 状态必须覆盖 hover 和 active，不能出现禁用按钮仍然变
 - 与内置 Ore 视觉和功能重复的按钮、卡片、表单样式。
 - 音频、浏览器存储、网络加载和第三方资源依赖。
 
-### 6.3 AUI CSS 兼容要求
+### 6.3 KUI CSS 兼容要求
 
 - [ ] 展平外部 `@import`。
 - [ ] 不保留未处理的 `@layer`。
@@ -294,7 +294,7 @@ disabled 状态必须覆盖 hover 和 active，不能出现禁用按钮仍然变
 - [ ] 不使用 `:has()`。
 - [ ] 所有新增选择器挂在 `.ore-theme` 下。
 - [ ] 不引入新的全局 reset。
-- [ ] 检查渐变、阴影、变量、伪类和媒体查询由 AUI 解析器支持。
+- [ ] 检查渐变、阴影、变量、伪类和媒体查询由 KUI 解析器支持。
 - [ ] 外部字体和图片不重复打包，复用现有 Ore 资源。
 
 ## 7. 实施阶段
@@ -346,7 +346,7 @@ disabled 状态必须覆盖 hover 和 active，不能出现禁用按钮仍然变
 - [ ] 将 Spectrollay 的扁平视觉转换为编号组件样式。
 - [ ] 将 Katorlys 的状态层次转换为现有组件 token。
 - [ ] 将 ParaOre 的紧凑尺寸用于明确的 `-2` 或 `-3` 组件，而不是全局覆盖。
-- [ ] 将 mcui 的 Panel、Drawer、Loading、Toast 静态样式转换为 AUI class。
+- [ ] 将 mcui 的 Panel、Drawer、Loading、Toast 静态样式转换为 KUI class。
 - [ ] 删除所有重复或没有明显差异的变体。
 
 完成标准：Flat 视觉只能通过组件 class 选择性使用，不能改变其他组件。
@@ -381,12 +381,12 @@ disabled 状态必须覆盖 hover 和 active，不能出现禁用按钮仍然变
 - [ ] 检查资源路径、字体路径和本地资源加载。
 - [ ] 在发布说明中列出新增 class 和 token，不改变旧版 API。
 
-完成标准：旧页面无回归，新样式可按 class 使用，`ore.css` 可被 AUI 正常加载和解析。
+完成标准：旧页面无回归，新样式可按 class 使用，`ore.css` 可被 KUI 正常加载和解析。
 
 ## 8. 目标文件边界
 
 ```text
-common/src/main/resources/assets/apricityui/apricity/apricityui/theme/ore/
+common/src/main/resources/assets/kltytonui/kltytonui/kltytonui/theme/ore/
   ore.css              # 唯一扩充文件
   example.html         # 增加变体和状态示例
   readme.md            # 更新使用说明
@@ -408,7 +408,7 @@ common/src/main/resources/assets/apricityui/apricity/apricityui/theme/ore/
 - [ ] 所有新规则使用 token，不把外部硬编码颜色散落到组件中。
 - [ ] 不存在全局 `ore-flat` 或其他全局皮肤开关。
 - [ ] 不包含 JS、Vue、Lit、音频或第三方运行时。
-- [ ] AUI CSS 解析器能够处理所有新增语法。
+- [ ] KUI CSS 解析器能够处理所有新增语法。
 - [ ] 示例、文档和回归测试覆盖默认样式及编号变体。
 - [ ] 删除已弃用的编辑器样式、示例和专用测试，文档入口统一为 `ore.css`。
 
@@ -424,7 +424,7 @@ common/src/main/resources/assets/apricityui/apricity/apricityui/theme/ore/
   -> switch / slider / radio / checkbox / scrollbar
   -> 响应式与可读性回归
   -> 示例与文档
-  -> AUI 解析和主题测试
+  -> KUI 解析和主题测试
 ```
 
 每一阶段都必须以“新增 class 才产生新增效果、旧 class 不产生变化”为验收原则。没有明确设计收益的组件和 token 不纳入实现。

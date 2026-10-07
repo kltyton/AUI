@@ -1,0 +1,761 @@
+package io.github.kltyton.kltytonui.style;
+
+import io.github.kltyton.kltytonui.layout.Layout;
+import io.github.kltyton.kltytonui.layout.Size;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
+import io.github.kltyton.kltytonui.parser.Color;
+import io.github.kltyton.kltytonui.parser.CssString;
+import io.github.kltyton.kltytonui.parser.CSS;
+
+/**
+ * CSS 简写属性（margin/padding/border/background/flex/gap/inset/animation/rotate）的
+ * 值展开解析。从 Style 拆出；Style.update 保留分发逻辑，逐条委托到这里。
+ * 只经 Style 的 public 字段与包内可见的 getFieldValue/setFieldValue 读写。
+ */
+public final class ShorthandParser {
+    private ShorthandParser() {
+    }
+
+    private static final Pattern TIME_TOKEN_PATTERN = Pattern.compile("[-+]?(?:\\d*\\.\\d+|\\d+)(?:ms|s)");
+    private static final Pattern NUMBER_TOKEN_PATTERN = Pattern.compile("[-+]?(?:\\d*\\.\\d+|\\d+)");
+    private static final Set<String> ANIMATION_DIRECTIONS = Set.of("normal", "reverse", "alternate", "alternate-reverse");
+    private static final Set<String> ANIMATION_FILL_MODES = Set.of("none", "forwards", "backwards", "both");
+    private static final Set<String> ANIMATION_TIMING_FUNCTIONS = Set.of(
+            "linear", "ease", "ease-in", "ease-out", "ease-in-out", "step-start", "step-end"
+    );
+
+    public static void applyBox(Style style, String baseName, String raw) {
+        String value = raw == null ? "" : raw.trim();
+        style.setFieldValue(baseName, value.isEmpty() ? "unset" : value);
+
+        String topValue;
+        String rightValue;
+        String bottomValue;
+        String leftValue;
+        if (isCssWideKeyword(value)) {
+            topValue = value;
+            rightValue = value;
+            bottomValue = value;
+            leftValue = value;
+        } else {
+            String[] expanded = expandFourSideTokens(value);
+            topValue = expanded[0];
+            rightValue = expanded[1];
+            bottomValue = expanded[2];
+            leftValue = expanded[3];
+        }
+
+        style.setFieldValue(baseName + "Top", topValue);
+        style.setFieldValue(baseName + "Right", rightValue);
+        style.setFieldValue(baseName + "Bottom", bottomValue);
+        style.setFieldValue(baseName + "Left", leftValue);
+    }
+
+    public static void applyBorder(Style style, String raw) {
+        String value = raw == null ? "" : raw.trim();
+        style.border = value.isEmpty() ? "unset" : value;
+        String resolved = value.isEmpty() ? "unset" : value;
+        style.borderTop = resolved;
+        style.borderRight = resolved;
+        style.borderBottom = resolved;
+        style.borderLeft = resolved;
+    }
+
+    public static void applyBorderWidth(Style style, String raw) {
+        String value = raw == null ? "" : raw.trim();
+        if (value.isEmpty()) return;
+        style.borderWidth = value;
+        String[] widths = isCssWideKeyword(value)
+                ? new String[]{value, value, value, value}
+                : expandFourSideTokens(value);
+        style.borderTop = replaceBorderWidth(style, style.borderTop, widths[0]);
+        style.borderRight = replaceBorderWidth(style, style.borderRight, widths[1]);
+        style.borderBottom = replaceBorderWidth(style, style.borderBottom, widths[2]);
+        style.borderLeft = replaceBorderWidth(style, style.borderLeft, widths[3]);
+    }
+
+    public static void applyBorderColor(Style style, String raw) {
+        String value = raw == null ? "" : raw.trim();
+        if (value.isEmpty()) return;
+        style.borderColor = value;
+        String[] colors = isCssWideKeyword(value)
+                ? new String[]{value, value, value, value}
+                : expandFourSideTokens(value);
+        style.borderTop = replaceBorderColor(style, style.borderTop, colors[0]);
+        style.borderRight = replaceBorderColor(style, style.borderRight, colors[1]);
+        style.borderBottom = replaceBorderColor(style, style.borderBottom, colors[2]);
+        style.borderLeft = replaceBorderColor(style, style.borderLeft, colors[3]);
+    }
+
+    public static void applyBorderSidePart(Style style, String styleName, String raw, boolean width) {
+        String side = styleName.substring("border".length(), styleName.length() - (width ? "Width".length() : "Color".length()));
+        String sideField = "border" + side;
+        String current = style.getFieldValue(sideField);
+        String value = raw == null ? "" : raw.trim();
+        String updated = width ? replaceBorderWidth(style, current, value) : replaceBorderColor(style, current, value);
+        style.setFieldValue(sideField, updated);
+    }
+
+    private static String replaceBorderWidth(Style style, String current, String width) {
+        String normalizedWidth = width == null || width.isBlank() ? "unset" : width.trim();
+        if (isCssWideKeyword(normalizedWidth)) return normalizedWidth;
+
+        String base = (current == null || current.isBlank() || "unset".equalsIgnoreCase(current.trim()))
+                ? "0px solid #000000"
+                : current.trim();
+        String[] tokens = CssString.splitTopLevelTokens(base).toArray(String[]::new);
+        if (tokens.length == 0) return normalizedWidth + " solid #000000";
+
+        boolean replaced = false;
+        for (int i = 0; i < tokens.length; i++) {
+            if (looksLikeCssLength(tokens[i]) || isBorderWidthVariable(tokens, i)) {
+                tokens[i] = normalizedWidth;
+                replaced = true;
+                break;
+            }
+        }
+        if (!replaced) return normalizedWidth + " " + base;
+        return String.join(" ", tokens);
+    }
+
+    private static String replaceBorderColor(Style style, String current, String color) {
+        String normalizedColor = color == null || color.isBlank() ? "unset" : color.trim();
+        if (isCssWideKeyword(normalizedColor)) return normalizedColor;
+
+        String base = (current == null || current.isBlank() || "unset".equalsIgnoreCase(current.trim()))
+                ? "0px solid #000000"
+                : current.trim();
+        List<String> tokens = new ArrayList<>(CssString.splitTopLevelTokens(base));
+        if (tokens.isEmpty()) return "0px solid " + normalizedColor;
+
+        boolean replaced = false;
+        for (int i = 0; i < tokens.size(); i++) {
+            if (CssString.isColorToken(tokens.get(i)) && !isVarToken(tokens.get(i))
+                    || isBorderColorVariable(tokens, i)) {
+                tokens.set(i, normalizedColor);
+                replaced = true;
+                break;
+            }
+        }
+        if (!replaced) tokens.add(normalizedColor);
+        return String.join(" ", tokens);
+    }
+
+    private static boolean isBorderWidthVariable(String[] tokens, int index) {
+        if (!isVarToken(tokens[index])) return false;
+        for (int i = 0; i < index; i++) {
+            if (isBorderStyleToken(tokens[i])) return false;
+        }
+        return true;
+    }
+
+    private static boolean isBorderColorVariable(List<String> tokens, int index) {
+        if (!isVarToken(tokens.get(index))) return false;
+        for (int i = 0; i < index; i++) {
+            if (isBorderStyleToken(tokens.get(i))) return true;
+        }
+        return false;
+    }
+
+    private static boolean isBorderStyleToken(String token) {
+        if (token == null || token.isBlank()) return false;
+        return switch (token.trim().toLowerCase(Locale.ROOT)) {
+            case "none", "hidden", "dotted", "dashed", "solid", "double", "groove", "ridge", "inset", "outset" -> true;
+            default -> false;
+        };
+    }
+
+    private static boolean looksLikeCssLength(String token) {
+        if (token == null || token.isBlank()) return false;
+        String lower = token.trim().toLowerCase(Locale.ROOT);
+        return lower.equals("0")
+                || lower.matches("-?\\d+(?:\\.\\d+)?(?:px|rem|em|vw|vh|%)?");
+    }
+
+    public static void applyBackground(Style style, String raw) {
+        String value = raw == null ? "" : raw.trim();
+
+        style.backgroundColor = "unset";
+        style.backgroundImage = "unset";
+        style.backgroundRepeat = "unset";
+        style.backgroundSize = "unset";
+        style.backgroundPosition = "unset";
+
+        if (value.isEmpty() || "unset".equalsIgnoreCase(value)) return;
+        if ("none".equalsIgnoreCase(value)) {
+            style.backgroundImage = "none";
+            return;
+        }
+
+        List<String> layers = Background.splitTopLevelComma(value);
+        StringBuilder images = new StringBuilder();
+        StringBuilder repeats = new StringBuilder();
+        StringBuilder positions = new StringBuilder();
+        StringBuilder sizes = new StringBuilder();
+        boolean hasImage = false;
+
+        for (int layerIndex = 0; layerIndex < layers.size(); layerIndex++) {
+            String image = "none";
+            String repeat = "repeat";
+            StringBuilder position = new StringBuilder();
+            StringBuilder size = new StringBuilder();
+            boolean afterSlash = false;
+
+            for (String token : CssString.splitTopLevelTokens(layers.get(layerIndex))) {
+                String lowerToken = token.toLowerCase(Locale.ROOT);
+                if ("/".equals(token)) {
+                    afterSlash = true;
+                    continue;
+                }
+                if (isBackgroundImageToken(lowerToken)) {
+                    image = token;
+                    hasImage = true;
+                    continue;
+                }
+                if (CssString.isColorToken(token) || isVarToken(token)) {
+                    if (layerIndex == layers.size() - 1) style.backgroundColor = token;
+                    continue;
+                }
+                if (isBackgroundRepeatToken(lowerToken)) {
+                    repeat = token;
+                    continue;
+                }
+                StringBuilder target = afterSlash ? size : position;
+                if (!target.isEmpty()) target.append(' ');
+                target.append(token);
+            }
+
+            appendLayerValue(images, image);
+            appendLayerValue(repeats, repeat);
+            appendLayerValue(positions, position.isEmpty() ? "0% 0%" : position.toString());
+            appendLayerValue(sizes, size.isEmpty() ? "auto" : size.toString());
+        }
+
+        if (hasImage) {
+            style.backgroundImage = images.toString();
+            style.backgroundRepeat = repeats.toString();
+            style.backgroundPosition = positions.toString();
+            style.backgroundSize = sizes.toString();
+        }
+    }
+
+    private static void appendLayerValue(StringBuilder target, String value) {
+        if (!target.isEmpty()) target.append(", ");
+        target.append(value);
+    }
+
+    /**
+     * {@link #applyBackground} 的结果按长写属性名返回，供层叠阶段做简写展开。
+     *
+     * <p>CSS 层叠是逐条声明按属性比较的：{@code background: #242527}（作者表、特异性更高）必须和
+     * 别处的 {@code background-color: #f2f2f2}（global.css、特异性更低）在同一个属性上竞争。
+     * 不展开的话两者各占一个键，应用阶段"先简写、后长写"的两趟会让低特异性的长写把高特异性的
+     * 简写覆盖回去——ore 主题 {@code .ore-code{background:#242527}} 就是这样被 global.css 的
+     * {@code pre{background-color:#f2f2f2}} 盖成浅灰、整个代码块变白的。</p>
+     */
+    public static Map<String, String> expandBackground(String raw) {
+        Style probe = new Style();
+        applyBackground(probe, raw);
+        Map<String, String> longhands = new LinkedHashMap<>();
+        putLonghand(longhands, "background-color", probe.backgroundColor);
+        putLonghand(longhands, "background-image", probe.backgroundImage);
+        putLonghand(longhands, "background-repeat", probe.backgroundRepeat);
+        putLonghand(longhands, "background-size", probe.backgroundSize);
+        putLonghand(longhands, "background-position", probe.backgroundPosition);
+        return longhands;
+    }
+
+    public static Map<String, String> expandFont(String raw) {
+        List<String> tokens = CssString.splitTopLevelTokens(raw);
+        if (tokens.isEmpty()) return Map.of();
+        String value = raw.trim();
+        if (isCssWideKeyword(value)) {
+            return Map.of("font-style", value, "font-weight", value,
+                    "font-size", value, "line-height", value, "font-family", value);
+        }
+
+        String style = "normal";
+        String weight = "400";
+        int sizeIndex = -1;
+        for (int index = 0; index < tokens.size(); index++) {
+            String token = tokens.get(index);
+            if (token.matches("(?i)(?:\\d+(?:\\.\\d+)?|\\.\\d+)(?:px|pt|em|rem|%|vw|vh|vmin|vmax)")) {
+                sizeIndex = index;
+                break;
+            }
+            if (token.equals("italic") || token.equals("oblique")) style = token;
+            else if (token.equals("bold") || token.equals("bolder") || token.equals("lighter")
+                    || token.matches("[1-9]00")) weight = token;
+        }
+        if (sizeIndex < 0) return Map.of();
+        int familyIndex = sizeIndex + 1;
+        String lineHeight = "normal";
+        if (familyIndex < tokens.size() && tokens.get(familyIndex).equals("/")) {
+            if (familyIndex + 1 >= tokens.size()) return Map.of();
+            lineHeight = tokens.get(familyIndex + 1);
+            familyIndex += 2;
+        }
+        if (familyIndex >= tokens.size()) return Map.of();
+        return Map.of("font-style", style, "font-weight", weight,
+                "font-size", tokens.get(sizeIndex), "line-height", lineHeight,
+                "font-family", String.join(" ", tokens.subList(familyIndex, tokens.size())));
+    }
+
+    public static Map<String, String> expandLogicalBox(String property, String raw) {
+        if (property == null || raw == null || raw.isBlank()) return Map.of();
+        if (!property.startsWith("inset-") && !property.startsWith("padding-")
+                && !property.startsWith("margin-") && !property.startsWith("border-inline-")) {
+            return Map.of();
+        }
+        String name = property.trim().toLowerCase(Locale.ROOT);
+        if (!name.contains("inline") && !name.contains("block")) return Map.of();
+        List<String> values = Layout.splitTopLevelWhitespace(raw.trim());
+        if (values.isEmpty()) return Map.of();
+        String first = values.get(0);
+        String second = values.size() > 1 ? values.get(1) : first;
+        return switch (name) {
+            case "inset-inline" -> Map.of("left", first, "right", second);
+            case "inset-block" -> Map.of("top", first, "bottom", second);
+            case "inset-inline-start" -> Map.of("left", raw);
+            case "inset-inline-end" -> Map.of("right", raw);
+            case "inset-block-start" -> Map.of("top", raw);
+            case "inset-block-end" -> Map.of("bottom", raw);
+            case "padding-inline" -> Map.of("padding-left", first, "padding-right", second);
+            case "padding-block" -> Map.of("padding-top", first, "padding-bottom", second);
+            case "padding-inline-start" -> Map.of("padding-left", raw);
+            case "padding-inline-end" -> Map.of("padding-right", raw);
+            case "padding-block-start" -> Map.of("padding-top", raw);
+            case "padding-block-end" -> Map.of("padding-bottom", raw);
+            case "margin-inline" -> Map.of("margin-left", first, "margin-right", second);
+            case "margin-block" -> Map.of("margin-top", first, "margin-bottom", second);
+            case "margin-inline-start" -> Map.of("margin-left", raw);
+            case "margin-inline-end" -> Map.of("margin-right", raw);
+            case "margin-block-start" -> Map.of("margin-top", raw);
+            case "margin-block-end" -> Map.of("margin-bottom", raw);
+            case "border-inline-end" -> Map.of("border-right", raw);
+            case "border-inline-start" -> Map.of("border-left", raw);
+            case "border-inline-width" -> Map.of("border-left-width", first, "border-right-width", second);
+            default -> Map.of();
+        };
+    }
+
+    private static void putLonghand(Map<String, String> longhands, String name, String value) {
+        if (value == null || value.isBlank()) return;
+        longhands.put(name, value);
+    }
+
+    public static void applyMask(Style style, String raw) {
+        String value = raw == null ? "" : raw.trim();
+
+        style.maskImage = "unset";
+        style.maskMode = "unset";
+        style.maskRepeat = "unset";
+        style.maskPosition = "unset";
+        style.maskSize = "unset";
+        style.maskClip = "unset";
+        style.maskOrigin = "unset";
+        style.maskComposite = "unset";
+
+        if (value.isEmpty() || isCssWideKeyword(value)) return;
+        if ("none".equalsIgnoreCase(value)) {
+            style.maskImage = "none";
+            return;
+        }
+
+        List<String> layers = Background.splitTopLevelComma(value);
+        if (layers.isEmpty()) return;
+
+        StringBuilder images = new StringBuilder();
+        StringBuilder repeats = new StringBuilder();
+        StringBuilder positions = new StringBuilder();
+        StringBuilder sizes = new StringBuilder();
+        StringBuilder modes = new StringBuilder();
+        StringBuilder clips = new StringBuilder();
+        StringBuilder origins = new StringBuilder();
+        StringBuilder composites = new StringBuilder();
+
+        for (String layer : layers) {
+            StringBuilder image = new StringBuilder();
+            StringBuilder position = new StringBuilder();
+            StringBuilder size = new StringBuilder();
+            String repeat = null;
+            String mode = null;
+            String origin = null;
+            String clip = null;
+            String composite = null;
+            boolean afterSlash = false;
+
+            for (String token : CssString.splitTopLevelTokens(layer)) {
+                String lowerToken = token.toLowerCase(Locale.ROOT);
+                if ("/".equals(token)) {
+                    afterSlash = true;
+                    continue;
+                }
+                if (isBackgroundImageToken(lowerToken) || "none".equals(lowerToken) || isVarToken(token)) {
+                    if (!image.isEmpty()) image.append(' ');
+                    image.append(token);
+                    continue;
+                }
+                if (isBackgroundRepeatToken(lowerToken)) {
+                    repeat = token;
+                    continue;
+                }
+                if (isMaskModeToken(lowerToken)) {
+                    mode = lowerToken;
+                    continue;
+                }
+                if (isMaskGeometryToken(lowerToken)) {
+                    // CSS mask 简写：第一个几何框 token 同时是 origin 与 clip，
+                    // 第二个只覆盖 clip；no-clip 只可能出现在 clip 位。
+                    if ("no-clip".equals(lowerToken)) {
+                        clip = "no-clip";
+                    } else if (origin == null) {
+                        origin = lowerToken;
+                        clip = lowerToken;
+                    } else {
+                        clip = lowerToken;
+                    }
+                    continue;
+                }
+                if (isMaskCompositeToken(lowerToken)) {
+                    composite = lowerToken;
+                    continue;
+                }
+                StringBuilder target = afterSlash ? size : position;
+                if (!target.isEmpty()) target.append(' ');
+                target.append(token);
+            }
+
+            if (!images.isEmpty()) {
+                images.append(", ");
+                repeats.append(", ");
+                positions.append(", ");
+                sizes.append(", ");
+                modes.append(", ");
+                clips.append(", ");
+                origins.append(", ");
+                composites.append(", ");
+            }
+            images.append(image.isEmpty() ? "none" : image);
+            repeats.append(repeat == null ? "repeat" : repeat);
+            positions.append(position.isEmpty() ? "0% 0%" : position);
+            sizes.append(size.isEmpty() ? "auto" : size);
+            modes.append(mode == null ? "match-source" : mode);
+            clips.append(clip == null ? "border-box" : clip);
+            origins.append(origin == null ? "border-box" : origin);
+            composites.append(composite == null ? "add" : composite);
+        }
+
+        style.maskImage = images.toString();
+        style.maskRepeat = repeats.toString();
+        style.maskPosition = positions.toString();
+        style.maskSize = sizes.toString();
+        style.maskMode = modes.toString();
+        style.maskClip = clips.toString();
+        style.maskOrigin = origins.toString();
+        style.maskComposite = composites.toString();
+    }
+
+    private static boolean isMaskModeToken(String token) {
+        return switch (token) {
+            case "alpha", "luminance", "match-source" -> true;
+            default -> false;
+        };
+    }
+
+    private static boolean isMaskGeometryToken(String token) {
+        return switch (token) {
+            case "border-box", "padding-box", "content-box", "margin-box",
+                 "fill-box", "stroke-box", "view-box", "no-clip" -> true;
+            default -> false;
+        };
+    }
+
+    private static boolean isMaskCompositeToken(String token) {
+        return switch (token) {
+            case "add", "subtract", "intersect", "exclude" -> true;
+            default -> false;
+        };
+    }
+
+    public static void applyFlex(Style style, String raw) {
+        String value = raw == null ? "" : raw.trim();
+        style.flex = value.isEmpty() ? "unset" : value;
+
+        if (value.isEmpty() || value.equalsIgnoreCase("unset") || value.equalsIgnoreCase("initial")) {
+            style.flexGrow = "0";
+            style.flexShrink = "1";
+            style.flexBasis = "auto";
+            return;
+        }
+
+        if (value.equalsIgnoreCase("none")) {
+            style.flexGrow = "0";
+            style.flexShrink = "0";
+            style.flexBasis = "auto";
+            return;
+        }
+
+        if (value.equalsIgnoreCase("auto")) {
+            style.flexGrow = "1";
+            style.flexShrink = "1";
+            style.flexBasis = "auto";
+            return;
+        }
+
+        String[] parts = Layout.splitTopLevelWhitespace(value).toArray(String[]::new);
+        if (parts.length == 1) {
+            Double grow = Size.parseNumber(parts[0]);
+            if (grow != null) {
+                style.flexGrow = trimNumber(grow);
+                style.flexShrink = "1";
+                style.flexBasis = "0%";
+                return;
+            }
+            style.flexGrow = "1";
+            style.flexShrink = "1";
+            style.flexBasis = parts[0];
+            return;
+        }
+
+        int numericCount = 0;
+        // 规范：flex 简写省略 basis 时为 0%（如 `flex: 2 1` ≡ 2 1 0%），不是 auto。
+        String basis = "0%";
+        String growValue = "0";
+        String shrinkValue = "1";
+
+        for (String part : parts) {
+            Double number = Size.parseNumber(part);
+            if (number != null && !Size.isPercent(part) && !part.endsWith("px")) {
+                if (numericCount == 0) {
+                    growValue = trimNumber(number);
+                } else if (numericCount == 1) {
+                    shrinkValue = trimNumber(number);
+                } else {
+                    basis = part;
+                }
+                numericCount++;
+                continue;
+            }
+            basis = part;
+        }
+
+        style.flexGrow = growValue;
+        style.flexShrink = shrinkValue;
+        style.flexBasis = basis;
+    }
+
+    public static void applyGap(Style style, String raw) {
+        String value = raw == null ? "" : raw.trim();
+        style.gap = value.isEmpty() ? "0px" : value;
+
+        if (value.isEmpty()) {
+            style.rowGap = "0px";
+            style.columnGap = "0px";
+            return;
+        }
+
+        if (isCssWideKeyword(value)) {
+            style.rowGap = value;
+            style.columnGap = value;
+            return;
+        }
+
+        String[] parts = Layout.splitTopLevelWhitespace(value).toArray(String[]::new);
+        String rowValue = parts.length > 0 ? parts[0] : "0px";
+        String columnValue = parts.length > 1 ? parts[1] : rowValue;
+        style.rowGap = rowValue;
+        style.columnGap = columnValue;
+    }
+
+    public static void applyInset(Style style, String raw) {
+        String value = raw == null ? "" : raw.trim();
+        if (value.isEmpty()) value = "unset";
+        String[] expanded = isCssWideKeyword(value)
+                ? new String[]{value, value, value, value}
+                : expandFourSideTokens(value);
+        style.top = expanded[0];
+        style.right = expanded[1];
+        style.bottom = expanded[2];
+        style.left = expanded[3];
+    }
+
+    public static void applyAnimation(Style style, String raw) {
+        String value = raw == null ? "" : raw.trim();
+        style.animation = value.isEmpty() ? "unset" : value;
+
+        style.animationName = "unset";
+        style.animationDuration = "unset";
+        style.animationDelay = "unset";
+        style.animationIterationCount = "unset";
+        style.animationDirection = "unset";
+        style.animationFillMode = "unset";
+        style.animationTimingFunction = "unset";
+        style.animationPlayState = "unset";
+
+        if (value.isEmpty() || isCssWideKeyword(value) || "none".equalsIgnoreCase(value)) {
+            style.animation = value.isEmpty() ? "unset" : value;
+            if ("none".equalsIgnoreCase(value)) {
+                style.animationName = "none";
+                style.animationDuration = "0s";
+                style.animationDelay = "0s";
+                style.animationIterationCount = "1";
+                style.animationDirection = "normal";
+                style.animationFillMode = "none";
+                style.animationTimingFunction = "ease";
+                style.animationPlayState = "running";
+            }
+            return;
+        }
+
+        List<String> tokens = splitAnimationTokens(value);
+        for (String token : tokens) {
+            if (isTimeToken(token)) {
+                if ("unset".equals(style.animationDuration)) style.animationDuration = token;
+                else style.animationDelay = token;
+                continue;
+            }
+            String normalized = token.toLowerCase(Locale.ROOT);
+            if ("infinite".equals(normalized) || isNumberToken(normalized)) {
+                style.animationIterationCount = token;
+                continue;
+            }
+            if (ANIMATION_DIRECTIONS.contains(normalized)) {
+                style.animationDirection = normalized;
+                continue;
+            }
+            if (ANIMATION_FILL_MODES.contains(normalized)) {
+                style.animationFillMode = normalized;
+                continue;
+            }
+            if ("running".equals(normalized) || "paused".equals(normalized)) {
+                style.animationPlayState = normalized;
+                continue;
+            }
+            if (isTimingFunctionToken(normalized)) {
+                style.animationTimingFunction = token;
+                continue;
+            }
+            style.animationName = token;
+        }
+    }
+
+    public static void applyRotate(Style style, String raw) {
+        String value = raw == null ? "" : raw.trim();
+        style.rotate = value.isEmpty() ? "none" : value;
+
+        if (style.rotate.isBlank() || "none".equalsIgnoreCase(style.rotate)) {
+            return;
+        }
+
+        String rotateFn = "rotate(" + style.rotate + ")";
+        String currentTransform = style.transform == null ? "" : style.transform.trim();
+        if (currentTransform.isEmpty() || "none".equalsIgnoreCase(currentTransform)) {
+            style.transform = rotateFn;
+            return;
+        }
+        style.transform = currentTransform + " " + rotateFn;
+    }
+
+    private static String trimNumber(Double value) {
+        if (value == null) return "0";
+        if (Math.abs(value - Math.rint(value)) < 1e-6) {
+            return Integer.toString((int) Math.rint(value));
+        }
+        return Double.toString(value);
+    }
+
+    private static boolean isVarToken(String token) {
+        if (token == null || token.isBlank()) return false;
+        String value = token.trim().toLowerCase(Locale.ROOT);
+        return value.startsWith("var(") && value.endsWith(")");
+    }
+
+    private static boolean isBackgroundImageToken(String token) {
+        if (token == null || token.isBlank()) return false;
+        return token.contains("url(") || token.contains("gradient(");
+    }
+
+    private static boolean isBackgroundRepeatToken(String token) {
+        if (token == null || token.isBlank()) return false;
+        return switch (token) {
+            case "repeat", "repeat-x", "repeat-y", "no-repeat", "space", "round" -> true;
+            default -> false;
+        };
+    }
+
+    public static boolean isCssWideKeyword(String value) {
+        if (value == null) return false;
+        String normalized = value.trim().toLowerCase(Locale.ROOT);
+        return normalized.equals("inherit")
+                || normalized.equals("initial")
+                || normalized.equals("unset")
+                || normalized.equals("revert")
+                || normalized.equals("revert-layer");
+    }
+
+    public static String[] expandFourSideTokens(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return new String[]{"unset", "unset", "unset", "unset"};
+        }
+        String[] tokens = new String[4];
+        int count = 0;
+        int index = 0;
+        while (index < raw.length() && count < tokens.length) {
+            while (index < raw.length() && Character.isWhitespace(raw.charAt(index))) index++;
+            if (index >= raw.length()) break;
+            int start = index;
+            while (index < raw.length() && !Character.isWhitespace(raw.charAt(index))) index++;
+            tokens[count++] = raw.substring(start, index);
+        }
+        if (count == 0) return new String[]{"unset", "unset", "unset", "unset"};
+        return switch (count) {
+            case 1 -> new String[]{tokens[0], tokens[0], tokens[0], tokens[0]};
+            case 2 -> new String[]{tokens[0], tokens[1], tokens[0], tokens[1]};
+            case 3 -> new String[]{tokens[0], tokens[1], tokens[2], tokens[1]};
+            default -> tokens;
+        };
+    }
+
+    public static List<String> splitAnimationTokens(String value) {
+        ArrayList<String> tokens = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        int depth = 0;
+        for (int i = 0; i < value.length(); i++) {
+            char ch = value.charAt(i);
+            if (Character.isWhitespace(ch) && depth == 0) {
+                if (!current.isEmpty()) {
+                    tokens.add(current.toString());
+                    current.setLength(0);
+                }
+                continue;
+            }
+            if (ch == '(') depth++;
+            else if (ch == ')' && depth > 0) depth--;
+            current.append(ch);
+        }
+        if (!current.isEmpty()) tokens.add(current.toString());
+        return tokens;
+    }
+
+    public static boolean isTimeToken(String token) {
+        return token != null && TIME_TOKEN_PATTERN.matcher(token.trim().toLowerCase(Locale.ROOT)).matches();
+    }
+
+    public static boolean isNumberToken(String token) {
+        return token != null && NUMBER_TOKEN_PATTERN.matcher(token.trim()).matches();
+    }
+
+    public static boolean isTimingFunctionToken(String token) {
+        if (token == null || token.isBlank()) return false;
+        if (ANIMATION_TIMING_FUNCTIONS.contains(token)) return true;
+        return token.startsWith("steps(") || token.startsWith("cubic-bezier(");
+    }
+}

@@ -1,8 +1,12 @@
-# ApricityUI
+# KltytonUI
 
 Design UI with HTML, CSS, and maybe JavaScript along.
 
 通过经典的 H5 三剑客（HTML / CSS / JS）构建 Minecraft 的 UI。
+
+KltytonUI 由 kltyton 独立维护，基于 [ApricityUI](https://github.com/Tower-of-Sighs/AUI) 的 LGPL-2.1 源码。原作者与贡献者的版权、许可证及提交历史保留。项目源码位于 [kltyton/KltytonUI](https://github.com/kltyton/KltytonUI)。
+
+本项目使用独立的 `kltytonui` modid、`io.github.kltyton.kltytonui` Java 包、资源命名空间及配置目录。实例页面目录为 `kltytonui/`，调试端口为 `25322`。原 ApricityUI 的配置、页面和存储文件不会被自动删除或覆盖；切换已有实例前，停用旧模组并显式迁移相应目录与页面内的旧 API 引用。正式发布渠道创建前，发布项目 ID 需由维护者明确提供。
 
 ## 项目结构
 
@@ -10,30 +14,17 @@ Design UI with HTML, CSS, and maybe JavaScript along.
 
 - `common/`：共享源码树（Java、测试、loader 无关资源）。可**单独编译并跑测试**
   （`gradlew -p common test`，见 `common/build.gradle`），不引用任何 target 侧类；
-  loader 绑定能力经 `com.sighs.apricityui.spi.AuiServices` 由 target 侧实现注册
-  （`ApricityUIForge` 为 @Mod 入口，`AuiServicesBootstrap` 负责注册服务）。
+  loader 绑定能力经 `io.github.kltyton.kltytonui.spi.KuiServices` 由 target 侧实现注册
+  （`KltytonUIForge` 为 @Mod 入口，`KuiServicesBootstrap` 负责注册服务）。
 - `targets/forge-1.20.1/`：Forge 1.20.1 目标，独立 Gradle 工程（自己的 wrapper 与配置）。
   加载器 metadata（`META-INF/mods.toml`）、mixin 类与注册、@Mod 入口保留在 target 中。
 
 共享资源放在 `common/src/main/resources/`，构建 target 时会合并进最终 jar；
 target 自身 `libs/` 目录中的 `*.jar` 会自动作为 `implementation` 依赖。
 
-## 开发须知（PR 规范）
+## 维护分支
 
-1. 不可直接向 master 分支提交 commit。
-2. 提交修改应该新建分支，分支名应体现对内核/MC 内容的关联，建议的分支命名规范：
-    - 优化 Optimize：`opt(core)/html-parser`
-    - 修复错误 Fix：`fix(neo26.1)/time-format`
-    - 功能 Feature：`feat(core+neo21.1)/editor-markdown`
-    - 重构 Refactor：`refactor(forge20.1+neo21.1)/textarea-render`
-3. 从其他分支合并修改到 master 分支时请发起一个 PR (Pull Request)。
-4. 分支合并前会有人来帮助你检查代码中的错误，通过审查后会合并到主线。
-5. 如果你的分支（以下以 a 表示）与 master 分支冲突，解决方案如下：
-    - 从 master 分支建立一个新分支（以下以 b 表示）
-    - 通过 cherry-pick 指令将你的修改从 a 分支移动过来
-    - 删除本地 a 分支
-    - 将本地 b 分支重命名成 a
-    - `git push (--force)`
+项目统一在 `main` 分支维护。各 Minecraft / Loader 目标沿用独立构建工程，通用能力通过 `common` 与版本对应的 SPI 接入。
 
 ## 构建与开发
 
@@ -67,7 +58,7 @@ cd targets\forge-1.20.1
 
 `common/` 禁止包含：
 
-- 任何 target 侧类的引用；loader 绑定能力一律通过 SPI（`AuiServices`）接口下沉到
+- 任何 target 侧类的引用；loader 绑定能力一律通过 SPI（`KuiServices`）接口下沉到
   common，由 target 侧实现并注册。
 - 运行时 loader/version 判断、反射分发和某个 target 的资源路径。
 - 为解决单一 target 编译错误而加入的平台 API 抽象泄漏。

@@ -13,9 +13,9 @@
 
 | 入口 | 打开的是什么 | 真实槽位 |
 | --- | --- | --- |
-| `new ApricityScreen(path)`（客户端） | 纯 UI Screen | 没有 |
-| `ApricityUI.screen(path)`（客户端） | UI-only 的容器 Screen | 没有——哪怕 HTML 里写了 `bind="player"` |
-| `ApricityUI.menu(player, path).bind(...)`（服务端） | ApricityContainerScreen | 有 |
+| `new KltytonScreen(path)`（客户端） | 纯 UI Screen | 没有 |
+| `KltytonUI.screen(path)`（客户端） | UI-only 的容器 Screen | 没有——哪怕 HTML 里写了 `bind="player"` |
+| `KltytonUI.menu(player, path).bind(...)`（服务端） | KltytonContainerScreen | 有 |
 
 重点：**要真实容器就必须从服务端走 `menu(...).bind(...)`**。`screen(path)` 只是请求打开一个长得像容器的 UI 页面。
 
@@ -28,7 +28,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <meta name="aui-viewport" content="mode=browser">
+    <meta name="kui-viewport" content="mode=browser">
     <style>
         body { margin: 0; padding: 12px; color: #e2e8f0; background: #1e293b; }
         container { display: grid; gap: 2px; width: max-content; }
@@ -48,7 +48,7 @@
 
 ```java
 public static void open(ServerPlayer player) {
-    ApricityUI.menu(player, "screens/inventory.html")
+    KltytonUI.menu(player, "screens/inventory.html")
             .bind(binding -> binding
                     .saveddata("machine_data", 9)
                     .player());
@@ -70,12 +70,12 @@ HTML 写 `id="machine"` 而服务端调 `blockEntity(pos)`，两边对不上，�
 
 ## 绑定 API
 
-`ApricityUI.menu(player, path)` 返回 PendingMenu，调 `bind(...)` 才真正打开。回调里一个数据源都不声明的话会打开 UI-only 菜单——那还不如直接用 `screen(path)`。
+`KltytonUI.menu(player, path)` 返回 PendingMenu，调 `bind(...)` 才真正打开。回调里一个数据源都不声明的话会打开 UI-only 菜单——那还不如直接用 `screen(path)`。
 
 | 方法 | 容量 | 说明 |
 | --- | --- | --- |
 | `player()` | 固定 36 | 玩家背包+快捷栏，本地索引 0-8 快捷栏、9-35 背包 |
-| `saveddata()` / `saveddata(name)` / `saveddata(name, cap)` | 默认 9 | 世界级持久库存，数据名默认 `apricityui_data` |
+| `saveddata()` / `saveddata(name)` / `saveddata(name, cap)` | 默认 9 | 世界级持久库存，数据名默认 `kltytonui_data` |
 | `blockEntity(pos)` / `blockEntity(pos, cap)` | capability 容量 | 方块实体的 Forge ITEM_HANDLER |
 | `entity(id)` / `entity(id, cap)` | capability 容量 | 实体的 ITEM_HANDLER |
 
@@ -97,7 +97,7 @@ HTML 写 `id="machine"` 而服务端调 `blockEntity(pos)`，两边对不上，�
 
 ```java
 FilterUtil fuel = FilterUtil.anyOf(FilterUtil.item(Items.COAL), FilterUtil.tag("c:coals"));
-ApricityUI.menu(player, "screens/furnace.html")
+KltytonUI.menu(player, "screens/furnace.html")
         .bind(binding -> binding.blockEntity(pos)
                 .slot("slot.input").filter(FilterUtil.not(FilterUtil.item(Items.LAVA_BUCKET)))
                 .slot("slot.fuel").filter(fuel)
@@ -107,7 +107,7 @@ ApricityUI.menu(player, "screens/furnace.html")
 KubeJS 也使用同一组工厂和组合语义：
 
 ```javascript
-ApricityUI.menu(player, "screens/furnace.html")
+KltytonUI.menu(player, "screens/furnace.html")
     .bind(function (binding) {
         binding.blockEntity(pos)
             .slot("slot.input").filter(FilterUtil.not(FilterUtil.item(Items.LAVA_BUCKET)))
@@ -116,11 +116,11 @@ ApricityUI.menu(player, "screens/furnace.html")
     });
 ```
 
-`FilterUtil` 可用于 Java 和 KubeJS：`ANY`（接受全部）、`NONE`（拒绝全部）、`EMPTY`（只接受空 ItemStack）；`item(Item)`、`tag(String)` / `tag(TagKey<Item>)`、`custom(Predicate<ItemStack>)`；以及 `allOf(...)`、`anyOf(...)`、`not(...)`。`and(...)`、`or(...)`、`negate()` 可继续组合已有过滤器。未调用 `.filter(...)` 时保留原有行为。这个过滤视图仅属于本次 AUI 菜单，不会修改机器 capability、漏斗或其他菜单的全局插入规则。无效 selector、未命中、匹配到嵌套 container / recipe 槽位或越界 local index 会被忽略并记 warning。
+`FilterUtil` 可用于 Java 和 KubeJS：`ANY`（接受全部）、`NONE`（拒绝全部）、`EMPTY`（只接受空 ItemStack）；`item(Item)`、`tag(String)` / `tag(TagKey<Item>)`、`custom(Predicate<ItemStack>)`；以及 `allOf(...)`、`anyOf(...)`、`not(...)`。`and(...)`、`or(...)`、`negate()` 可继续组合已有过滤器。未调用 `.filter(...)` 时保留原有行为。这个过滤视图仅属于本次 KUI 菜单，不会修改机器 capability、漏斗或其他菜单的全局插入规则。无效 selector、未命中、匹配到嵌套 container / recipe 槽位或越界 local index 会被忽略并记 warning。
 
-这是一次 API 迁移：旧的 `binding.blockEntity(pos).filter(...)` 已移除，必须改为 `binding.blockEntity(pos).slot("...").filter(...)`。同类型只能绑一个——要两台机器就得用高级声明 API：`ApricityScreenNetworkHandler.openScreen(player, path, declarations, argsById)`，每个 `ContainerDeclaration` 自带 id、类型、容量和 primary，参数通过 argsById 传（block_entity 要 `x/y/z`，entity 要 `entity_id`，saved_data 可选 `data_name`）。HTML 的容器 id 必须和声明 id 一致。这是给 Java 模组代码用的，KubeJS 脚本一般用不到；该高级入口不接收 slot 过滤规则。
+这是一次 API 迁移：旧的 `binding.blockEntity(pos).filter(...)` 已移除，必须改为 `binding.blockEntity(pos).slot("...").filter(...)`。同类型只能绑一个——要两台机器就得用高级声明 API：`KltytonScreenNetworkHandler.openScreen(player, path, declarations, argsById)`，每个 `ContainerDeclaration` 自带 id、类型、容量和 primary，参数通过 argsById 传（block_entity 要 `x/y/z`，entity 要 `entity_id`，saved_data 可选 `data_name`）。HTML 的容器 id 必须和声明 id 一致。这是给 Java 模组代码用的，KubeJS 脚本一般用不到；该高级入口不接收 slot 过滤规则。
 
-旧入口（`openScreen` 等）还在，新代码别用。旧示例里的 `ApricityUI.bind()`、`primarySavedData()` 之类已不是现行 API。
+旧入口（`openScreen` 等）还在，新代码别用。旧示例里的 `KltytonUI.bind()`、`primarySavedData()` 之类已不是现行 API。
 
 ## container 元素
 
@@ -172,7 +172,7 @@ HTML 里的 `slot-index` 是**容器内的本地索引**，和服务端全局菜
 
 **真实槽位**显示数据源的 ItemStack，按 MC 菜单规则点击、拖拽、shift-click。**展示槽位**用直接子元素 `<item>` 或 `<ingredient>` 显示物品，不连数据源，适合做图鉴、配方预览、装饰。真实槽位中的展示标记不会覆盖数据源的物品。
 
-**交互控制**（优先级从高到低）：recipe 生成的永远不可交互 → CSS `--aui-slot-interactive` → HTML `interactive` → HTML `pointer` → 真实绑定默认可交互。展示槽位建议显式写 `interactive="0" pointer="0"` 让语义稳定。`disabled="true"` 同样拒绝菜单操作。
+**交互控制**（优先级从高到低）：recipe 生成的永远不可交互 → CSS `--kui-slot-interactive` → HTML `interactive` → HTML `pointer` → 真实绑定默认可交互。展示槽位建议显式写 `interactive="0" pointer="0"` 让语义稳定。`disabled="true"` 同样拒绝菜单操作。
 
 **渲染控制**：
 
@@ -180,9 +180,9 @@ HTML 里的 `slot-index` 是**容器内的本地索引**，和服务端全局菜
 | --- | --- |
 | `render="all" / "item" / "bg" / "none"` | 整体开关 |
 | `render-bg` / `render-item` | 单独控制 |
-| `--aui-slot-render-bg` / `--aui-slot-render-item` | CSS 版，优先于 HTML 属性 |
+| `--kui-slot-render-bg` / `--kui-slot-render-item` | CSS 版，优先于 HTML 属性 |
 
-**尺寸和外观**：`size`（或 `slot-size` / `--aui-slot-size`）控制逻辑尺寸，参与命中和物品居中；`iconScale`（`--aui-slot-icon-scale`）物品缩放；`zIndex`（`--aui-slot-z`）绘制层级。
+**尺寸和外观**：`size`（或 `slot-size` / `--kui-slot-size`）控制逻辑尺寸，参与命中和物品居中；`iconScale`（`--kui-slot-icon-scale`）物品缩放；`zIndex`（`--kui-slot-z`）绘制层级。
 
 展示槽位的物品表达式写在 `<item>` 或 `<ingredient>` 的文本里，不要直接写在 `<slot>` 中；语法、JSON Ingredient、标签候选和轮播设置见[MC 物品与配方元素](mc-elements)。
 
@@ -210,9 +210,9 @@ HTML 里的 `slot-index` 是**容器内的本地索引**，和服务端全局菜
 
 ## 视口与坐标
 
-容器页面和普通 Screen 用同一套 meta（见 [ApricityScreen 的 meta 章节](apricity-screen#页面-meta-配置)）。槽位 DOM 坐标是逻辑坐标，框架读取 viewport 缩放后同步给菜单——别在脚本里手动乘 renderScale。
+容器页面和普通 Screen 用同一套 meta（见 [KltytonScreen 的 meta 章节](kltytonui-screen#页面-meta-配置)）。槽位 DOM 坐标是逻辑坐标，框架读取 viewport 缩放后同步给菜单——别在脚本里手动乘 renderScale。
 
-另外，`ApricityUI.getCurrentScreenDocument()` 对容器 Screen 返回 null 是正常的，它只认 ApricityScreen。
+另外，`KltytonUI.getCurrentScreenDocument()` 对容器 Screen 返回 null 是正常的，它只认 KltytonScreen。
 
 ## 安全
 
@@ -226,7 +226,7 @@ HTML 里的 `slot-index` 是**容器内的本地索引**，和服务端全局菜
 
 **repeat 没展开**：预期行为，用空容器 + size。
 
-**槽位看得见点不动**：在 container 内吗？id 对吗？slot-index 超容量了吗？是不是 recipe 生成的？有没有 `interactive="0"` / `pointer="0"` / `disabled` / 祖先的 `--aui-slot-interactive:0`？
+**槽位看得见点不动**：在 container 内吗？id 对吗？slot-index 超容量了吗？是不是 recipe 生成的？有没有 `interactive="0"` / `pointer="0"` / `disabled` / 祖先的 `--kui-slot-interactive:0`？
 
 **方块实体打不开**：区块加载了吗？方块实体在吗？有 capability 吗？距离超 8 格了吗？容量写超了吗？
 

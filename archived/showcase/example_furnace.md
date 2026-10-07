@@ -1,4 +1,4 @@
-# 一个使用 AUI 创建换皮熔炉的当前示例
+# 一个使用 KUI 创建换皮熔炉的当前示例
 
 ## 页面模板
 
@@ -192,7 +192,7 @@ public @NotNull InteractionResult use(BlockState state, Level level, BlockPos po
     if (level.isClientSide) return InteractionResult.SUCCESS;
     if (!(player instanceof ServerPlayer serverPlayer)) return InteractionResult.PASS;
 
-    ApricityUI.menu(serverPlayer, DEMO_TEMPLATE_PATH).bind(b -> b.blockEntity(pos).player());
+    KltytonUI.menu(serverPlayer, DEMO_TEMPLATE_PATH).bind(b -> b.blockEntity(pos).player());
     return InteractionResult.CONSUME;
 }
 ```

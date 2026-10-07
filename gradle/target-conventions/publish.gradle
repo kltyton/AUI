@@ -11,7 +11,7 @@ dependencies {
     implementation fileTree(dir: file('libs'), include: ['*.jar'], exclude: ['*-sources.jar', '*-javadoc.jar'])
 }
 
-// AUI: common/ is a shared source tree compiled into this target via source-set
+// KUI: common/ is a shared source tree compiled into this target via source-set
 // sharing (not an included Gradle project), so the shared resources directory is
 // referenced by relative path instead of project(':common').
 sourceSets.main.resources.srcDir file('../../common/src/main/resources')

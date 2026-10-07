@@ -1,4 +1,4 @@
-# ApricityUI Web API 测试流程
+# KltytonUI Web API 测试流程
 
 这份文档用于说明当前 Web API 相关测试的完整执行流程，包括：
 
@@ -15,7 +15,7 @@
 
 位置：
 
-- `src/test/java/com/sighs/apricityui/webapi/`
+- `src/test/java/io/github/kltyton/kltytonui/webapi/`
 
 主要测试类：
 
@@ -50,9 +50,9 @@
 
 位置：
 
-- Java 驱动：`src/main/java/com/sighs/apricityui/instance/ClientRuntimeSelfTest.java`
-- 页面资源：`src/main/resources/assets/apricityui/apricity/tests/client-runtime-self-test.html`
-- 生命周期页面：`src/main/resources/assets/apricityui/apricity/tests/lifecycle-event-test.html`
+- Java 驱动：`src/main/java/io/github/kltyton/kltytonui/instance/ClientRuntimeSelfTest.java`
+- 页面资源：`src/main/resources/assets/kltytonui/kltytonui/tests/client-runtime-self-test.html`
+- 生命周期页面：`src/main/resources/assets/kltytonui/kltytonui/tests/lifecycle-event-test.html`
 
 这层主要验证：
 
@@ -97,13 +97,13 @@
 
 ```powershell
 .\gradlew.bat test `
-  --tests com.sighs.apricityui.webapi.GlobalJsBootstrapTest `
-  --tests com.sighs.apricityui.webapi.DomSemanticsTest `
-  --tests com.sighs.apricityui.webapi.WindowApiTest `
-  --tests com.sighs.apricityui.webapi.DocumentLifecycleTest `
-  --tests com.sighs.apricityui.webapi.LoaderIntegrationTest `
-  --tests com.sighs.apricityui.webapi.ResourcePipelineTest `
-  --tests com.sighs.apricityui.webapi.ElementBindingTest `
+  --tests io.github.kltyton.kltytonui.webapi.GlobalJsBootstrapTest `
+  --tests io.github.kltyton.kltytonui.webapi.DomSemanticsTest `
+  --tests io.github.kltyton.kltytonui.webapi.WindowApiTest `
+  --tests io.github.kltyton.kltytonui.webapi.DocumentLifecycleTest `
+  --tests io.github.kltyton.kltytonui.webapi.LoaderIntegrationTest `
+  --tests io.github.kltyton.kltytonui.webapi.ResourcePipelineTest `
+  --tests io.github.kltyton.kltytonui.webapi.ElementBindingTest `
   --console plain --no-daemon
 ```
 
@@ -149,21 +149,21 @@
 ### 5.1 启动命令
 
 ```powershell
-$env:JAVA_TOOL_OPTIONS='-Dapricityui.clientSelfTest=true -Dapricityui.clientSelfTest.exitOnFinish=true'
+$env:JAVA_TOOL_OPTIONS='-Dkltytonui.clientSelfTest=true -Dkltytonui.clientSelfTest.exitOnFinish=true'
 .\gradlew.bat runClient --console plain --no-daemon
 ```
 
 说明：
 
-- `apricityui.clientSelfTest=true` 会启用客户端自测
-- `apricityui.clientSelfTest.exitOnFinish=true` 会在自测结束后自动退出客户端
+- `kltytonui.clientSelfTest=true` 会启用客户端自测
+- `kltytonui.clientSelfTest.exitOnFinish=true` 会在自测结束后自动退出客户端
 
 ### 5.2 成功标志
 
 日志中出现：
 
 ```text
-[AUI SelfTest] PASS client runtime self-test
+[KUI SelfTest] PASS client runtime self-test
 ```
 
 ### 5.3 失败标志
@@ -171,7 +171,7 @@ $env:JAVA_TOOL_OPTIONS='-Dapricityui.clientSelfTest=true -Dapricityui.clientSelf
 日志中出现：
 
 ```text
-[AUI SelfTest] FAIL client runtime self-test: ...
+[KUI SelfTest] FAIL client runtime self-test: ...
 ```
 
 失败时要直接看这条日志后面的具体断言内容。

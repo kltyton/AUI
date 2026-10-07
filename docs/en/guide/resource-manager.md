@@ -1,6 +1,6 @@
 # Resource Paths and the Built-in Resource Manager
 
-AUI pages do not read disk files directly. All HTML, CSS, JS, images, and fonts are first mapped into a **logical resource space**, and the loader then finds the actual content from resource packs, the local directory, or the development directory.
+KUI pages do not read disk files directly. All HTML, CSS, JS, images, and fonts are first mapped into a **logical resource space**, and the loader then finds the actual content from resource packs, the local directory, or the development directory.
 
 ## Logical Paths
 
@@ -18,7 +18,7 @@ Document.create("screens/example.html");
 Do not write paths like these:
 
 ```text
-assets/apricityui/apricity/screens/example.html      ← the resource root is not a prefix
+assets/kltytonui/kltytonui/screens/example.html      ← the resource root is not a prefix
 src/main/resources/...                                ← a disk path even less so
 D:/work/...                                           ← don't even think about it
 ```
@@ -37,14 +37,14 @@ There are three sources, in ascending priority; for the same path, the one loade
 
 | Source | Location | Writable |
 | --- | --- | --- |
-| Resource pack | `assets/apricityui/apricity/...` (packaged into the mod jar) | No |
-| Local directory | `<instance dir>/apricity/...` (usually `run/apricity/` in a dev environment) | Yes |
-| Development directory | `src/main/resources/assets/apricityui/apricity/...` | Yes |
+| Resource pack | `assets/kltytonui/kltytonui/...` (packaged into the mod jar) | No |
+| Local directory | `<instance dir>/kltytonui/...` (usually `run/kltytonui/` in a dev environment) | Yes |
+| Development directory | `src/main/resources/assets/kltytonui/kltytonui/...` | Yes |
 
-So: use resource pack paths for packaged releases; to override a page without repackaging, drop a same-named file into `run/apricity/`; for day-to-day development, use the development directory under src. A typical development directory structure:
+So: use resource pack paths for packaged releases; to override a page without repackaging, drop a same-named file into `run/kltytonui/`; for day-to-day development, use the development directory under src. A typical development directory structure:
 
 ```text
-src/main/resources/assets/apricityui/apricity/
+src/main/resources/assets/kltytonui/kltytonui/
 ├── global.css            ← auto-included in every page if present
 ├── global.js             ← executed on every Document refresh if present
 ├── screens/example.html
@@ -54,11 +54,11 @@ src/main/resources/assets/apricityui/apricity/
 └── fonts/display.ttf
 ```
 
-A **`.`-prefixed directory like `.cache/` is not part of the resource tree**: the resource scan, the static resource list and dev auto-reload all skip it (any path segment starting with a dot drops the whole path). That is where the framework keeps its own machine state — the network cache at `apricity/.cache/network/` and the WebView2 profile at `apricity/.cache/webview/` (see [WebView and iframe](webview)). Do not put page resources in dot-prefixed directories: they will not be loaded.
+A **`.`-prefixed directory like `.cache/` is not part of the resource tree**: the resource scan, the static resource list and dev auto-reload all skip it (any path segment starting with a dot drops the whole path). That is where the framework keeps its own machine state — the network cache at `kltytonui/.cache/network/` and the WebView2 profile at `kltytonui/.cache/webview/` (see [WebView and iframe](webview)). Do not put page resources in dot-prefixed directories: they will not be loaded.
 
 ## Using Each Resource Type
 
-**HTML**: The page entry point; must end with `.html`. `Document.create`, ApricityScreen, containers, and WorldWindows all reference it by logical path.
+**HTML**: The page entry point; must end with `.html`. `Document.create`, KltytonScreen, containers, and WorldWindows all reference it by logical path.
 
 **CSS**: Inline `<style>` or external `<link rel="stylesheet">`; external sheets can also use `@import` (with a nesting depth limit; circular references are ignored and logged).
 
@@ -87,9 +87,9 @@ The network policy is fixed — nothing to configure and no way to configure it:
 | Timeout | 3 seconds each for connect and read |
 | Redirects / retries | Up to 3 / 1 |
 | Concurrency / per-resource size | 4 / 8 MiB |
-| Cache | 60 seconds in memory; 7 days on disk (`apricity/.cache/network/`) |
+| Cache | 60 seconds in memory; 7 days on disk (`kltytonui/.cache/network/`) |
 
-Failure reasons are written to the `[AUI Network]` log. Note that a resource reload does not clear the disk cache — when verifying new server content, either wait for expiry or manually delete the `.bin` files. There are no browser concepts like CORS, cookies, or permission prompts.
+Failure reasons are written to the `[KUI Network]` log. Note that a resource reload does not clear the disk cache — when verifying new server content, either wait for expiry or manually delete the `.bin` files. There are no browser concepts like CORS, cookies, or permission prompts.
 
 ## Scanning and Reloading
 
@@ -106,7 +106,7 @@ Refresh rebuilds the DOM and invalidates all old Element references — a rule c
 
 ## Built-in Resource Manager
 
-Bind **Open Resource Manager** in Minecraft's Controls settings, then press the assigned key. It is unbound by default. The manager itself is an AUI page (`devtools/resource.html`).
+Bind **Open Resource Manager** in Minecraft's Controls settings, then press the assigned key. It is unbound by default. The manager itself is an KUI page (`devtools/resource.html`).
 
 The UI has four areas: a resource tree on the left, a path navigator at the top, a file grid in the center, and a details panel on the right. It only shows the resource that is **in effect** after override merging — it does not display a pile of same-named cards to illustrate override relationships.
 
@@ -120,7 +120,7 @@ The UI has four areas: a resource tree on the left, a path navigator at the top,
 
 **New HTML**: NEW FILE supports three content sources — importing a local file, the clipboard, and a blank template (with common meta optionally pre-configured). The save path must be a relative path ending in `.html`; `../` cannot escape. Saving automatically triggers a reload, so the new page is usable immediately.
 
-**EDIT META**: Edits the AUI meta tags in the HTML head (`aui-viewport`, `aui-mouse-events`, and charset); non-AUI meta and the body are preserved as-is. Files from resource packs have no writable source, so this item is disabled for them. For the meaning of each meta, see the [ApricityScreen doc](apricity-screen#page-meta-configuration).
+**EDIT META**: Edits the KUI meta tags in the HTML head (`kui-viewport`, `kui-mouse-events`, and charset); non-KUI meta and the body are preserved as-is. Files from resource packs have no writable source, so this item is disabled for them. For the meaning of each meta, see the [KltytonScreen doc](kltytonui-screen#page-meta-configuration).
 
 **REFERENCE**: Generates reference code and copies it to the clipboard in one click — images get both CSS background and `<img>` snippets, fonts get `@font-face` registration + `font-family` usage, and HTML gets various opening methods such as Screen / Overlay / WorldWindow / KubeJS.
 
@@ -130,13 +130,13 @@ Logs are prefixed by stage — search `logs/latest.log`:
 
 | Prefix | Covers |
 | --- | --- |
-| `[AUI Resource]` | Scanning, file reading |
-| `[AUI HTML]` | Missing templates, parse failures |
-| `[AUI CSS]` | Missing stylesheets, @import cycles |
-| `[AUI JS]` | Missing or unreadable scripts |
-| `[AUI Image]` / `[AUI Font]` | Decoding, upload failures |
-| `[AUI Network]` | HTTPS download problems |
-| `[AUI Document]` | DOM construction, script execution |
+| `[KUI Resource]` | Scanning, file reading |
+| `[KUI HTML]` | Missing templates, parse failures |
+| `[KUI CSS]` | Missing stylesheets, @import cycles |
+| `[KUI JS]` | Missing or unreadable scripts |
+| `[KUI Image]` / `[KUI Font]` | Decoding, upload failures |
+| `[KUI Network]` | HTTPS download problems |
+| `[KUI Document]` | DOM construction, script execution |
 
 A few frequent issues:
 

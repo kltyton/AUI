@@ -137,15 +137,15 @@ Minecraft 专属标签是这些：
 
 这些变量在 `slot` 和 `container` 场景里很好用：
 
-- `--aui-slot-size`
-- `--aui-slot-render-bg`
-- `--aui-slot-render-item`
-- `--aui-slot-icon-scale`
-- `--aui-slot-z`
-- `--aui-slot-interactive`
-- `--aui-slot-cycle`
-- `--aui-slot-cycle-interval`
-- `--aui-container-columns`
+- `--kui-slot-size`
+- `--kui-slot-render-bg`
+- `--kui-slot-render-item`
+- `--kui-slot-icon-scale`
+- `--kui-slot-z`
+- `--kui-slot-interactive`
+- `--kui-slot-cycle`
+- `--kui-slot-cycle-interval`
+- `--kui-container-columns`
 
 如果你在写容器 UI，这组变量建议直接记住。
 
@@ -201,11 +201,11 @@ window.setTimeout(() => {
 
 顺手一提，现在客户端 KJS 绑定里也已经补上了世界内窗口接口：
 
-- `ApricityUI.createInWorldDocument()`
-- `ApricityUI.createWorldWindow()`
-- `ApricityUI.createFollowFacingWorldWindow()`
-- `ApricityUI.removeWorldWindow()`
-- `ApricityUI.clearWorldWindows()`
+- `KltytonUI.createInWorldDocument()`
+- `KltytonUI.createWorldWindow()`
+- `KltytonUI.createFollowFacingWorldWindow()`
+- `KltytonUI.removeWorldWindow()`
+- `KltytonUI.clearWorldWindows()`
 
 如果你在写客户端可视化脚本，这几条会很顺手。
 
@@ -213,20 +213,20 @@ window.setTimeout(() => {
 
 ### Java 侧统一入口
 
-如果你是模组开发者，不想一会儿记 `Document`，一会儿记网络处理器，一会儿记 `WorldWindow`，现在也可以直接从主类 `ApricityUI` 走统一入口。
+如果你是模组开发者，不想一会儿记 `Document`，一会儿记网络处理器，一会儿记 `WorldWindow`，现在也可以直接从主类 `KltytonUI` 走统一入口。
 
 常用的有这些：
 
-- `ApricityUI.createDocument()`
-- `ApricityUI.createInWorldDocument()`
-- `ApricityUI.removeDocument()`
-- `ApricityUI.openScreen()`
-- `ApricityUI.closeScreen()`
-- `ApricityUI.bind()`
-- `ApricityUI.createWorldWindow()`
-- `ApricityUI.createFollowFacingWorldWindow()`
-- `ApricityUI.removeWorldWindow()`
-- `ApricityUI.clearWorldWindows()`
+- `KltytonUI.createDocument()`
+- `KltytonUI.createInWorldDocument()`
+- `KltytonUI.removeDocument()`
+- `KltytonUI.openScreen()`
+- `KltytonUI.closeScreen()`
+- `KltytonUI.bind()`
+- `KltytonUI.createWorldWindow()`
+- `KltytonUI.createFollowFacingWorldWindow()`
+- `KltytonUI.removeWorldWindow()`
+- `KltytonUI.clearWorldWindows()`
 
 这样文档里的示例无论写 JS 还是写 Java，思路都能尽量统一。
 
@@ -291,11 +291,11 @@ window.setInterval(() => {
 
 框架内已经放了一组独立的手工回归页，统一放在：
 
-- `src/main/resources/assets/apricityui/apricity/tests/`
+- `src/main/resources/assets/kltytonui/kltytonui/tests/`
 
 现在可以直接从下面这个入口页开始点：
 
-- `src/main/resources/assets/apricityui/apricity/tests/index.html`
+- `src/main/resources/assets/kltytonui/kltytonui/tests/index.html`
 
 里面已经把现有测试页按主题归了类，当前重点包括：
 

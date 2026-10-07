@@ -1,16 +1,16 @@
 ---
-title: Implementing Player Message Bubbles With AUI
-description: This example uses AUI's WorldWindow class and listens to ClientChatReceivedEvent to show a message bubble above the player's head. It is intended as a reference only.
+title: Implementing Player Message Bubbles With KUI
+description: This example uses KUI's WorldWindow class and listens to ClientChatReceivedEvent to show a message bubble above the player's head. It is intended as a reference only.
 last_update:
   date: 3/15/2026
   author:
 ---
 
-# Implementing Player Message Bubbles With AUI
+# Implementing Player Message Bubbles With KUI
 
 This page is the showcase version of the same player-message example. For the full Java example, see [../guide/example.md](../guide/example.md).
 
-`assets/apricityui/apricity/player_message.html`
+`assets/kltytonui/kltytonui/player_message.html`
 
 ```html
 <body>

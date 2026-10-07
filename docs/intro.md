@@ -3,9 +3,8 @@
 可以使用HTML+CSS+JS构建UI，语法尽可能遵循Web标准。
 
 相关链接：
-- CurseForge: https://curseforge.com/minecraft/mc-mods/apricityui
-- Modrinth: https://modrinth.com/mod/apricityui
-- Github: https://github.com/Tower-of-Sighs/AUI
+- Github: https://github.com/kltyton/KltytonUI
+- CurseForge / Modrinth：独立项目发布页尚未创建。
 
 社区：
 - 晴雪UI交流群：211573328
@@ -15,7 +14,7 @@
 
 ### 基本内容
 
-晴雪UI用 HTML、CSS 和 Java 构建 Minecraft UI；部分 loader target 还支持页面 JavaScript。Forge 1.20.1、NeoForge 1.21.1 和 NeoForge 26.1 支持页面脚本；Fabric targets 当前不执行页面脚本。KubeJS 的 `ApricityUI` 模组绑定只在 Forge 1.20.1 与 NeoForge 1.21.1 提供。详见[总览](guide/overview#loader-与脚本支持)。
+晴雪UI用 HTML、CSS 和 Java 构建 Minecraft UI；部分 loader target 还支持页面 JavaScript。Forge 1.20.1、NeoForge 1.21.1 和 NeoForge 26.1 支持页面脚本；Fabric targets 当前不执行页面脚本。KubeJS 的 `KltytonUI` 模组绑定只在 Forge 1.20.1 与 NeoForge 1.21.1 提供。详见[总览](guide/overview#loader-与脚本支持)。
 
 HTML/CSS 页面仍能在没有页面脚本的 target 中渲染；需要交互逻辑时，请确认目标 target 支持页面脚本，或从 Java 侧操作 DOM。
 它的上手门槛很低：你可以用常见的 Web 技术编写页面，也可以借助 AI 生成 HTML/CSS，再按项目需要调整。
@@ -32,7 +31,7 @@ HTML/CSS 页面仍能在没有页面脚本的 target 中渲染；需要交互逻
 - 用法简单，我在b站上看到的速成课大部分都在三小时以内，最短的十分钟，别忘了AI对它也是如数家珍。
 - 调试方便，Web框架中的一切几乎都支持瞬间热重载，并且还有便捷的开发者工具提供可视化调试，晴雪UI也都有。
 
-注：普通 AUI 页面由 Java 实现，不会启动 Chromium 浏览器进程；`<iframe>` 使用系统提供的 WebView2，只有需要嵌入真实网页时才使用它。
+注：普通 KUI 页面由 Java 实现，不会启动 Chromium 浏览器进程；`<iframe>` 使用系统提供的 WebView2，只有需要嵌入真实网页时才使用它。
 
 ### 使用案例展示
 
@@ -98,7 +97,7 @@ html可以渲染在世界内的某个位置，可以配置角度、方块穿透�
 
 简单来说，使用iframe标签创建一个document时，实际上会打开一个Webview并以离屏渲染的方式绘制到iframe标签的内部区域中。
 
-WebView 页面与 AUI DOM 相互隔离；AUI 当前会转发鼠标、键盘和滚轮输入，但没有提供跨页面 DOM 或脚本桥接 API。
+WebView 页面与 KUI DOM 相互隔离；KUI 当前会转发鼠标、键盘和滚轮输入，但没有提供跨页面 DOM 或脚本桥接 API。
 
 而较高的内存占用，也使得Webview难以胜任Overlay和世界内窗口的绘制方式。
 
@@ -118,7 +117,7 @@ repositories {
     }
 }
 dependencies {
-    implementation 'com.sighs:ApricityUI-forge-1.20.1:1.2.6'
+    implementation 'io.github.kltyton.kltytonui:KltytonUI-forge-1.20.1:1.2.6'
 }
 ```
 
@@ -146,12 +145,12 @@ dependencies {
 遵从内置文档的引导。
 已知：run/screenshots/aui文件夹中每一秒都会输出游戏截图；静态资源会自动监听变更，并触发重载。
 测试流程：修改html/css/js文件 -> 监听日志中的重载消息 -> 等待三秒后检查截图文件夹中的游戏截图 -> 判断截图是否满足需求效果，若不满足就继续修改html/css/js文件，若满足，结束流程。
-目标html文件：run/apricity/test/quest.html
+目标html文件：run/kltytonui/test/quest.html
 需要满足的效果是：游戏中的任务列表，现代扁平风格，红白配色
 效果参考图：run/screenshots/image_614748742442633.png
 ```
 
-完整SKILL详见[官方文档](https://doc.sighs.cc/ApricityUI/skill)，已内置在jar包中。
+完整SKILL详见[官方文档](https://doc.sighs.cc/KltytonUI/skill)，已内置在jar包中。
 
 MC的环境中复杂UI的需求较少，一般而言，只要让AI阅读内置文档即可一次性完成大部分设计工作，在使用了内置主题的情况下，样式的美观程度也大有保障。
 
@@ -167,11 +166,11 @@ MC的环境中复杂UI的需求较少，一般而言，只要让AI阅读内置�
 
 ### 资源分发
 
-晴雪UI支持 HTML、CSS、JavaScript（取决于 target）、TTF/OTF 字体、包括 GIF 在内的图片，以及 OGG/WAV 音频。视频网页可通过 Windows 上的 WebView `<iframe>` 播放；AUI 原生页面没有 `<video>` 实现。
-存放资源的地方有版本实例下的apricity文件夹和资源包，资源包的优先级较低，但默认全局样式和内置字体都存放在模组本体的资源包中。
-对于整合包开发者，推荐使用 `apricity/` 文件夹作为页面资源目录。资源重载操作默认未绑定，可在 MC 控制设置里自行绑定；也可启用自动热重载。更多信息见[资源管理](guide/resource-manager)。
+晴雪UI支持 HTML、CSS、JavaScript（取决于 target）、TTF/OTF 字体、包括 GIF 在内的图片，以及 OGG/WAV 音频。视频网页可通过 Windows 上的 WebView `<iframe>` 播放；KUI 原生页面没有 `<video>` 实现。
+存放资源的地方有版本实例下的kltytonui文件夹和资源包，资源包的优先级较低，但默认全局样式和内置字体都存放在模组本体的资源包中。
+对于整合包开发者，推荐使用 `kltytonui/` 文件夹作为页面资源目录。资源重载操作默认未绑定，可在 MC 控制设置里自行绑定；也可启用自动热重载。更多信息见[资源管理](guide/resource-manager)。
 
-详情请查询官方文档的[资源管理](https://doc.sighs.cc/ApricityUI/guide/resource-manager)章节。
+详情请查询官方文档的[资源管理](https://doc.sighs.cc/KltytonUI/guide/resource-manager)章节。
 
 如果需要打包分享，资源包或普通压缩包都可以，考虑到资源包还得重载游戏，还是推荐简单压缩。  
 不过，对于使用晴雪UI作为前置的模组来说，资源包形式比较好。默认加载路径有包含开发环境下的资源包路径，并且优先级最高，肥肠方便。  

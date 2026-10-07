@@ -5,9 +5,9 @@
 跨版本支持进行中，计划从1.16支持到26.1。
 
 相关链接：
-- CurseForge: https://curseforge.com/minecraft/mc-mods/apricityui
-- Modrinth: https://modrinth.com/mod/apricityui
-- Github: https://github.com/Tower-of-Sighs/AUI
+- CurseForge: https://github.com/kltyton/KltytonUI
+- Modrinth: https://github.com/kltyton/KltytonUI
+- Github: https://github.com/kltyton/KltytonUI
 
 ![icon](https://cdn.modrinth.com/data/cached_images/9513051c399c427a47a6a4fd3600f0e157ba8a42.png)
 
@@ -61,7 +61,7 @@
 
 ![img4.png](https://resource-api.xyeidc.com//client/members/pics/8b59a171)
 
-详情请看官方文档中的[简单例子](https://doc.sighs.cc/ApricityUI/guide/example)。
+详情请看官方文档中的[简单例子](https://doc.sighs.cc/KltytonUI/guide/example)。
 
 如果懒得自己写样式可以让AI写或者去[Codepen](https://codepen.io/)抄现成的。
 
@@ -70,8 +70,8 @@
 ### 资源分发
 
 晴雪UI支持的静态资源有HTML、CSS、Javascript、TTF/OTF字体以及包括GIF在内的大部分图片格式，未来还会支持音频和视频。  
-存放资源的地方有版本实例下的apricity文件夹和资源包，资源包的优先级较低，但默认全局样式和内置字体都存放在模组本体的资源包中。  
-对于整合包开发者，推荐使用apricity文件夹作为静态资源存放位置，默认按END键热重载，一般重载时间一秒以内。
+存放资源的地方有版本实例下的kltytonui文件夹和资源包，资源包的优先级较低，但默认全局样式和内置字体都存放在模组本体的资源包中。  
+对于整合包开发者，推荐使用kltytonui文件夹作为静态资源存放位置，默认按END键热重载，一般重载时间一秒以内。
 
 详情请查询官方文档。
 
@@ -106,6 +106,6 @@ run/screenshots/aui文件夹中每一秒都会输出游戏截图，最多保存2
 
 在本次对话中：
 仅修改html和css。
-需要修改的html文件是：src/main/resources/assets/apricityui/apricity/devtools/index.html
+需要修改的html文件是：src/main/resources/assets/kltytonui/kltytonui/devtools/index.html
 需要满足的效果是：简洁的调试工具，大小适中，样式美观，参考图：......。
 我已启动游戏，请你开始测试流程，先迭代5次。

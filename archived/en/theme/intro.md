@@ -19,4 +19,4 @@ That said, missing some of these is not a big problem. Minecraft UI rarely needs
 Themes can be divided into single-tag themes and composite themes.  
 Single-tag themes are mostly pure CSS. Composite themes depend on JS and are currently more cumbersome to build. It makes more sense to revisit that once more front-end framework support has landed.
 
-So this section mainly introduces built-in themes and theme ideas related to ApricityUI.
+So this section mainly introduces built-in themes and theme ideas related to KltytonUI.

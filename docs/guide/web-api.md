@@ -1,6 +1,6 @@
-# ApricityUI Web API
+# KltytonUI Web API
 
-AUI 不是 Chromium，也没有浏览器内核。在支持的 target 上，页面 JavaScript 由 Rhino 执行，Java 侧的 Document、Element、事件和资源管线被桥接成浏览器风格的对象。所以这里的 API 分三类：
+KUI 不是 Chromium，也没有浏览器内核。在支持的 target 上，页面 JavaScript 由 Rhino 执行，Java 侧的 Document、Element、事件和资源管线被桥接成浏览器风格的对象。所以这里的 API 分三类：
 
 > **Target 限制**：Forge 1.20.1、NeoForge 1.21.1 和 NeoForge 26.1 target 支持页面脚本；Fabric 1.20.1、Fabric 1.21.1、Fabric 26.1 的 target 实现目前不执行页面脚本。页面仍会解析和渲染，但不执行 `<script>` 的 target 上，依赖脚本的交互不可用。各 target 的说明见[总览](overview#loader-与脚本支持)。
 
@@ -8,7 +8,7 @@ AUI 不是 Chromium，也没有浏览器内核。在支持的 target 上，页�
 - **轻量兼容**：名字和常用调法和浏览器一样，但返回值、时机或参数范围有缩减；
 - **未提供**：没实现，别假设存在。
 
-CSS 属性和布局见 [HTML/CSS 覆盖面](html-css-coverage)，页面级的 viewport/字体/鼠标 meta 配置见 [ApricityScreen 文档](apricity-screen#页面-meta-配置)。
+CSS 属性和布局见 [HTML/CSS 覆盖面](html-css-coverage)，页面级的 viewport/字体/鼠标 meta 配置见 [KltytonScreen 文档](kltytonui-screen#页面-meta-配置)。
 
 ## 快速开始
 
@@ -29,7 +29,7 @@ CSS 属性和布局见 [HTML/CSS 覆盖面](html-css-coverage)，页面级的 vi
 </script>
 ```
 
-页面脚本建议用 `var`、普通 `function` 和传统循环。AUI 会对部分现代写法做兼容转换，但 Rhino 不是现代 JS 引擎，别赌。
+页面脚本建议用 `var`、普通 `function` 和传统循环。KUI 会对部分现代写法做兼容转换，但 Rhino 不是现代 JS 引擎，别赌。
 
 ## 全局对象
 
@@ -37,7 +37,7 @@ CSS 属性和布局见 [HTML/CSS 覆盖面](html-css-coverage)，页面级的 vi
 
 | 全局 | 状态 | 说明 |
 | --- | --- | --- |
-| window / document / console | 可用 | console 写入 AUI 日志 |
+| window / document / console | 可用 | console 写入 KUI 日志 |
 | localStorage / sessionStorage | 可用 | 见下文 Storage 节 |
 | performance | 轻量 | 只有 `now()` |
 | fetch | 轻量 | 受限 GET，见下文 |
@@ -48,7 +48,7 @@ CSS 属性和布局见 [HTML/CSS 覆盖面](html-css-coverage)，页面级的 vi
 | ResizeObserver / MutationObserver | 轻量 | 按文档帧派发，不是微任务时机 |
 | DOMMatrix / Path2D / OffscreenCanvas / createImageBitmap | 轻量 | 见 Canvas 节 |
 
-**没有提供**：KeyboardEvent 构造器、navigator.clipboard、Selection/Range、history、matchMedia、XMLHttpRequest、WebSocket、IntersectionObserver、WebGL、Service Worker、完整 Promise、AbortController、Shadow DOM、postMessage。`<iframe>` 的元素壳与离屏渲染见 [WebView 与 iframe](webview)，但页面里的 `window.parent`/`postMessage` 没有接到 AUI 上。文字选择复制是 AUI 自己的实现，别按 Selection/Range 写。
+**没有提供**：KeyboardEvent 构造器、navigator.clipboard、Selection/Range、history、matchMedia、XMLHttpRequest、WebSocket、IntersectionObserver、WebGL、Service Worker、完整 Promise、AbortController、Shadow DOM、postMessage。`<iframe>` 的元素壳与离屏渲染见 [WebView 与 iframe](webview)，但页面里的 `window.parent`/`postMessage` 没有接到 KUI 上。文字选择复制是 KUI 自己的实现，别按 Selection/Range 写。
 
 ## Window
 
@@ -60,7 +60,7 @@ window.devicePixelRatio    // Minecraft GUI scale
 
 事件里的 `clientX/clientY` 已经是逻辑坐标，不要再乘 devicePixelRatio 或 renderScale。
 
-**事件**：`addEventListener(type, fn)` / `removeEventListener` / `dispatchEvent`，第三参数只按布尔 capture 处理，`{passive, signal}` 选项对象没实现。AUI 内部多一个第四参数表示 once：`addEventListener("custom", fn, false, true)`。
+**事件**：`addEventListener(type, fn)` / `removeEventListener` / `dispatchEvent`，第三参数只按布尔 capture 处理，`{passive, signal}` 选项对象没实现。KUI 内部多一个第四参数表示 once：`addEventListener("custom", fn, false, true)`。
 
 **定时器**：
 
@@ -224,13 +224,13 @@ form.submit();          // 直接派发 submit
 form.reset();           // 可取消，未取消则恢复默认值
 ```
 
-AUI 不会因为 form 的 action 发 HTTP 请求。取消 submit 后不会再派 formdata。表单外控件可以用 `form="id"` 关联。
+KUI 不会因为 form 的 action 发 HTTP 请求。取消 submit 后不会再派 formdata。表单外控件可以用 `form="id"` 关联。
 
 FormData：
 
 ```javascript
 var data = new FormData(form);
-data.append("tag", "aui");
+data.append("tag", "kui");
 data.get("tag");  data.getAll("tag");  data.set("page", "1");
 data.has("page"); data.delete("page");
 data.forEach(function (v, k) { ... });
@@ -246,7 +246,7 @@ localStorage.getItem("theme");   // 还有 removeItem/clear/key/length
 sessionStorage.setItem("draft", "text");
 ```
 
-localStorage 持久化到 `config/apricityui/localStorage.nbt`，sessionStorage 只在本次客户端运行有效。空 key 被忽略；传 null 可能存成字符串 "null"；没有 storage 事件。
+localStorage 持久化到 `config/kltytonui/localStorage.nbt`，sessionStorage 只在本次客户端运行有效。空 key 被忽略；传 null 可能存成字符串 "null"；没有 storage 事件。
 
 `window.location` 由资源路径生成，能读 `href/protocol/host/hostname/port/origin/pathname/search/hash/searchParams`。`assign/replace/reload` 是空操作，没有真实导航。要字符串形式就读 `href`，它没有自定义 toString。
 
@@ -258,7 +258,7 @@ URLSearchParams 只有这几个方法：`append / getAll / sort / forEach / toSt
 fetch("data.json").then(function (response) {
     console.log(response.ok, response.status, response.url);
     var text = response.text();
-    var json = response.json();     // AUI 内置 JSON 解析
+    var json = response.json();     // KUI 内置 JSON 解析
     var bytes = response.bytes();   // 字节数组副本
 });
 ```
@@ -303,7 +303,7 @@ record 可读 `type/target/addedNodes/removedNodes/previousSibling/nextSibling/a
     ctx.fillStyle = "#2f7d8c";
     ctx.fillRect(10, 10, 120, 40);
     ctx.font = "16px sans-serif";
-    ctx.fillText("ApricityUI", 18, 36);
+    ctx.fillText("KltytonUI", 18, 36);
 </script>
 ```
 
@@ -337,9 +337,9 @@ createImageBitmapAsync(canvas).then(function (b) { ... });  // 异步版
 两种用法，都是浏览器的 HTMLAudioElement 语义：`<audio>` 元素和 `new Audio()` 工厂。
 
 ```html
-<audio src="apricityui/sounds/click.ogg" controls autoplay></audio>
+<audio src="kltytonui/sounds/click.ogg" controls autoplay></audio>
 <script>
-    var audio = new Audio("apricityui/sounds/bgm.ogg");  // 游离实例，不入 DOM 树
+    var audio = new Audio("kltytonui/sounds/bgm.ogg");  // 游离实例，不入 DOM 树
     audio.loop = true;
     audio.volume = 0.6;
     audio.addEventListener("ended", function () { console.log("播完"); });
@@ -347,7 +347,7 @@ createImageBitmapAsync(canvas).then(function (b) { ... });  // 异步版
 </script>
 ```
 
-- **来源**：与图片/字体同一条资源链——开发环境 resource 目录、`<游戏目录>/apricity/`、classpath、资源包；`src` 相对路径按页面路径解析。不支持远程 URL。
+- **来源**：与图片/字体同一条资源链——开发环境 resource 目录、`<游戏目录>/kltytonui/`、classpath、资源包；`src` 相对路径按页面路径解析。不支持远程 URL。
 - **格式**：OGG Vorbis、WAV/PCM（8/16-bit、单/双声道）。无 MP3、无 Web Audio API。
 - **API**：`play()`（返回带 `then`/`['catch']` 的 Promise）、`pause()`、`load()`；`currentTime`（可读写，写 = seek）、`duration`（未就绪为 NaN）、`volume`（钳 0..1）、`muted`、`loop`、`paused`、`ended`、`seeking`、`readyState`（0→1→4，全量解码没有 2/3）、`networkState`（无 src 为 3）、`preload`（`none` 等到 play()/load()，`metadata`/`auto` 等价立即加载）、`autoplay`。
 - **事件序列**：`loadstart → durationchange → loadedmetadata → canplay → canplaythrough → play → playing → timeupdate（250ms 节流）→ pause / ended`；失败派 `error`；seek 派 `seeking → seeked`。内联 `oncanplay` 等属性同样可用。
@@ -377,17 +377,17 @@ document.addEventListener("DOMContentLoaded", installPage);
 
 别每帧调 `refresh()`——它重建整个页面，是重载手段，不是更新手段。
 
-## AUI 特有行为
+## KUI 特有行为
 
 **script 双内容**：带 `src` 又写了内联代码的 `<script>`，两个都会执行（带警告）。别依赖浏览器"有 src 就忽略内联"的行为。
 
-**日志前缀**：排查问题搜 `[AUI HTML]` / `[AUI CSS]` / `[AUI JS]` / `[AUI Fetch]` / `[AUI Canvas]` / `[AUI Event]`，一般带资源路径。页面里用 `console.log/debug/warn/error` 和 `console.time/timeEnd`。
+**日志前缀**：排查问题搜 `[KUI HTML]` / `[KUI CSS]` / `[KUI JS]` / `[KUI Fetch]` / `[KUI Canvas]` / `[KUI Event]`，一般带资源路径。页面里用 `console.log/debug/warn/error` 和 `console.time/timeEnd`。
 
 **Top layer**：宿主侧 `setTopLayer(true)` 让弹窗、下拉菜单在当前 Document 内最后绘制、不被祖先 overflow 裁剪。只影响本 Document 内顺序，不会把一个 Document 抬到另一个之上。
 
 **手动渲染**：宿主可以把 Document 设为手动渲染，之后它退出全局绘制和输入分发，由调用方自己画、自己转发事件。普通页面别用。
 
-**扩展元素**：AUI 注册了 `<texture>`、`<sprite>`、`<translation>`、`<svg>`、`<canvas>`、`<item>`、`<ingredient>`、`<recipe>`、`<container>`、`<slot>` 等 Minecraft 向的标签，不是浏览器原生 HTML。见[扩展元素](extension-elements)、[MC 物品与配方元素](mc-elements)和[容器文档](container)。
+**扩展元素**：KUI 注册了 `<texture>`、`<sprite>`、`<translation>`、`<svg>`、`<canvas>`、`<item>`、`<ingredient>`、`<recipe>`、`<container>`、`<slot>` 等 Minecraft 向的标签，不是浏览器原生 HTML。见[扩展元素](extension-elements)、[MC 物品与配方元素](mc-elements)和[容器文档](container)。
 
 **宿主**：页面 DOM API 不管创建宿主。Screen、Overlay、Container、WorldWindow 分别见各自文档。
 

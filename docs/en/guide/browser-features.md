@@ -1,17 +1,17 @@
 # Browser-like Features
 
-AUI is not a browser, but it equips pages with a layer of browser-style assistive behaviors: zoom, text selection, clipboard, default form actions, and scrolling. This page covers these behaviors themselves and their boundaries.
+KUI is not a browser, but it equips pages with a layer of browser-style assistive behaviors: zoom, text selection, clipboard, default form actions, and scrolling. This page covers these behaviors themselves and their boundaries.
 
-The full explanation of a page's three metas — viewport, font, and mouse interception — is in the [ApricityScreen docs](apricity-screen#page-meta-configuration), and the details of the DOM and JS API are in the [Web API docs](web-api); neither is repeated here.
+The full explanation of a page's three metas — viewport, font, and mouse interception — is in the [KltytonScreen docs](kltytonui-screen#page-meta-configuration), and the details of the DOM and JS API are in the [Web API docs](web-api); neither is repeated here.
 
 ## Page zoom
 
-Both `ApricityScreen` and container Screens support browser-style zoom: Ctrl+wheel and Ctrl+`+`/`-` to zoom, Ctrl+`0` to restore the initial value. The range, step, and whether user zoom is allowed are all controlled by `zoom/min-zoom/max-zoom/zoom-step/user-scalable` in the `aui-viewport` meta.
+Both `KltytonScreen` and container Screens support browser-style zoom: Ctrl+wheel and Ctrl+`+`/`-` to zoom, Ctrl+`0` to restore the initial value. The range, step, and whether user zoom is allowed are all controlled by `zoom/min-zoom/max-zoom/zoom-step/user-scalable` in the `kui-viewport` meta.
 
 To **disable zooming**, set `user-scalable` to `false`:
 
 ```html
-<meta name="aui-viewport" content="mode=browser,user-scalable=false">
+<meta name="kui-viewport" content="mode=browser,user-scalable=false">
 ```
 
 Ctrl+wheel, Ctrl+`+`/`-`, and Ctrl+`0` then all stop zooming — Ctrl+wheel falls back to a plain wheel, and the page still scrolls normally.
@@ -20,10 +20,10 @@ Zooming does not stretch the picture — the framework recomputes the logical vi
 
 Key points:
 
-- The zoom value is stored per page path in `config/apricityui/viewport-zoom.properties` and is remembered when you reopen the page. Think of it first when troubleshooting "why is this page still zoomed in";
+- The zoom value is stored per page path in `config/kltytonui/viewport-zoom.properties` and is remembered when you reopen the page. Think of it first when troubleshooting "why is this page still zoomed in";
 - `user-scalable=false` only disables user shortcuts; Java/DevTools `document.setViewportZoom(...)` is unrestricted;
 - **Changing a meta's content at runtime does not re-apply it** — metas are only read when the Document is created and on `refresh()`;
-- When an Overlay blocks zooming, enable `[input] viewportZoomPassThrough = true` in `config/apricityui-client.toml`; Overlays that haven't declared interception are skipped by the zoom logic. It only affects zoom — it does not let clicks pass through Overlays that genuinely intercept input.
+- When an Overlay blocks zooming, enable `[input] viewportZoomPassThrough = true` in `config/kltytonui-client.toml`; Overlays that haven't declared interception are skipped by the zoom logic. It only affects zoom — it does not let clicks pass through Overlays that genuinely intercept input.
 
 ## Development key actions
 
@@ -50,7 +50,7 @@ Selection is **document-level**: one selection can span inline children (e.g. `<
 | `user-select: all` | Click to select the whole block |
 | `user-select: none` | Selection forbidden |
 
-This is AUI's own selection implementation, not browser Selection/Range — pages cannot obtain `Selection`/`Range` objects (see the [Web API docs](web-api)); cross-unit joining and other details should not be written against browser specs.
+This is KUI's own selection implementation, not browser Selection/Range — pages cannot obtain `Selection`/`Range` objects (see the [Web API docs](web-api)); cross-unit joining and other details should not be written against browser specs.
 
 Shortcuts: drag to select, Ctrl+A select all, Ctrl+C copy, Esc clears the selection; input controls additionally have Ctrl+X cut, Ctrl+V paste, Ctrl+Z undo. Focus changes do not clear the selection. It is cleared only by Esc, by clicking a non-selectable area, or by starting a new selection elsewhere; clicking inside the already-selected text does not collapse it — it becomes the start of a selection drag.
 
@@ -77,7 +77,7 @@ The framework handles a batch of control default behaviors before scripts, consu
 - Text boxes submit their form on Enter; Enter in a textarea inserts a newline;
 - number supports arrow-key and wheel stepping; range supports arrow keys;
 - select has a full keyboard suite (arrows/Home/End/PgUp/PgDn/Enter/Space/Esc/prefix search);
-- checkbox/radio toggle; file opens the system file picker; color opens the AUI color picker.
+- checkbox/radio toggle; file opens the system file picker; color opens the KUI color picker.
 
 `preventDefault()` can intercept these default actions. Don't `click()` the same control again inside a listener — one keypress would trigger it twice.
 
@@ -92,9 +92,9 @@ For mouse/pointer event types and coordinate rules, see the [Web API docs](web-a
 
 ## Differences from a real browser
 
-| Capability | AUI behavior |
+| Capability | KUI behavior |
 | --- | --- |
-| Network/navigation | fetch goes through the AUI resource bridge; location's navigation methods are no-ops |
+| Network/navigation | fetch goes through the KUI resource bridge; location's navigation methods are no-ops |
 | Clipboard | Ctrl shortcuts + Java's `Operation`; no `navigator.clipboard` |
 | Text selection | Document-level selection spanning inline children and multiple elements; no Selection/Range JS API |
 | Meta | Read at creation/refresh; runtime DOM attribute changes are not re-applied |

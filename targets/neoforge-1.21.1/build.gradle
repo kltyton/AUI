@@ -13,7 +13,7 @@ group = mod_group_id
 version = mod_version
 
 jar {
-    manifest.attributes(["Automatic-Module-Name": "apricityui"])
+    manifest.attributes(["Automatic-Module-Name": "kltytonui"])
 }
 
 base {
@@ -44,7 +44,7 @@ sourceSets {
 tasks.register('prepareCommonSources', Sync) {
     from('../../common/src/client/java')
     from('../../common/src/main/java') {
-        exclude 'com/sighs/apricityui/network/**'
+        exclude 'io/github/kltyton/kltytonui/network/**'
     }
     into "$buildDir/generated/common-main"
 }
@@ -60,35 +60,35 @@ neoForge {
 
             // 页面视觉比对：见 ClientPageCaptureRunner。
             // ./gradlew -p targets/neoforge-1.21.1 runClient -PauiPageCapture -PauiPageCaptureOut=<dir>
-            if (project.hasProperty('auiPageCapture')) {
-                systemProperty 'apricityui.pageCapture', 'true'
+            if (project.hasProperty('kuiPageCapture')) {
+                systemProperty 'kltytonui.pageCapture', 'true'
             }
-            if (project.hasProperty('auiPageCapturePage')) {
-                systemProperty 'apricityui.pageCapture.page', project.property('auiPageCapturePage')
+            if (project.hasProperty('kuiPageCapturePage')) {
+                systemProperty 'kltytonui.pageCapture.page', project.property('kuiPageCapturePage')
             }
-            if (project.hasProperty('auiPageCaptureOut')) {
-                systemProperty 'apricityui.pageCapture.out', project.property('auiPageCaptureOut')
+            if (project.hasProperty('kuiPageCaptureOut')) {
+                systemProperty 'kltytonui.pageCapture.out', project.property('kuiPageCaptureOut')
             }
-            if (project.hasProperty('auiLogRenderPhases')) {
-                systemProperty 'apricityui.test.logRenderPhases', 'true'
+            if (project.hasProperty('kuiLogRenderPhases')) {
+                systemProperty 'kltytonui.test.logRenderPhases', 'true'
             }
-            if (project.hasProperty('auiPageCaptureSettleTicks')) {
-                systemProperty 'apricityui.pageCapture.settleTicks', project.property('auiPageCaptureSettleTicks')
+            if (project.hasProperty('kuiPageCaptureSettleTicks')) {
+                systemProperty 'kltytonui.pageCapture.settleTicks', project.property('kuiPageCaptureSettleTicks')
             }
-            if (project.hasProperty('auiPageCaptureKeepOpen')) {
-                systemProperty 'apricityui.pageCapture.exit', 'false'
+            if (project.hasProperty('kuiPageCaptureKeepOpen')) {
+                systemProperty 'kltytonui.pageCapture.exit', 'false'
             }
             // 窗口尺寸：浏览器基准图按“显示器物理宽 / 系统缩放”定宽，窗口铺满屏幕时
             // 文档逻辑视口与浏览器视口一致，两边才能直接叠图。
-            if (project.hasProperty('auiWindowWidth')) {
+            if (project.hasProperty('kuiWindowWidth')) {
                 programArgument '--width'
-                programArgument project.property('auiWindowWidth').toString()
+                programArgument project.property('kuiWindowWidth').toString()
             }
-            if (project.hasProperty('auiWindowHeight')) {
+            if (project.hasProperty('kuiWindowHeight')) {
                 programArgument '--height'
-                programArgument project.property('auiWindowHeight').toString()
+                programArgument project.property('kuiWindowHeight').toString()
             }
-            if (project.hasProperty('auiWindowMaximized')) {
+            if (project.hasProperty('kuiWindowMaximized')) {
                 programArgument '--earlywindow.maximized'
             }
         }
@@ -108,7 +108,7 @@ neoForge {
 repositories {
     mavenCentral()
     mavenLocal()
-    // KubeJS / Rhino (see D:\work\reference\AUI for the reference coordinates)
+    // KubeJS / Rhino (see D:\work\reference\KUI for the reference coordinates)
     maven {
         name = "Latvian"
         url = "https://maven.latvian.dev/releases"
@@ -151,7 +151,7 @@ dependencies {
     testImplementation "dev.latvian.mods:rhino:${rhino_121_version}"
 
     // Rhino is the required page runtime; KubeJS only adds optional bindings.
-    // Coordinates from D:\work\reference\AUI (1.21.1 NeoForge).
+    // Coordinates from D:\work\reference\KUI (1.21.1 NeoForge).
     compileOnly "dev.latvian.mods:rhino:${rhino_121_version}"
     compileOnly "dev.latvian.mods:kubejs-neoforge:${kubejs_121_version}"
     runtimeOnly "dev.latvian.mods:rhino:${rhino_121_version}"
@@ -209,7 +209,7 @@ configurations {
         // spark 是 dev-run 专用分析器，单测 worker 不需要，排除以保持 --offline 可跑
         exclude group: 'maven.modrinth', module: 'spark'
     }
-    auiTestModRuntime {
+    kuiTestModRuntime {
         canBeConsumed = false
         canBeResolved = true
         extendsFrom modDevRuntimeDependencies
@@ -221,12 +221,12 @@ configurations {
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
     // common/ main code links against Minecraft/NeoForge classes (e.g.
-    // ApricityUI.LOGGER -> LogUtils), so the unit-test worker needs the mod
+    // KltytonUI.LOGGER -> LogUtils), so the unit-test worker needs the mod
     // runtime on its classpath.
-    classpath += configurations.auiTestModRuntime
+    classpath += configurations.kuiTestModRuntime
     // 布局一致性探针（LayoutParityProbeTest）的输出目录，见 tools/page-diff/README.md
-    if (project.hasProperty('auiLayoutProbeOut')) {
-        systemProperty 'aui.layoutProbe.out', project.property('auiLayoutProbeOut')
+    if (project.hasProperty('kuiLayoutProbeOut')) {
+        systemProperty 'kui.layoutProbe.out', project.property('kuiLayoutProbeOut')
     }
 }
 

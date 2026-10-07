@@ -1,21 +1,21 @@
 ---
-title: 使用 AUI 实现生物血量显示功能
-description: 这个示例使用了 AUI 中的 WorldWindow 类，是通过在每个需要显示血量的生物上添加一个影像血条来实现的，仅做参考。
+title: 使用 KUI 实现生物血量显示功能
+description: 这个示例使用了 KUI 中的 WorldWindow 类，是通过在每个需要显示血量的生物上添加一个影像血条来实现的，仅做参考。
 last_update:
   date: 2/27/2026
   author: Terry_MC
 ---
 
-# 使用 AUI 实现生物血量显示功能
+# 使用 KUI 实现生物血量显示功能
 
-这个示例使用了 AUI 中的`WorldWindow`类，是通过在每个需要显示血量的生物上添加一个[影像](/ApricityUI/guide/ui-types#影像)血条来实现的，仅做参考。
+这个示例使用了 KUI 中的`WorldWindow`类，是通过在每个需要显示血量的生物上添加一个[影像](/KltytonUI/guide/ui-types#影像)血条来实现的，仅做参考。
 
 `MobHealthDisplay.java`
 
 ```java
 package top.terry_mc.mobhealthdisplay;
 
-import com.sighs.apricityui.instance.WorldWindow;
+import io.github.kltyton.kltytonui.instance.WorldWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -166,7 +166,7 @@ public class MobHealthDisplay {
 }
 ```
 
-`assets/apricityui/apricity/mobhealthdisplay/mob_health.html`
+`assets/kltytonui/kltytonui/mobhealthdisplay/mob_health.html`
 
 ```html
 <body>

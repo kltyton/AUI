@@ -21,7 +21,7 @@ $previousTmp = $env:TMP
 $previousTmpDir = $env:TMPDIR
 $previousNpmCache = $env:npm_config_cache
 $previousNodePath = $env:NODE_PATH
-$previousRhinoPlugin = $env:AUI_RHINO_SEMANTICS_PLUGIN
+$previousRhinoPlugin = $env:KUI_RHINO_SEMANTICS_PLUGIN
 $env:TEMP = $temp
 $env:TMP = $temp
 $env:TMPDIR = $temp
@@ -46,9 +46,9 @@ try {
     }
 
     & node (Join-Path $project 'scripts\ore\build-mcui2-runtime.mjs') $upstream $bundle
-    if ($LASTEXITCODE -ne 0) { throw 'AUI IIFE build failed' }
+    if ($LASTEXITCODE -ne 0) { throw 'KUI IIFE build failed' }
 
-    $babelRoot = Join-Path $temp 'aui-babel-tools'
+    $babelRoot = Join-Path $temp 'kui-babel-tools'
     $babel = Join-Path $babelRoot 'node_modules\@babel\cli\bin\babel.js'
     if (-not (Test-Path -LiteralPath $babel)) {
         & npm install --prefix $babelRoot --no-save --no-package-lock --ignore-scripts `
@@ -67,31 +67,31 @@ module.exports = {
   presets: [['@babel/preset-env', {
     targets: { ie: '11' }, bugfixes: true, modules: false, useBuiltIns: false
   }]],
-  plugins: [process.env.AUI_RHINO_SEMANTICS_PLUGIN]
+  plugins: [process.env.KUI_RHINO_SEMANTICS_PLUGIN]
 };
 '@, [Text.UTF8Encoding]::new($false))
     $env:NODE_PATH = Join-Path $babelRoot 'node_modules'
-    $env:AUI_RHINO_SEMANTICS_PLUGIN = Join-Path $project 'scripts\runtime\rhino-semantics.cjs'
+    $env:KUI_RHINO_SEMANTICS_PLUGIN = Join-Path $project 'scripts\runtime\rhino-semantics.cjs'
 
     $scripts = @('mcui-oreui', 'mcui-icons-normal', 'mcui-icons-key',
         'mcui-icons-x', 'mcui-sounds-default')
     foreach ($name in $scripts) {
-        $source = Join-Path $bundle "$name.aui.iife.js"
-        $target = Join-Path $bundle "$name.aui.js"
+        $source = Join-Path $bundle "$name.kui.iife.js"
+        $target = Join-Path $bundle "$name.kui.js"
         & node $babel $source --out-file $target --config-file $config
         if ($LASTEXITCODE -ne 0) { throw "Rhino transform failed: $name" }
         & node --check $target
         if ($LASTEXITCODE -ne 0) { throw "JavaScript syntax check failed: $name" }
     }
-    $gallerySource = Join-Path $bundle 'gallery\gallery.aui.iife.js'
-    $galleryTarget = Join-Path $bundle 'gallery\gallery.aui.js'
+    $gallerySource = Join-Path $bundle 'gallery\gallery.kui.iife.js'
+    $galleryTarget = Join-Path $bundle 'gallery\gallery.kui.js'
     & node $babel $gallerySource --out-file $galleryTarget --config-file $config
     if ($LASTEXITCODE -ne 0) { throw 'Rhino transform failed: gallery' }
     & node --check $galleryTarget
     if ($LASTEXITCODE -ne 0) { throw 'JavaScript syntax check failed: gallery' }
 
     $runtime = Join-Path $project `
-        'common\src\main\resources\assets\apricityui\apricity\apricityui\runtime\mcui'
+        'common\src\main\resources\assets\kltytonui\kltytonui\kltytonui\runtime\mcui'
     if (-not $runtime.StartsWith($project + [IO.Path]::DirectorySeparatorChar,
             [StringComparison]::OrdinalIgnoreCase)) {
         throw "Runtime target escaped project: $runtime"
@@ -99,7 +99,7 @@ module.exports = {
     $fontTarget = Join-Path $runtime 'fonts'
     $license = Get-Content -LiteralPath (Join-Path $upstream 'LICENSE') -Raw -Encoding utf8
     $notice = '/*! ' + (($license -replace '\s+', ' ').Trim()) + ' */'
-    $generatedFiles = @($scripts | ForEach-Object { Join-Path $bundle "$_.aui.js" }) + @(
+    $generatedFiles = @($scripts | ForEach-Object { Join-Path $bundle "$_.kui.js" }) + @(
         $galleryTarget, (Join-Path $bundle 'gallery\style.css'),
         (Join-Path $bundle 'style.css'), (Join-Path $bundle 'fonts.css'))
     foreach ($generatedFile in $generatedFiles) {
@@ -108,10 +108,10 @@ module.exports = {
     }
     New-Item -ItemType Directory -Path $fontTarget -Force | Out-Null
     foreach ($name in $scripts) {
-        Copy-Item -LiteralPath (Join-Path $bundle "$name.aui.js") `
-            -Destination (Join-Path $runtime "$name.aui.js") -Force
+        Copy-Item -LiteralPath (Join-Path $bundle "$name.kui.js") `
+            -Destination (Join-Path $runtime "$name.kui.js") -Force
     }
-    Copy-Item -LiteralPath $galleryTarget -Destination (Join-Path $runtime 'gallery.aui.js') -Force
+    Copy-Item -LiteralPath $galleryTarget -Destination (Join-Path $runtime 'gallery.kui.js') -Force
     Copy-Item -LiteralPath (Join-Path $bundle 'gallery\style.css') `
         -Destination (Join-Path $runtime 'gallery.css') -Force
     Copy-Item -LiteralPath (Join-Path $bundle 'style.css') `
@@ -130,5 +130,5 @@ module.exports = {
     $env:TMPDIR = $previousTmpDir
     $env:npm_config_cache = $previousNpmCache
     $env:NODE_PATH = $previousNodePath
-    $env:AUI_RHINO_SEMANTICS_PLUGIN = $previousRhinoPlugin
+    $env:KUI_RHINO_SEMANTICS_PLUGIN = $previousRhinoPlugin
 }

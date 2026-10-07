@@ -29,7 +29,7 @@ const { build } = await import(pathToFileURL(resolve(upstreamRoot, 'node_modules
 const { default: vue } = await import(pathToFileURL(resolve(upstreamRoot, 'node_modules/@vitejs/plugin-vue/dist/index.mjs')).href);
 
 const excludeSkinViewer = {
-  name: 'aui-exclude-unused-skin-viewer',
+  name: 'kui-exclude-unused-skin-viewer',
   enforce: 'pre',
   transform(source, id) {
     const path = id.split('?')[0].replaceAll('\\', '/');
@@ -51,7 +51,7 @@ const excludeSkinViewer = {
 };
 
 const adaptVisualGallery = {
-  name: 'aui-adapt-upstream-visual-gallery',
+  name: 'kui-adapt-upstream-visual-gallery',
   enforce: 'pre',
   transform(source, id) {
     if (id.includes('?') || !id.replaceAll('\\', '/').endsWith('/tests/e2e/fixture/src/VisualGallery.vue')) {
@@ -97,16 +97,16 @@ async function bundle(entry, globalName, fileName, plugins = [], outDir = output
   });
 }
 
-await bundle('src/index.ts', 'McUIVue', 'mcui-oreui.aui', [excludeSkinViewer, vue()]);
+await bundle('src/index.ts', 'McUIVue', 'mcui-oreui.kui', [excludeSkinViewer, vue()]);
 for (const [entry, globalName, fileName] of [
-  ['src/icons/normal.ts', 'McUINormalIcons', 'mcui-icons-normal.aui'],
-  ['src/icons/key.ts', 'McUIKeyIcons', 'mcui-icons-key.aui'],
-  ['src/icons/x.ts', 'McUIXIcons', 'mcui-icons-x.aui'],
-  ['src/sounds/default.ts', 'McUIDefaultSounds', 'mcui-sounds-default.aui'],
+  ['src/icons/normal.ts', 'McUINormalIcons', 'mcui-icons-normal.kui'],
+  ['src/icons/key.ts', 'McUIKeyIcons', 'mcui-icons-key.kui'],
+  ['src/icons/x.ts', 'McUIXIcons', 'mcui-icons-x.kui'],
+  ['src/sounds/default.ts', 'McUIDefaultSounds', 'mcui-sounds-default.kui'],
 ]) {
   await bundle(entry, globalName, fileName);
 }
-await bundle('tests/e2e/fixture/src/VisualGallery.vue', 'McUIVisualGallery', 'gallery.aui',
+await bundle('tests/e2e/fixture/src/VisualGallery.vue', 'McUIVisualGallery', 'gallery.kui',
   [adaptVisualGallery, vue()], resolve(outputRoot, 'gallery'));
 
 const fonts = ['Minecraft-Ten.otf', 'Minecraft-Seven.otf',
@@ -119,9 +119,9 @@ const fontStyles = readFileSync(resolve(upstreamRoot, 'src/styles/fonts.css'), '
   .replaceAll('../assets/fonts/', 'fonts/');
 writeFileSync(resolve(outputRoot, 'fonts.css'), fontStyles);
 
-const runtime = readFileSync(resolve(outputRoot, 'mcui-oreui.aui.iife.js'), 'utf8');
+const runtime = readFileSync(resolve(outputRoot, 'mcui-oreui.kui.iife.js'), 'utf8');
 const stylesheet = readFileSync(resolve(outputRoot, 'style.css'), 'utf8');
-const gallery = readFileSync(resolve(outputRoot, 'gallery/gallery.aui.iife.js'), 'utf8');
+const gallery = readFileSync(resolve(outputRoot, 'gallery/gallery.kui.iife.js'), 'utf8');
 const retainedNames = componentNames.filter((name) => name !== 'McSkinViewer');
 if (runtime.includes('McSkinViewer') || retainedNames.some((name) => !runtime.includes(name))) {
   throw new Error('The runtime does not export exactly the expected components');

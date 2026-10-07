@@ -10,16 +10,16 @@
 
 资源一共有三层，优先级从高到低是这样的：
 
-1. 开发环境路径：`src/main/resources/assets/apricityui/apricity/...`
-2. 游戏实例目录：`apricity/...`
-3. 模组资源包：`assets/apricityui/apricity/...`
+1. 开发环境路径：`src/main/resources/assets/kltytonui/kltytonui/...`
+2. 游戏实例目录：`kltytonui/...`
+3. 模组资源包：`assets/kltytonui/kltytonui/...`
 
 也就是说，同一路径的文件如果三层都存在，最终生效的是最上面那层。
 
 这套覆盖顺序就是专门给开发和魔改准备的：
 
 - 开发时直接改源码资源目录，优先级最高。
-- 整合包作者优先改实例里的 `apricity` 文件夹，不用重新打包模组。
+- 整合包作者优先改实例里的 `kltytonui` 文件夹，不用重新打包模组。
 - 模组本体自带的资源包作为默认兜底。
 
 ---
@@ -51,7 +51,7 @@ CSS 同目录下引用字体：
 }
 ```
 
-如果你用的是以 `/` 开头的路径，那它会从 Apricity 的资源根开始算，不是浏览器网站根目录。
+如果你用的是以 `/` 开头的路径，那它会从 Kltyton 的资源根开始算，不是浏览器网站根目录。
 
 另外，`..` 这种相对跳转也是支持的，编辑器里写起来会比较顺手。
 
@@ -59,7 +59,7 @@ CSS 同目录下引用字体：
 
 ### HTML、CSS、JS 的加载方式
 
-HTML 本身由 `ApricityUI.createDocument(path)` 或 `ApricityUI.openScreen(path)` 这类入口加载。
+HTML 本身由 `KltytonUI.createDocument(path)` 或 `KltytonUI.openScreen(path)` 这类入口加载。
 
 CSS 和 JS 都支持两种写法：
 
@@ -127,7 +127,7 @@ CSS 和 JS 都支持两种写法：
 
 ### 热重载
 
-实例目录里的 `apricity` 文件夹，本来就是为了热重载和魔改准备的。
+实例目录里的 `kltytonui` 文件夹，本来就是为了热重载和魔改准备的。
 
 最直接的方式是按 `END`，会立即重载静态资源并刷新 Document。
 
@@ -139,8 +139,8 @@ CSS 和 JS 都支持两种写法：
 
 监听范围包括：
 
-1. 开发环境下的 `src/main/resources/assets/apricityui/apricity`
-2. 游戏实例目录里的 `apricity`
+1. 开发环境下的 `src/main/resources/assets/kltytonui/kltytonui`
+2. 游戏实例目录里的 `kltytonui`
 
 资源包那层主要是默认资源来源，不是热重载主战场。
 
@@ -164,7 +164,7 @@ CSS 和 JS 都支持两种写法：
 
 如果你是整合包作者或者前端式开发习惯，建议直接这样干：
 
-1. 先把资源放在实例目录的 `apricity/modid/...`。
+1. 先把资源放在实例目录的 `kltytonui/modid/...`。
 2. HTML、CSS、图片、字体全部走相对路径。
 3. 调样式时用 `END` 热重载。
 4. 需要打包时，再整理进资源包或模组资源里。

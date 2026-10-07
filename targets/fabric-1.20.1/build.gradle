@@ -32,7 +32,7 @@ java {
 }
 
 loom {
-    accessWidenerPath = file("src/main/resources/apricityui.accesswidener")
+    accessWidenerPath = file("src/main/resources/kltytonui.accesswidener")
     mixin {
         defaultRefmapName = "${mod_id}.refmap.json"
     }
@@ -51,7 +51,7 @@ sourceSets {
 tasks.register('prepareCommonSources', Sync) {
     from('../../common/src/client/java')
     from('../../common/src/main/java') {
-        exclude 'com/sighs/apricityui/network/chunk/**'
+        exclude 'io/github/kltyton/kltytonui/network/chunk/**'
     }
     into "$buildDir/generated/common-main"
 }

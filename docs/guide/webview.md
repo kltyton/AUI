@@ -1,6 +1,6 @@
 # WebView 与 iframe
 
-AUI 本身不是浏览器——HTML 解析、CSS 布局、绘制都是自研引擎。但当页面需要**真正跑一个网页**（第三方站点、视频、不值得用 AUI 重写的复杂界面）时，框架留了一个逃生门：`<iframe>` 接的是**操作系统自带的 WebView**（Windows 上是 WebView2 / Edge Runtime），离屏渲染后当纹理贴进页面。
+KUI 本身不是浏览器——HTML 解析、CSS 布局、绘制都是自研引擎。但当页面需要**真正跑一个网页**（第三方站点、视频、不值得用 KUI 重写的复杂界面）时，框架留了一个逃生门：`<iframe>` 接的是**操作系统自带的 WebView**（Windows 上是 WebView2 / Edge Runtime），离屏渲染后当纹理贴进页面。
 
 这一章讲 `<iframe>` 的完整行为、WebView 后端的架构与性能特性、能做什么和不能做什么。标准元素的能力边界见 [HTML/CSS 覆盖面](html-css-coverage)，`<iframe>` 作为扩展元素的速览见[扩展元素文档](extension-elements)，这里都不重复。
 
@@ -8,12 +8,12 @@ AUI 本身不是浏览器——HTML 解析、CSS 布局、绘制都是自研引�
 
 | 需求 | 选择 |
 | --- | --- |
-| 游戏内的 HUD、面板、设置页 | AUI 原生元素 |
-| 和游戏数据 / 物品 / 方块实体交互 | AUI 原生元素 + [容器](container) |
+| 游戏内的 HUD、面板、设置页 | KUI 原生元素 |
+| 和游戏数据 / 物品 / 方块实体交互 | KUI 原生元素 + [容器](container) |
 | 跑一个真正的网页、第三方 Web 内容 | `<iframe>` |
 | 播放视频、访问实时更新的外部文档 | `<iframe>` |
 
-- `<iframe>` 的内容**在 AUI 之外**：页面里没有 AUI 的 DOM，AUI 脚本也读不到它的内容。它是"贴图 + 输入转发"，不是可组合的组件；
+- `<iframe>` 的内容**在 KUI 之外**：页面里没有 KUI 的 DOM，KUI 脚本也读不到它的内容。它是"贴图 + 输入转发"，不是可组合的组件；
 - 每个实例是一整套离屏浏览器，内存占用高，**不适合 Overlay 和世界内窗口**，留给全屏页或较大的面板；
 - 只有 Windows x64 有后端，其他平台是空占位符（见[平台与可用性](#平台与可用性)）。
 
@@ -26,7 +26,7 @@ AUI 本身不是浏览器——HTML 解析、CSS 布局、绘制都是自研引�
 
 - `src` 必须是**绝对 URL**（`https:`、`file:` 等）。引擎没有文档 base URL，相对路径原样交给浏览器，解析不出结果；
 - **只有写了 `src` 才启动浏览器实例**；没有 `src` 的 `<iframe>` 不占进程，只是一个占位盒子；
-- 先用 `AuiServices.webView()` 确认后端可用（见[平台与可用性](#平台与可用性)），不可用时元素退化为空盒子。
+- 先用 `KuiServices.webView()` 确认后端可用（见[平台与可用性](#平台与可用性)），不可用时元素退化为空盒子。
 
 ## 属性
 
@@ -88,7 +88,7 @@ AUI 本身不是浏览器——HTML 解析、CSS 布局、绘制都是自研引�
 
 - **鼠标移动 / 按下 / 松开**：指针在内容盒内、或已有按键按下（拖拽指针捕获）时转发，坐标夹到盒内；按下状态随移动一起发（否则 Chromium 会把拖拽判成悬停）。拖拽期间指针移出内容盒仍继续转发，松开也一定送达，`mouseLeave` 在按住期间不发；
 - **指针移动会合并**：宿主只保留最新位置、每轮转发一次（拖拽时实测一半以上采样被合并掉，记 `coalesced=`）；按键、滚轮、移出这些有顺序含义的事件不合并；
-- **滚轮**：转发给页面；页面自己有滚轮监听时 AUI 不再滚动父容器。注意 `iframe` 只阻止事件冒泡、不把滚轮交给原生，所以宿主文档**没有**声明 `aui-mouse-events: intercept` 时，滚轮仍可能漏到游戏（见 [ApricityScreen 的 meta 章节](apricity-screen#页面-meta-配置)）。滚轮只按符号换算成 **1 格**、横向滚轮不转发，`deltaY` 为 0 会算成向上；悬停在 iframe 上按 **Ctrl+滚轮**会优先被 AUI 的页面缩放吃掉、不进网页（除非页面 meta 关了 `user-scalable`，见[浏览器辅助功能](browser-features#页面缩放)）；
+- **滚轮**：转发给页面；页面自己有滚轮监听时 KUI 不再滚动父容器。注意 `iframe` 只阻止事件冒泡、不把滚轮交给原生，所以宿主文档**没有**声明 `kui-mouse-events: intercept` 时，滚轮仍可能漏到游戏（见 [KltytonScreen 的 meta 章节](kltytonui-screen#页面-meta-配置)）。滚轮只按符号换算成 **1 格**、横向滚轮不转发，`deltaY` 为 0 会算成向上；悬停在 iframe 上按 **Ctrl+滚轮**会优先被 KUI 的页面缩放吃掉、不进网页（除非页面 meta 关了 `user-scalable`，见[浏览器辅助功能](browser-features#页面缩放)）；
 - **键盘**：iframe 成为文档焦点元素后，`keydown`/`keyup` 转发给页面并**吞掉**这些按键，Minecraft 快捷键不会同时触发。文字输入要求**网页自己的可编辑元素拿到 DOM 焦点**（先在网页里点一下输入框），和真浏览器一致；没有元素持有焦点时字符会被**静默丢弃**（页面完全不会给反馈）；
 - **没有原生键盘注入 API**：按键是在页面里**合成 DOM 事件**实现的，浏览器的默认动作不会自动发生，得由框架显式补上（输入框里的退格/删除/方向键已处理；`textarea` 里回车换行，单行输入框里回车提交所属表单，和浏览器一致）；IME 组合输入以"已上屏文本"送入，没有组合过程。
 
@@ -97,7 +97,7 @@ AUI 本身不是浏览器——HTML 解析、CSS 布局、绘制都是自研引�
 - 设置 `src` 后，实例在**后台线程**创建（首次要几百毫秒，不卡帧），期间 `status()` 是 `starting`；
 - 改 `src` 复用已有实例导航，不重建；想强制重载就对同一个值再 `setAttribute("src", ...)`（元素不做去重）；
 - `removeAttribute("src")`、把元素从文档移除、以及**关闭整个文档**，都会释放该实例（浏览器、宿主线程、解码线程、共享内存段）；
-- 浏览器数据（cookie、localStorage）存在 `游戏目录/apricity/.cache/webview` 下，重启后保留。它在**页面根目录之外**的缓存区里（和网络缓存 `apricity/.cache/network` 并列）：`apricity/` 本身是给人写页面、给资源扫描和热重载遍历的目录，而浏览器 profile 是几万个文件、随时在变的机器状态（它的缓存条目还正好落在热重载监听的 `.html/.css/.js` 上），放在资源树里会被当成资源、还会误触发热重载；`.` 开头的目录资源扫描和热重载都会跳过（见[资源管理](resource-manager)）；
+- 浏览器数据（cookie、localStorage）存在 `游戏目录/kltytonui/.cache/webview` 下，重启后保留。它在**页面根目录之外**的缓存区里（和网络缓存 `kltytonui/.cache/network` 并列）：`kltytonui/` 本身是给人写页面、给资源扫描和热重载遍历的目录，而浏览器 profile 是几万个文件、随时在变的机器状态（它的缓存条目还正好落在热重载监听的 `.html/.css/.js` 上），放在资源树里会被当成资源、还会误触发热重载；`.` 开头的目录资源扫描和热重载都会跳过（见[资源管理](resource-manager)）；
 - **后端不可用是粘性的**：一旦创建失败或实例失效，该元素此后只当占位符，不会重试（即使改 `src`）。
 
 ## 弹窗与导航
@@ -109,12 +109,12 @@ AUI 本身不是浏览器——HTML 解析、CSS 布局、绘制都是自研引�
 
 - **仅 Windows x64**：其他平台、以及非 64 位 x86 的 JVM 都没有后端；
 - 需要系统装了 **WebView2 Runtime**；没装、或装了但版本过旧（不支持离屏 hosting）都会失败；
-- 用 `AuiServices.webView()` 判断：
+- 用 `KuiServices.webView()` 判断：
 
 ```java
-AuiServices.webView().isAvailable();        // 后端是否可用
-AuiServices.webView().backendName();        // "webview2"
-AuiServices.webView().unavailableReason();  // 不可用原因
+KuiServices.webView().isAvailable();        // 后端是否可用
+KuiServices.webView().backendName();        // "webview2"
+KuiServices.webView().unavailableReason();  // 不可用原因
 ```
 
   不可用原因包括：非 Windows（`offscreen WebView2 hosting is Windows-only`）、非 64 位 x86（`needs a 64-bit x86 JVM`）、jar 内原生库缺失、`native library not loaded`、`WebView2 runtime is not installed`、runtime 过旧；
@@ -123,7 +123,7 @@ AuiServices.webView().unavailableReason();  // 不可用原因
 ## 限制
 
 - 相对路径、`srcdoc`、`sandbox` 都不支持；
-- 页面里的 `window.parent` / `postMessage` 指向浏览器内部，**没有**接到 AUI 上；`contentWindow` / `contentDocument` 也没有暴露；
+- 页面里的 `window.parent` / `postMessage` 指向浏览器内部，**没有**接到 KUI 上；`contentWindow` / `contentDocument` 也没有暴露；
 - 页面内容不透明合成，没有 alpha 通道；
 - ZoomFactor 被 WebView2 限死在 0.25 ~ 5，SDK 无法放宽；
 - **没有面向脚本的 webview API**：JS 侧只有通用 DOM 属性 / 事件（`getAttribute`/`setAttribute`）；Java 侧也没有 `reload()` / `navigate()` 这类方法，用改属性代替。
@@ -155,13 +155,13 @@ AuiServices.webView().unavailableReason();  // 不可用原因
 
 ## 常见问题
 
-**页面一片空白**：先确认后端可用（`AuiServices.webView().unavailableReason()`）。非 Windows、没装 WebView2 Runtime、或非 x64 都会退化成空盒子；`src` 用了相对路径也会解析不出内容。
+**页面一片空白**：先确认后端可用（`KuiServices.webView().unavailableReason()`）。非 Windows、没装 WebView2 Runtime、或非 x64 都会退化成空盒子；`src` 用了相对路径也会解析不出内容。
 
-**点了输入框还是打不进字**：看 `Iframe.status()` 里的 `focus=`。`no` 说明这个 iframe 不是文档的焦点元素（AUI 不会把字符转给它）；`yes` 但还打不进，就是网页里没有元素持有焦点——常见原因是**你没点在输入框上**：固定宽度站点（例如 mcmod.cn，正文约 1200px 宽）在窄视口下会把输入框甩到视口右侧之外，`status()` 里的 `box=` 就是页面的 CSS 视口尺寸，比这个宽度小就说明得先在页面里横向滚动才能点到它。
+**点了输入框还是打不进字**：看 `Iframe.status()` 里的 `focus=`。`no` 说明这个 iframe 不是文档的焦点元素（KUI 不会把字符转给它）；`yes` 但还打不进，就是网页里没有元素持有焦点——常见原因是**你没点在输入框上**：固定宽度站点（例如 mcmod.cn，正文约 1200px 宽）在窄视口下会把输入框甩到视口右侧之外，`status()` 里的 `box=` 就是页面的 CSS 视口尺寸，比这个宽度小就说明得先在页面里横向滚动才能点到它。
 
-**Ctrl+滚轮把整个页面缩放了，而不是滚网页**：Ctrl+滚轮在转发给 iframe 之前就被 AUI 的视口缩放处理掉了。要让滚轮进网页，得先关掉宿主页面的用户缩放（`<meta name="aui-viewport" content="user-scalable=false">`，见[浏览器辅助功能](browser-features#页面缩放)）。
+**Ctrl+滚轮把整个页面缩放了，而不是滚网页**：Ctrl+滚轮在转发给 iframe 之前就被 KUI 的视口缩放处理掉了。要让滚轮进网页，得先关掉宿主页面的用户缩放（`<meta name="kui-viewport" content="user-scalable=false">`，见[浏览器辅助功能](browser-features#页面缩放)）。
 
-**滚轮把游戏快捷栏也切了**：宿主文档没有声明 `aui-mouse-events: intercept`，原生滚轮漏到了游戏。补上这个 meta（见 [ApricityScreen 的 meta 章节](apricity-screen#页面-meta-配置)）。
+**滚轮把游戏快捷栏也切了**：宿主文档没有声明 `kui-mouse-events: intercept`，原生滚轮漏到了游戏。补上这个 meta（见 [KltytonScreen 的 meta 章节](kltytonui-screen#页面-meta-配置)）。
 
 **大 iframe 画面发软**：触发了单边 4096 上限或按面积降采样（`status()` 里会有 `raster capped by area`）。这是有意为之——保帧率、只牺牲清晰度，页面的 CSS 视口仍然精确。
 

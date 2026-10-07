@@ -1,0 +1,51 @@
+package io.github.kltyton.kltytonui.task;
+
+import io.github.kltyton.kltytonui.ui.ToastManager;
+import io.github.kltyton.kltytonui.resource.async.image.ImageAsyncHandler;
+import io.github.kltyton.kltytonui.resource.async.style.StyleAsyncHandler;
+import io.github.kltyton.kltytonui.init.Document;
+import io.github.kltyton.kltytonui.init.Window;
+
+/**
+ * KUI 的帧调度器。
+ * <p>
+ * 目的不是去做功能，而是把 tick/render 的生命周期边界固定下来：
+ * <ul>
+ *     <li>tick（逻辑线程）：输入/DOM commit/异步资源 apply/样式/布局/绘制队列更新</li>
+ *     <li>render（渲染线程）：只读稳定的渲染数据并发出 draw call</li>
+ * </ul>
+ */
+public final class FrameScheduler {
+    private FrameScheduler() {
+    }
+
+    public static void tick() {
+        ToastManager.tick();
+
+        // 1) Drain async apply tasks (style/image/audio decode -> apply)
+        StyleAsyncHandler.INSTANCE.tickApplyQueue();
+        ImageAsyncHandler.INSTANCE.tickApplyQueue();
+        io.github.kltyton.kltytonui.resource.async.audio.AudioAsyncHandler.INSTANCE.tickApplyQueue();
+        io.github.kltyton.kltytonui.media.AudioEngine.tick();
+
+        // 2) Frame-budgeted initialization and UI build tasks.
+        FrameTaskScheduler.tick();
+
+        // 3) Document commit / style flush / layout + paint-list updates
+        for (Document document : Document.getAll()) {
+            if (document == null) continue;
+            document.tickFrame();
+        }
+        Window.window.tickResizeObservers();
+    }
+
+    /**
+     * render 入口（渲染线程）。
+     * <p>
+     * 当前主要用于 drain RenderSystem 的 fenced tasks（例如图片纹理上传）。
+     * 未来可在此处接入更多“渲染帧级别”的 begin/end 管理。
+     */
+    public static void renderBegin() {
+        // 1.20.1 上没有 executePendingTasks；渲染线程任务通过 recordRenderCall 直接入队即可。
+    }
+}

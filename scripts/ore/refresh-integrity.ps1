@@ -21,8 +21,8 @@ if ($UpstreamRoot) {
 }
 
 $roots = @(
-    (Join-Path $ProjectRoot 'common\src\main\resources\assets\apricityui\apricity\apricityui\theme\ore'),
-    (Join-Path $ProjectRoot 'common\src\main\resources\assets\apricityui\apricity\apricityui\runtime\mcui')
+    (Join-Path $ProjectRoot 'common\src\main\resources\assets\kltytonui\kltytonui\kltytonui\theme\ore'),
+    (Join-Path $ProjectRoot 'common\src\main\resources\assets\kltytonui\kltytonui\kltytonui\runtime\mcui')
 )
 foreach ($root in $roots) {
     $manifest = Join-Path $root 'provenance.sha256'

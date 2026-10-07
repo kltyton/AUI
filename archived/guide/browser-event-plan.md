@@ -1,6 +1,6 @@
 # 浏览器事件补全计划
 
-本文档用于规划 ApricityUI 当前 Web 风格事件系统的补全方向。目标不是机械对齐浏览器标准，而是在现有 UI/脚本架构下，优先补齐最常用、最稳定、最容易形成正确心智模型的事件能力。
+本文档用于规划 KltytonUI 当前 Web 风格事件系统的补全方向。目标不是机械对齐浏览器标准，而是在现有 UI/脚本架构下，优先补齐最常用、最稳定、最容易形成正确心智模型的事件能力。
 
 ## 目标
 
@@ -513,7 +513,7 @@
 
 ### 文档生命周期
 
-- `src/main/java/com/sighs/apricityui/init/Document.java`
+- `src/main/java/io/github/kltyton/kltytonui/init/Document.java`
 
 负责：
 
@@ -524,8 +524,8 @@
 
 ### 统一 DOM 事件派发
 
-- `src/main/java/com/sighs/apricityui/init/Event.java`
-- `src/main/java/com/sighs/apricityui/init/EventRegistry.java`
+- `src/main/java/io/github/kltyton/kltytonui/init/Event.java`
+- `src/main/java/io/github/kltyton/kltytonui/init/EventRegistry.java`
 
 负责：
 
@@ -535,9 +535,9 @@
 
 ### 鼠标 / 滚轮 / 滚动
 
-- `src/main/java/com/sighs/apricityui/event/MouseEvent.java`
-- `src/main/java/com/sighs/apricityui/init/Operation.java`
-- `src/main/java/com/sighs/apricityui/init/ScrollModel.java`
+- `src/main/java/io/github/kltyton/kltytonui/event/MouseEvent.java`
+- `src/main/java/io/github/kltyton/kltytonui/init/Operation.java`
+- `src/main/java/io/github/kltyton/kltytonui/init/ScrollModel.java`
 
 负责：
 
@@ -548,12 +548,12 @@
 
 ### 键盘 / 文本输入
 
-- `src/main/java/com/sighs/apricityui/event/KeyEvent.java`
-- `src/main/java/com/sighs/apricityui/init/Operation.java`
-- `src/main/java/com/sighs/apricityui/element/AbstractText.java`
-- `src/main/java/com/sighs/apricityui/element/Input.java`
-- `src/main/java/com/sighs/apricityui/element/TextArea.java`
-- `src/main/java/com/sighs/apricityui/element/Select.java`
+- `src/main/java/io/github/kltyton/kltytonui/event/KeyEvent.java`
+- `src/main/java/io/github/kltyton/kltytonui/init/Operation.java`
+- `src/main/java/io/github/kltyton/kltytonui/element/AbstractText.java`
+- `src/main/java/io/github/kltyton/kltytonui/element/Input.java`
+- `src/main/java/io/github/kltyton/kltytonui/element/TextArea.java`
+- `src/main/java/io/github/kltyton/kltytonui/element/Select.java`
 
 负责：
 
@@ -564,7 +564,7 @@
 
 ### 焦点
 
-- `src/main/java/com/sighs/apricityui/init/FocusRing.java`
+- `src/main/java/io/github/kltyton/kltytonui/init/FocusRing.java`
 
 负责：
 
@@ -574,7 +574,7 @@
 
 ### 窗口级事件
 
-- `src/main/java/com/sighs/apricityui/init/Window.java`
+- `src/main/java/io/github/kltyton/kltytonui/init/Window.java`
 
 负责：
 

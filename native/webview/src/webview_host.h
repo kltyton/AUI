@@ -1,7 +1,7 @@
-// ApricityUI offscreen WebView host.
+// KltytonUI offscreen WebView host.
 //
 // Owns one WebView2 instance rendered into a hidden (off-desktop) top-level window
-// and exposes its pixels as a raw RGBA byte buffer, so the AUI renderer can treat
+// and exposes its pixels as a raw RGBA byte buffer, so the KUI renderer can treat
 // it like any other texture-backed element.
 #pragma once
 
@@ -28,22 +28,22 @@
 // Win32 message values, matching COREWEBVIEW2_MOUSE_EVENT_KIND one-to-one so the
 // Java side can pass them straight through.
 enum {
-    AUI_WEBVIEW_MOUSE_MOVE = 512,
-    AUI_WEBVIEW_MOUSE_LEFT_DOWN = 513,
-    AUI_WEBVIEW_MOUSE_LEFT_UP = 514,
-    AUI_WEBVIEW_MOUSE_RIGHT_DOWN = 516,
-    AUI_WEBVIEW_MOUSE_RIGHT_UP = 517,
-    AUI_WEBVIEW_MOUSE_MIDDLE_DOWN = 519,
-    AUI_WEBVIEW_MOUSE_MIDDLE_UP = 520,
-    AUI_WEBVIEW_MOUSE_WHEEL = 522,
-    AUI_WEBVIEW_MOUSE_HWHEEL = 526,
-    AUI_WEBVIEW_MOUSE_LEAVE = 675,
+    KUI_WEBVIEW_MOUSE_MOVE = 512,
+    KUI_WEBVIEW_MOUSE_LEFT_DOWN = 513,
+    KUI_WEBVIEW_MOUSE_LEFT_UP = 514,
+    KUI_WEBVIEW_MOUSE_RIGHT_DOWN = 516,
+    KUI_WEBVIEW_MOUSE_RIGHT_UP = 517,
+    KUI_WEBVIEW_MOUSE_MIDDLE_DOWN = 519,
+    KUI_WEBVIEW_MOUSE_MIDDLE_UP = 520,
+    KUI_WEBVIEW_MOUSE_WHEEL = 522,
+    KUI_WEBVIEW_MOUSE_HWHEEL = 526,
+    KUI_WEBVIEW_MOUSE_LEAVE = 675,
 
-    AUI_WEBVIEW_VK_LEFT = 0x1,
-    AUI_WEBVIEW_VK_RIGHT = 0x2,
-    AUI_WEBVIEW_VK_SHIFT = 0x4,
-    AUI_WEBVIEW_VK_CONTROL = 0x8,
-    AUI_WEBVIEW_VK_MIDDLE = 0x10
+    KUI_WEBVIEW_VK_LEFT = 0x1,
+    KUI_WEBVIEW_VK_RIGHT = 0x2,
+    KUI_WEBVIEW_VK_SHIFT = 0x4,
+    KUI_WEBVIEW_VK_CONTROL = 0x8,
+    KUI_WEBVIEW_VK_MIDDLE = 0x10
 };
 
 class WebViewHost {

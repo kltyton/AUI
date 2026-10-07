@@ -1,4 +1,4 @@
-# ApricityUI `container` / `slot` / `item` / `ingredient` 使用说明
+# KltytonUI `container` / `slot` / `item` / `ingredient` 使用说明
 
 最后更新：2026-08-06
 
@@ -45,7 +45,7 @@
 
 ### 3.2 `interactive`、`pointer` 和 `disabled`
 
-Slot 的交互能力优先级为：recipe 生成槽位 → `interactive` → `pointer` → CSS `--aui-slot-interactive` → 绑定默认值。
+Slot 的交互能力优先级为：recipe 生成槽位 → `interactive` → `pointer` → CSS `--kui-slot-interactive` → 绑定默认值。
 
 - `tooltip`：只显示 tooltip。
 - `slot`：只允许菜单操作。

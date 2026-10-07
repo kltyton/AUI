@@ -1,38 +1,37 @@
-## ApricityUI
+## KltytonUI
 
 Build UIs with HTML + CSS + JS. The syntax follows Web standards as closely as possible.
 
 Related links:
-- CurseForge: https://curseforge.com/minecraft/mc-mods/apricityui
-- Modrinth: https://modrinth.com/mod/apricityui
-- Github: https://github.com/Tower-of-Sighs/AUI
+- Github: https://github.com/kltyton/KltytonUI
+- CurseForge / Modrinth: standalone release pages have not been created yet.
 
 Community:
-- ApricityUI group (QQ): 211573328
+- KltytonUI group (QQ): 211573328
 - Discord: https://discord.gg/C8epbbwjrS
 
 ![icon](https://cdn.modrinth.com/data/cached_images/9513051c399c427a47a6a4fd3600f0e157ba8a42.png)
 
 ### Overview
 
-ApricityUI was built around one goal: a UI framework that is low-friction, convenient, and broadly capable. That is why it takes the classic HTML + CSS + JS trio as its core.
+KltytonUI was built around one goal: a UI framework that is low-friction, convenient, and broadly capable. That is why it takes the classic HTML + CSS + JS trio as its core.
 
 The JS side currently depends on KubeJS (optional), which means modpack authors can draw whatever UI they like with an extremely low learning curve.  
-How low? You can have AI generate everything ApricityUI-related for you. Web frameworks are popular enough that AI knows them well — the result may even look better than what you would draw yourself, and you can still read it.
+How low? You can have AI generate everything KltytonUI-related for you. Web frameworks are popular enough that AI knows them well — the result may even look better than what you would draw yourself, and you can still read it.
 
-Mods that need custom UI can also depend on ApricityUI to build highly extensible interfaces; the JS and Java APIs are broadly equivalent.  
+Mods that need custom UI can also depend on KltytonUI to build highly extensible interfaces; the JS and Java APIs are broadly equivalent.  
 Where does that extensibility show? Nested masks, smooth scrolling, rounded borders, frosted-glass backgrounds, custom animations, custom fonts, GIF playback — even filters, masks, and shadows nested inside one another. Features that take hundreds or thousands of lines elsewhere are a few lines here.
 
-ApricityUI's syntax is essentially fixed and stays as close to Web standards as possible, so you can upgrade freely and use it across game versions without worrying about compatibility breaks.
+KltytonUI's syntax is essentially fixed and stays as close to Web standards as possible, so you can upgrade freely and use it across game versions without worrying about compatibility breaks.
 
-From 1.2.5 onward, ApricityUI can also call the WebView built into your operating system, letting you embed a real website or web page inside the game that accepts only hardware input (video playback included).
+From 1.2.5 onward, KltytonUI can also call the WebView built into your operating system, letting you embed a real website or web page inside the game that accepts only hardware input (video playback included).
 
 If you are not sure what a Web framework is, at least remember its three well-known advantages:
-- Rich functionality, from simple shape drawing to nested rendering effects — ApricityUI can even render onto a block in the world.
+- Rich functionality, from simple shape drawing to nested rendering effects — KltytonUI can even render onto a block in the world.
 - Easy to use: most crash courses I have seen are under three hours (the shortest is ten minutes), and AI knows the stack inside out.
-- Easy to debug: almost everything hot-reloads instantly, and convenient developer tools provide visual debugging. ApricityUI has both.
+- Easy to debug: almost everything hot-reloads instantly, and convenient developer tools provide visual debugging. KltytonUI has both.
 
-Note: ApricityUI does not bundle a Chrome runtime. It is built entirely from scratch in Java; as of 1.2.4 the jar is only 2.5 MB, it downloads nothing extra, and it is safe to use.
+Note: KltytonUI does not bundle a Chrome runtime. It is built entirely from scratch in Java; as of 1.2.4 the jar is only 2.5 MB, it downloads nothing extra, and it is safe to use.
 
 ### Showcase
 
@@ -94,17 +93,17 @@ Rich text editors can be built in a data-driven way.
 
 ### WebView
 
-So that different mods' UIs can stay independent while still interacting with each other, ApricityUI uses a multi-document architecture. That removes most of the point of the `iframe` tag, and Minecraft rarely needs nested interfaces anyway — so today ApricityUI's `iframe` tag is used entirely to embed WebView.
+So that different mods' UIs can stay independent while still interacting with each other, KltytonUI uses a multi-document architecture. That removes most of the point of the `iframe` tag, and Minecraft rarely needs nested interfaces anyway — so today KltytonUI's `iframe` tag is used entirely to embed WebView.
 
 Put simply, creating a document with an `iframe` tag actually opens a WebView and draws it off-screen into the iframe's area.
 
-WebView's drawbacks are obvious: from either Java or KubeJS it is hard to find an elegant way to interact with it logically, so ApricityUI currently only forwards hardware input to it.
+WebView's drawbacks are obvious: from either Java or KubeJS it is hard to find an elegant way to interact with it logically, so KltytonUI currently only forwards hardware input to it.
 
 Its high memory use also makes WebView a poor fit for overlays and world windows.
 
 A small number of environments do not ship a WebView at all (Linux, for example), but this mod will **never** embed one.
 
-The upside is that WebView partly compensates for ApricityUI's incomplete coverage of browser standards. It can draw complex pages that have little to do with the game, or open external sites directly — live documentation, changelogs, mod tutorial videos — and it supports building an in-world cinema.
+The upside is that WebView partly compensates for KltytonUI's incomplete coverage of browser standards. It can draw complex pages that have little to do with the game, or open external sites directly — live documentation, changelogs, mod tutorial videos — and it supports building an in-world cinema.
 
 ![Watching a website video through WebView](https://resource-api.xyeidc.com//client/members/pics/53f3fe20)
 
@@ -112,7 +111,7 @@ The upside is that WebView partly compensates for ApricityUI's incomplete covera
 
 Note: All documents and skills are built into the module file, and AI is ready to use.
 
-Using ApricityUI requires no knowledge of the source code. If you need it, the official Maven is available:
+Using KltytonUI requires no knowledge of the source code. If you need it, the official Maven is available:
 ```Groovy
 repositories {
     maven {
@@ -120,11 +119,11 @@ repositories {
     }
 }
 dependencies {
-    implementation 'com.sighs:ApricityUI-forge-1.20.1:1.2.7'
+    implementation 'io.github.kltyton.kltytonui:KltytonUI-forge-1.20.1:1.2.7'
 }
 ```
 
-Developing Web apps with AI is very easy — you do not even need a SKILL, and the same goes for ApricityUI.
+Developing Web apps with AI is very easy — you do not even need a SKILL, and the same goes for KltytonUI.
 
 A simple example: one sentence generates an interface.
 
@@ -146,14 +145,14 @@ Inside an AI coding agent you can phrase it this way to keep iterating on a desi
 ```
 The task is to create or modify a UI; only HTML/CSS/JS may be changed.
 Follow the guidance in the bundled documentation.
-Known: the folder run/screenshots/aui outputs a game screenshot every second; static assets are watched automatically and trigger a reload on change.
+Known: the folder run/screenshots/kui outputs a game screenshot every second; static assets are watched automatically and trigger a reload on change.
 Test loop: edit the html/css/js files -> watch the log for the reload message -> wait three seconds, then check the newest screenshot in the screenshots folder -> judge whether it matches the requirement; if not, keep editing, if yes, stop.
-Target HTML file: run/apricity/test/quest.html
+Target HTML file: run/kltytonui/test/quest.html
 Required result: an in-game quest list, modern flat style, red and white palette
 Reference image: run/screenshots/image_614748742442633.png
 ```
 
-The full SKILL is documented in the [official docs](https://doc.sighs.cc/en/ApricityUI/skill) and is bundled in the jar with the full docs.
+The full SKILL is documented in the [official docs](https://doc.sighs.cc/en/KltytonUI/skill) and is bundled in the jar with the full docs.
 
 Complex UI needs are rare in Minecraft. In general, letting AI read the bundled documentation is enough to finish most design work in one pass, and with a built-in theme the result already looks good.
 
@@ -169,24 +168,24 @@ You can also borrow ready-made styles from [Codepen](https://codepen.io/). If yo
 
 ### Asset distribution
 
-ApricityUI supports HTML, CSS, Javascript, TTF/OTF fonts, and most image formats including GIF as static assets; audio and video are planned.  
-Assets live in the `apricity` folder of the version instance and in resource packs. Resource packs have lower priority, but the default global styles and built-in fonts ship in the mod's own resources.  
-For modpack developers, the `apricity` folder is the recommended location. Hot reload is bound to `END` by default and usually takes under a second.
+KltytonUI supports HTML, CSS, Javascript, TTF/OTF fonts, and most image formats including GIF as static assets; audio and video are planned.  
+Assets live in the `kltytonui` folder of the version instance and in resource packs. Resource packs have lower priority, but the default global styles and built-in fonts ship in the mod's own resources.  
+For modpack developers, the `kltytonui` folder is the recommended location. Hot reload is bound to `END` by default and usually takes under a second.
 
-See the [Resource Manager](https://doc.sighs.cc/en/ApricityUI/guide/resource-manager/) chapter of the official docs for details.
+See the [Resource Manager](https://doc.sighs.cc/en/KltytonUI/guide/resource-manager/) chapter of the official docs for details.
 
 If you want to package and share, either a resource pack or a plain archive works. Since a resource pack also requires reloading the game, a simple archive is recommended.  
-For mods that use ApricityUI as a dependency, the resource-pack form is better: the default load paths include the development resource-pack path with the highest priority, which is very convenient.  
-Another option is network assets, such as image hosts or open-source static hosting sites. ApricityUI supports loading network assets asynchronously — just do not do anything bad with it.
+For mods that use KltytonUI as a dependency, the resource-pack form is better: the default load paths include the development resource-pack path with the highest priority, which is very convenient.  
+Another option is network assets, such as image hosts or open-source static hosting sites. KltytonUI supports loading network assets asynchronously — just do not do anything bad with it.
 
-ApricityUI also offers a retro "server sends HTML to the client to render" workflow, which lets you manage the client UI entirely from the server.
+KltytonUI also offers a retro "server sends HTML to the client to render" workflow, which lets you manage the client UI entirely from the server.
 
 ### Want to know more?
 
-- ApricityUI also implements browser-style zoom: hold CTRL and scroll on a page to zoom in and out, so players can adapt to any window size.
+- KltytonUI also implements browser-style zoom: hold CTRL and scroll on a page to zoom in and out, so players can adapt to any window size.
 - KubeJS is an optional dependency. Without it you cannot run the JavaScript written inside HTML, and the console is unavailable — but for mod developers that rarely matters, since DOM work can be done in Java.
 - Hot reload is fast: twenty different QQ avatars plus three custom fonts, including inline JS, reload a whole document in about one second. If you write KubeJS client scripts you might even use it to cut corners — though the resource paths offer no PJS completion. Note that this reload does not reload resource packs.
-- ApricityUI has no obvious performance bottleneck in normal use, and on 26.1 and above there is almost nothing to worry about. But the author cannot test every case — if you happen to hit a sudden stutter, please report it immediately.
+- KltytonUI has no obvious performance bottleneck in normal use, and on 26.1 and above there is almost nothing to worry about. But the author cannot test every case — if you happen to hit a sudden stutter, please report it immediately.
 - Lightweight ports of modern front-end frameworks such as Vue and Svelte are in active development. A simple Vue already has a PR from kltyton, and Svelte will be built in later. Join the group if you are interested!
 
 ### Gallery

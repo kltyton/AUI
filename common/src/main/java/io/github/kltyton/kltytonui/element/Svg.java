@@ -1,0 +1,592 @@
+package io.github.kltyton.kltytonui.element;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+import io.github.kltyton.kltytonui.canvas.CanvasPath2D;
+import io.github.kltyton.kltytonui.canvas.BrowserImage;
+import io.github.kltyton.kltytonui.init.Document;
+import io.github.kltyton.kltytonui.init.Element;
+import io.github.kltyton.kltytonui.init.Node;
+import io.github.kltyton.kltytonui.registry.annotation.ElementRegister;
+import io.github.kltyton.kltytonui.render.Base;
+import io.github.kltyton.kltytonui.render.ImageDrawer;
+import io.github.kltyton.kltytonui.render.Rect;
+import io.github.kltyton.kltytonui.layout.Box;
+import io.github.kltyton.kltytonui.parser.Color;
+import io.github.kltyton.kltytonui.layout.Position;
+import io.github.kltyton.kltytonui.layout.Size;
+import io.github.kltyton.kltytonui.style.Style;
+
+import java.awt.BasicStroke;
+import java.awt.AlphaComposite;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
+import java.awt.geom.PathIterator;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.util.Locale;
+
+@ElementRegister(Svg.TAG_NAME)
+public class Svg extends Canvas {
+    public static final String TAG_NAME = "SVG";
+    private static final int RASTER_SCALE = 4;
+    private static final String[] RASTER_FINGERPRINT_ATTRIBUTES = {
+            "color", "fill", "stroke", "stroke-width", "stroke-linecap", "stroke-linejoin",
+            "opacity", "fill-opacity", "stroke-opacity", "fill-rule", "d", "cx", "cy", "r",
+            "x", "y", "width", "height", "rx", "ry", "x1", "y1", "x2", "y2",
+            "href", "xlink:href", "preserveAspectRatio"
+    };
+    private double rasterLayoutWidth = -1;
+    private double rasterLayoutHeight = -1;
+    private int intrinsicViewportWidth = 1;
+    private int intrinsicViewportHeight = 1;
+    private long rasterSubtreeMutationVersion = Long.MIN_VALUE;
+    private long rasterStyleFingerprint = Long.MIN_VALUE;
+    private int rasterSurfaceWidth = -1;
+    private int rasterSurfaceHeight = -1;
+
+    public Svg(Document document) {
+        super(document);
+        this.tagName = TAG_NAME;
+    }
+
+    @Override
+    protected void onInitFromDom(Element origin) {
+        super.onInitFromDom(origin);
+        syncViewportAttributes();
+    }
+
+    @Override
+    public void setAttribute(String name, String value) {
+        super.setAttribute(name, value);
+        if (name != null && ("viewbox".equalsIgnoreCase(name) || "width".equalsIgnoreCase(name) || "height".equalsIgnoreCase(name))) {
+            syncViewportAttributes();
+        }
+    }
+
+    @Override
+    public void removeAttribute(String name) {
+        super.removeAttribute(name);
+        if (name != null && ("viewbox".equalsIgnoreCase(name) || "width".equalsIgnoreCase(name) || "height".equalsIgnoreCase(name))) {
+            syncViewportAttributes();
+        }
+    }
+
+    @Override
+    public void drawPhase(PoseStack poseStack, Base.RenderPhase phase) {
+        Rect rectRenderer = Rect.of(this);
+        switch (phase) {
+            case SHADOW -> rectRenderer.drawShadow(poseStack);
+            case BODY -> {
+                rectRenderer.drawBody(poseStack);
+                renderVectorSurface();
+                drawCanvas(poseStack, rectRenderer);
+            }
+            case BORDER -> rectRenderer.drawBorder(poseStack);
+        }
+    }
+
+    private void syncViewportAttributes() {
+        double[] viewBox = parseViewBox();
+        int width = parseDimension(getAttribute("width"), (int) Math.round(Math.max(1d, viewBox[2])));
+        int height = parseDimension(getAttribute("height"), (int) Math.round(Math.max(1d, viewBox[3])));
+        intrinsicViewportWidth = width;
+        intrinsicViewportHeight = height;
+        resizeSurface(width, height, false);
+    }
+
+    @Override
+    public Size getIntrinsicSize() {
+        return new Size(intrinsicViewportWidth, intrinsicViewportHeight);
+    }
+
+    private void renderVectorSurface() {
+        syncSurfaceToLayoutSize();
+        long subtreeMutationVersion = getSubtreeMutationVersion();
+        long styleFingerprint = svgStyleFingerprint(this, 17L);
+        if (rasterSubtreeMutationVersion == subtreeMutationVersion
+                && rasterStyleFingerprint == styleFingerprint
+                && rasterSurfaceWidth == getWidth()
+                && rasterSurfaceHeight == getHeight()) {
+            return;
+        }
+        renderOperation(graphics -> {
+            graphics.setComposite(java.awt.AlphaComposite.Clear);
+            graphics.fill(new Rectangle2D.Double(0, 0, getWidth(), getHeight()));
+            graphics.setComposite(java.awt.AlphaComposite.SrcOver);
+            double surfaceWidth = getWidth();
+            double surfaceHeight = getHeight();
+            if (surfaceWidth <= 0 || surfaceHeight <= 0) {
+                return;
+            }
+            String shapeRendering = resolveShapeRendering(
+                    getComputedStyle().shapeRendering, getAttribute("shape-rendering"));
+            boolean crispEdges = "crispedges".equalsIgnoreCase(shapeRendering)
+                    || "optimizespeed".equalsIgnoreCase(shapeRendering);
+            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    crispEdges ? RenderingHints.VALUE_ANTIALIAS_OFF : RenderingHints.VALUE_ANTIALIAS_ON);
+            graphics.setRenderingHint(RenderingHints.KEY_RENDERING,
+                    crispEdges ? RenderingHints.VALUE_RENDER_SPEED : RenderingHints.VALUE_RENDER_QUALITY);
+            graphics.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
+                    crispEdges ? RenderingHints.VALUE_STROKE_NORMALIZE : RenderingHints.VALUE_STROKE_PURE);
+            double[] viewBox = parseViewBox();
+            ViewBoxTransform viewBoxTransform = resolveViewBoxTransform(
+                    surfaceWidth, surfaceHeight,
+                    viewBox[0], viewBox[1], viewBox[2], viewBox[3],
+                    getAttribute("preserveAspectRatio"));
+            AffineTransform original = graphics.getTransform();
+            graphics.translate(viewBoxTransform.offsetX(), viewBoxTransform.offsetY());
+            graphics.scale(viewBoxTransform.scaleX(), viewBoxTransform.scaleY());
+            graphics.translate(-viewBox[0], -viewBox[1]);
+            SvgPaint inheritedPaint = SvgPaint.fromElement(this, currentColorArgb(), "black", "none", 1.0,
+                    "butt", "miter", 1.0, 1.0, 1.0);
+            drawSvgSubtree(graphics, this, inheritedPaint);
+            graphics.setTransform(original);
+        });
+        rasterSubtreeMutationVersion = subtreeMutationVersion;
+        rasterStyleFingerprint = styleFingerprint;
+        rasterSurfaceWidth = getWidth();
+        rasterSurfaceHeight = getHeight();
+    }
+
+    private void syncSurfaceToLayoutSize() {
+        Size contentSize = Box.of(this).innerSize();
+        if (contentSize.width() <= 0 || contentSize.height() <= 0) return;
+        rasterLayoutWidth = contentSize.width();
+        rasterLayoutHeight = contentSize.height();
+        String shapeRendering = resolveShapeRendering(
+                getComputedStyle().shapeRendering, getAttribute("shape-rendering"));
+        double documentPixelScale = document == null ? 1.0d : document.getViewport().scissorScale();
+        double rasterScale = rasterScaleFor(shapeRendering, documentPixelScale);
+        int surfaceWidth = Math.max(1, (int) Math.ceil(contentSize.width() * rasterScale));
+        int surfaceHeight = Math.max(1, (int) Math.ceil(contentSize.height() * rasterScale));
+        if (surfaceWidth == getWidth() && surfaceHeight == getHeight()) return;
+        resizeSurface(surfaceWidth, surfaceHeight, false);
+    }
+
+    @Override
+    protected void drawCanvas(PoseStack poseStack, Rect rectRenderer) {
+        syncTexture();
+        if (textureLocation == null) return;
+
+        Position contentPos = rectRenderer.getContentPosition();
+        Size contentSize = Box.of(this).innerSize();
+        double drawWidth = rasterLayoutWidth > 0 ? rasterLayoutWidth : contentSize.width();
+        double drawHeight = rasterLayoutHeight > 0 ? rasterLayoutHeight : contentSize.height();
+        if (drawWidth <= 0 || drawHeight <= 0) return;
+
+        Style style = getComputedStyle();
+        String shapeRendering = resolveShapeRendering(style.shapeRendering, getAttribute("shape-rendering"));
+        boolean linearSampling = useLinearSampling(style.imageRendering, shapeRendering);
+        ImageDrawer.ObjectFitRect drawRect = new ImageDrawer.ObjectFitRect(
+                (float) contentPos.x, (float) contentPos.y, (float) drawWidth, (float) drawHeight);
+        if (!linearSampling) {
+            double scale = document == null ? 1.0d : document.getViewport().scissorScale();
+            drawRect = ImageDrawer.snapToDevicePixels(drawRect, scale);
+        }
+        ImageDrawer.draw(
+                poseStack,
+                textureLocation,
+                drawRect.x(),
+                drawRect.y(),
+                drawRect.width(),
+                drawRect.height(),
+                linearSampling
+        );
+    }
+
+    static boolean useLinearSampling(String imageRendering, String shapeRendering) {
+        if (imageRendering != null && !imageRendering.isBlank()
+                && !"auto".equalsIgnoreCase(imageRendering) && !"unset".equalsIgnoreCase(imageRendering)) {
+            return !"pixelated".equalsIgnoreCase(imageRendering)
+                    && !"crisp-edges".equalsIgnoreCase(imageRendering);
+        }
+        return !"crispedges".equalsIgnoreCase(shapeRendering)
+                && !"optimizespeed".equalsIgnoreCase(shapeRendering);
+    }
+
+    static String resolveShapeRendering(String cssValue, String attributeValue) {
+        if (cssValue != null && !cssValue.isBlank()
+                && !"auto".equalsIgnoreCase(cssValue) && !"unset".equalsIgnoreCase(cssValue)) {
+            return cssValue;
+        }
+        return attributeValue == null ? cssValue : attributeValue;
+    }
+
+    static double rasterScaleFor(String shapeRendering, double documentPixelScale) {
+        boolean crispEdges = "crispedges".equalsIgnoreCase(shapeRendering)
+                || "optimizespeed".equalsIgnoreCase(shapeRendering);
+        if (!crispEdges) return RASTER_SCALE;
+        return Double.isFinite(documentPixelScale) && documentPixelScale > 0.0d
+                ? documentPixelScale : 1.0d;
+    }
+
+    private void drawSvgSubtree(Graphics2D graphics, Element parent, SvgPaint inheritedPaint) {
+        if (parent == null) return;
+        SvgPaint currentPaint = SvgPaint.fromElement(parent, inheritedPaint.currentColor, inheritedPaint.fill,
+                inheritedPaint.stroke, inheritedPaint.strokeWidth, inheritedPaint.lineCap, inheritedPaint.lineJoin,
+                inheritedPaint.opacity, inheritedPaint.fillOpacity, inheritedPaint.strokeOpacity);
+        for (Node child : parent.getChildNodes()) {
+            if (!(child instanceof Element childElement)) continue;
+            String tag = childElement.tagName == null ? "" : childElement.tagName.toUpperCase(Locale.ROOT);
+            if (Path.TAG_NAME.equals(tag)) {
+                drawPath(graphics, childElement, currentPaint);
+                continue;
+            }
+            if ("IMAGE".equals(tag)) {
+                SvgPaint imagePaint = SvgPaint.fromElement(childElement, currentPaint.currentColor, currentPaint.fill,
+                        currentPaint.stroke, currentPaint.strokeWidth, currentPaint.lineCap, currentPaint.lineJoin,
+                        currentPaint.opacity, currentPaint.fillOpacity, currentPaint.strokeOpacity);
+                drawEmbeddedImage(graphics, childElement, imagePaint.opacity);
+                continue;
+            }
+            Shape shape = shapeForElement(childElement, tag);
+            if (shape != null) {
+                drawShape(graphics, childElement, shape, currentPaint);
+                continue;
+            }
+            drawSvgSubtree(graphics, childElement, currentPaint);
+        }
+    }
+
+    private void drawPath(Graphics2D graphics, Element pathElement, SvgPaint inheritedPaint) {
+        String d = pathElement.getAttribute("d");
+        if (d == null || d.isBlank()) return;
+        CanvasPath2D canvasPath = new CanvasPath2D(d);
+        if ("evenodd".equalsIgnoreCase(pathElement.getAttribute("fill-rule"))) {
+            canvasPath.setWindingRule(Path2D.WIND_EVEN_ODD);
+        }
+        Shape shape = canvasPath.asShape();
+        if (shape == null || shape.getBounds2D().isEmpty()) return;
+        drawShape(graphics, pathElement, shape, inheritedPaint);
+    }
+
+    private Shape shapeForElement(Element element, String tag) {
+        return switch (tag) {
+            case "CIRCLE" -> circleShape(element);
+            case "ELLIPSE" -> ellipseShape(element);
+            case "RECT" -> rectShape(element);
+            case "LINE" -> lineShape(element);
+            case "POLYLINE" -> pointsShape(element, false);
+            case "POLYGON" -> pointsShape(element, true);
+            default -> null;
+        };
+    }
+
+    private Shape circleShape(Element element) {
+        double r = parseSvgNumber(element.getAttribute("r"), 0);
+        if (r <= 0) return null;
+        double cx = parseSvgNumber(element.getAttribute("cx"), 0);
+        double cy = parseSvgNumber(element.getAttribute("cy"), 0);
+        return new Ellipse2D.Double(cx - r, cy - r, r * 2, r * 2);
+    }
+
+    private Shape ellipseShape(Element element) {
+        double rx = parseSvgNumber(element.getAttribute("rx"), 0);
+        double ry = parseSvgNumber(element.getAttribute("ry"), 0);
+        if (rx <= 0 || ry <= 0) return null;
+        double cx = parseSvgNumber(element.getAttribute("cx"), 0);
+        double cy = parseSvgNumber(element.getAttribute("cy"), 0);
+        return new Ellipse2D.Double(cx - rx, cy - ry, rx * 2, ry * 2);
+    }
+
+    private Shape rectShape(Element element) {
+        double width = parseSvgNumber(element.getAttribute("width"), 0);
+        double height = parseSvgNumber(element.getAttribute("height"), 0);
+        if (width <= 0 || height <= 0) return null;
+        double x = parseSvgNumber(element.getAttribute("x"), 0);
+        double y = parseSvgNumber(element.getAttribute("y"), 0);
+        return new Rectangle2D.Double(x, y, width, height);
+    }
+
+    private Shape lineShape(Element element) {
+        double x1 = parseSvgNumber(element.getAttribute("x1"), 0);
+        double y1 = parseSvgNumber(element.getAttribute("y1"), 0);
+        double x2 = parseSvgNumber(element.getAttribute("x2"), 0);
+        double y2 = parseSvgNumber(element.getAttribute("y2"), 0);
+        return new Line2D.Double(x1, y1, x2, y2);
+    }
+
+    private Shape pointsShape(Element element, boolean close) {
+        String raw = element.getAttribute("points");
+        if (raw == null || raw.isBlank()) return null;
+        String[] parts = raw.trim().split("[,\\s]+");
+        if (parts.length < 4) return null;
+        Path2D.Double path = new Path2D.Double();
+        path.moveTo(parseSvgNumber(parts[0], 0), parseSvgNumber(parts[1], 0));
+        for (int i = 2; i + 1 < parts.length; i += 2) {
+            path.lineTo(parseSvgNumber(parts[i], 0), parseSvgNumber(parts[i + 1], 0));
+        }
+        if (close) path.closePath();
+        return path;
+    }
+
+    private void drawShape(Graphics2D graphics, Element pathElement, Shape shape, SvgPaint inheritedPaint) {
+        SvgPaint paint = SvgPaint.fromElement(pathElement, inheritedPaint.currentColor, inheritedPaint.fill,
+                inheritedPaint.stroke, inheritedPaint.strokeWidth, inheritedPaint.lineCap, inheritedPaint.lineJoin,
+                inheritedPaint.opacity, inheritedPaint.fillOpacity, inheritedPaint.strokeOpacity);
+
+        if (!"none".equalsIgnoreCase(paint.fill)) {
+            graphics.setColor(toAwtColor(resolveSvgColor(paint.fill, paint.currentColor), paint.opacity * paint.fillOpacity));
+            if (RenderingHints.VALUE_ANTIALIAS_OFF.equals(
+                    graphics.getRenderingHint(RenderingHints.KEY_ANTIALIASING))) {
+                AffineTransform original = graphics.getTransform();
+                Shape snapped = snapFilledShape(shape, original);
+                graphics.setTransform(new AffineTransform());
+                graphics.fill(snapped);
+                graphics.setTransform(original);
+            } else {
+                graphics.fill(shape);
+            }
+        }
+
+        if (!"none".equalsIgnoreCase(paint.stroke)) {
+            graphics.setColor(toAwtColor(resolveSvgColor(paint.stroke, paint.currentColor), paint.opacity * paint.strokeOpacity));
+            graphics.setStroke(new BasicStroke(
+                    (float) Math.max(0.1d, paint.strokeWidth),
+                    switch (paint.lineCap) {
+                        case "round" -> BasicStroke.CAP_ROUND;
+                        case "square" -> BasicStroke.CAP_SQUARE;
+                        default -> BasicStroke.CAP_BUTT;
+                    },
+                    switch (paint.lineJoin) {
+                        case "round" -> BasicStroke.JOIN_ROUND;
+                        case "bevel" -> BasicStroke.JOIN_BEVEL;
+                        default -> BasicStroke.JOIN_MITER;
+                    }
+            ));
+            graphics.draw(shape);
+        }
+    }
+
+    static boolean drawEmbeddedImage(Graphics2D graphics, Element imageElement, double opacity) {
+        if (graphics == null || imageElement == null) return false;
+        String href = firstNonBlank(imageElement.getAttribute("href"), imageElement.getAttribute("xlink:href"));
+        BufferedImage image = BrowserImage.decodeSource(href);
+        if (image == null) return false;
+
+        double x = parseSvgNumber(imageElement.getAttribute("x"), 0.0d);
+        double y = parseSvgNumber(imageElement.getAttribute("y"), 0.0d);
+        double width = parseSvgNumber(imageElement.getAttribute("width"), image.getWidth());
+        double height = parseSvgNumber(imageElement.getAttribute("height"), image.getHeight());
+        if (!(width > 0.0d) || !(height > 0.0d)) return false;
+
+        ViewBoxTransform fit = resolveViewBoxTransform(
+                width, height, 0.0d, 0.0d, image.getWidth(), image.getHeight(),
+                imageElement.getAttribute("preserveAspectRatio"));
+        Graphics2D child = (Graphics2D) graphics.create();
+        try {
+            child.clip(new Rectangle2D.Double(x, y, width, height));
+            child.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
+                    (float) clampOpacity(opacity)));
+            boolean crisp = RenderingHints.VALUE_ANTIALIAS_OFF.equals(
+                    graphics.getRenderingHint(RenderingHints.KEY_ANTIALIASING));
+            child.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                    crisp ? RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR
+                            : RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            child.translate(x + fit.offsetX(), y + fit.offsetY());
+            child.scale(fit.scaleX(), fit.scaleY());
+            child.drawImage(image, 0, 0, null);
+            return true;
+        } finally {
+            child.dispose();
+        }
+    }
+
+    static Shape snapFilledShape(Shape shape, AffineTransform transform) {
+        Shape transformed = transform.createTransformedShape(shape);
+        PathIterator iterator = transformed.getPathIterator(null);
+        Path2D.Double snapped = new Path2D.Double(iterator.getWindingRule());
+        double[] points = new double[6];
+        while (!iterator.isDone()) {
+            int segment = iterator.currentSegment(points);
+            switch (segment) {
+                case PathIterator.SEG_MOVETO -> snapped.moveTo(Math.rint(points[0]), Math.rint(points[1]));
+                case PathIterator.SEG_LINETO -> snapped.lineTo(Math.rint(points[0]), Math.rint(points[1]));
+                case PathIterator.SEG_QUADTO -> snapped.quadTo(
+                        Math.rint(points[0]), Math.rint(points[1]),
+                        Math.rint(points[2]), Math.rint(points[3]));
+                case PathIterator.SEG_CUBICTO -> snapped.curveTo(
+                        Math.rint(points[0]), Math.rint(points[1]),
+                        Math.rint(points[2]), Math.rint(points[3]),
+                        Math.rint(points[4]), Math.rint(points[5]));
+                case PathIterator.SEG_CLOSE -> snapped.closePath();
+                default -> throw new IllegalStateException("Unsupported SVG path segment " + segment);
+            }
+            iterator.next();
+        }
+        return snapped;
+    }
+
+    private int currentColorArgb() {
+        String computedColor = getComputedStyle() == null ? null : getComputedStyle().color;
+        if (computedColor == null || computedColor.isBlank() || "unset".equalsIgnoreCase(computedColor)) {
+            computedColor = getAttribute("color");
+        }
+        if (computedColor == null || computedColor.isBlank() || "unset".equalsIgnoreCase(computedColor)) {
+            computedColor = "#000000";
+        }
+        return Color.parse(computedColor);
+    }
+
+    private static int resolveCurrentColor(Element element, int fallback) {
+        if (element == null) return fallback;
+        String color = firstNonBlank(element.getAttribute("color"), element.getComputedStyle() == null ? null : element.getComputedStyle().color);
+        if (color == null || color.isBlank() || "unset".equalsIgnoreCase(color)) return fallback;
+        return Color.parse(color);
+    }
+
+    private int resolveSvgColor(String value, int currentColor) {
+        if (value == null || value.isBlank()) return currentColor;
+        if ("currentcolor".equalsIgnoreCase(value)) return currentColor;
+        return Color.parse(value);
+    }
+
+    private java.awt.Color toAwtColor(int argb, double opacityMultiplier) {
+        int a = (argb >>> 24) & 0xFF;
+        int r = (argb >>> 16) & 0xFF;
+        int g = (argb >>> 8) & 0xFF;
+        int b = argb & 0xFF;
+        a = (int) Math.round(a * clampOpacity(opacityMultiplier));
+        return new java.awt.Color(r, g, b, a);
+    }
+
+    private static long svgStyleFingerprint(Element element, long value) {
+        if (element == null) return value;
+        String color = element.getComputedStyle() == null ? null : element.getComputedStyle().color;
+        value = mixStyleFingerprint(value, color);
+        for (String attribute : RASTER_FINGERPRINT_ATTRIBUTES) {
+            value = mixStyleFingerprint(value, element.getAttribute(attribute));
+        }
+        for (Node child : element.childNodes) {
+            if (child instanceof Element childElement) {
+                value = svgStyleFingerprint(childElement, value);
+            }
+        }
+        return value;
+    }
+
+    private static long mixStyleFingerprint(long value, String component) {
+        return (value * 0x9E3779B185EBCA87L) ^ (component == null ? 0 : component.hashCode());
+    }
+
+    private double[] parseViewBox() {
+        String raw = firstNonBlank(getAttribute("viewBox"), getAttribute("viewbox"));
+        if (raw == null || raw.isBlank()) {
+            return new double[]{0, 0, Math.max(1, getWidth()), Math.max(1, getHeight())};
+        }
+        String[] parts = raw.trim().split("[,\\s]+");
+        if (parts.length < 4) {
+            return new double[]{0, 0, Math.max(1, getWidth()), Math.max(1, getHeight())};
+        }
+        return new double[]{
+                parseSvgNumber(parts[0], 0),
+                parseSvgNumber(parts[1], 0),
+                Math.max(1d, parseSvgNumber(parts[2], Math.max(1, getWidth()))),
+                Math.max(1d, parseSvgNumber(parts[3], Math.max(1, getHeight())))
+        };
+    }
+
+    private static double parseSvgNumber(String raw, double fallback) {
+        if (raw == null || raw.isBlank()) return fallback;
+        try {
+            return Double.parseDouble(raw.trim());
+        } catch (NumberFormatException ignored) {
+            return fallback;
+        }
+    }
+
+    private static String firstNonBlank(String... values) {
+        if (values == null) return null;
+        for (String value : values) {
+            if (value != null && !value.isBlank() && !"unset".equalsIgnoreCase(value)) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    private static int parseDimension(String raw, int fallback) {
+        if (raw == null || raw.isBlank()) return Math.max(1, fallback);
+        Double parsed = Size.parseNumber(raw);
+        return parsed == null ? Math.max(1, fallback) : Math.max(1, (int) Math.round(parsed));
+    }
+
+    private static double parseOpacity(String raw, double fallback) {
+        if (raw == null || raw.isBlank()) return fallback;
+        try {
+            return clampOpacity(Double.parseDouble(raw.trim()));
+        } catch (NumberFormatException ignored) {
+            return fallback;
+        }
+    }
+
+    private static double clampOpacity(double value) {
+        if (!Double.isFinite(value)) return 1.0;
+        return Math.max(0.0, Math.min(1.0, value));
+    }
+
+    static ViewBoxTransform resolveViewBoxTransform(double viewportWidth, double viewportHeight,
+                                                    double minX, double minY,
+                                                    double viewBoxWidth, double viewBoxHeight,
+                                                    String preserveAspectRatio) {
+        double safeViewBoxWidth = Math.max(1.0e-9d, viewBoxWidth);
+        double safeViewBoxHeight = Math.max(1.0e-9d, viewBoxHeight);
+        double scaleX = viewportWidth / safeViewBoxWidth;
+        double scaleY = viewportHeight / safeViewBoxHeight;
+        String value = preserveAspectRatio == null || preserveAspectRatio.isBlank()
+                ? "xMidYMid meet"
+                : preserveAspectRatio.trim();
+        String normalized = value.toLowerCase(Locale.ROOT);
+        if (normalized.startsWith("defer ")) normalized = normalized.substring(6).trim();
+        if (normalized.startsWith("none")) {
+            return new ViewBoxTransform(scaleX, scaleY, 0.0d, 0.0d);
+        }
+
+        boolean slice = normalized.endsWith(" slice");
+        double scale = slice ? Math.max(scaleX, scaleY) : Math.min(scaleX, scaleY);
+        double remainingX = viewportWidth - safeViewBoxWidth * scale;
+        double remainingY = viewportHeight - safeViewBoxHeight * scale;
+        double offsetX = normalized.startsWith("xmin") ? 0.0d
+                : normalized.startsWith("xmax") ? remainingX : remainingX / 2.0d;
+        double offsetY = normalized.contains("ymin") ? 0.0d
+                : normalized.contains("ymax") ? remainingY : remainingY / 2.0d;
+        return new ViewBoxTransform(scale, scale, offsetX, offsetY);
+    }
+
+    record ViewBoxTransform(double scaleX, double scaleY, double offsetX, double offsetY) {
+    }
+
+    private record SvgPaint(int currentColor, String fill, String stroke, double strokeWidth, String lineCap, String lineJoin,
+                            double opacity, double fillOpacity, double strokeOpacity) {
+        private static SvgPaint fromElement(Element element, int inheritedColor, String inheritedFill, String inheritedStroke,
+                                            double inheritedStrokeWidth, String inheritedLineCap, String inheritedLineJoin,
+                                            double inheritedOpacity, double inheritedFillOpacity, double inheritedStrokeOpacity) {
+            int color = resolveCurrentColor(element, inheritedColor);
+            String fill = firstNonBlank(
+                    attribute(element, "fill"),
+                    element.getComputedStyle().fill,
+                    inheritedFill,
+                    "black"
+            );
+            Style style = element.getComputedStyle();
+            String stroke = firstNonBlank(attribute(element, "stroke"), style.stroke, inheritedStroke, "none");
+            double strokeWidth = parseSvgNumber(firstNonBlank(attribute(element, "stroke-width"), style.strokeWidth), inheritedStrokeWidth);
+            String lineCap = firstNonBlank(attribute(element, "stroke-linecap"), style.strokeLinecap, inheritedLineCap, "butt").toLowerCase(Locale.ROOT);
+            String lineJoin = firstNonBlank(attribute(element, "stroke-linejoin"), style.strokeLinejoin, inheritedLineJoin, "miter").toLowerCase(Locale.ROOT);
+            double opacity = inheritedOpacity * parseOpacity(firstNonBlank(attribute(element, "opacity"), style.opacity), 1.0);
+            double fillOpacity = parseOpacity(firstNonBlank(attribute(element, "fill-opacity"), style.fillOpacity), inheritedFillOpacity);
+            double strokeOpacity = parseOpacity(firstNonBlank(attribute(element, "stroke-opacity"), style.strokeOpacity), inheritedStrokeOpacity);
+            return new SvgPaint(color, fill, stroke, strokeWidth, lineCap, lineJoin,
+                    clampOpacity(opacity), fillOpacity, strokeOpacity);
+        }
+
+        private static String attribute(Element element, String name) {
+            return element == null ? null : element.getAttribute(name);
+        }
+    }
+}

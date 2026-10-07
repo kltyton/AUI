@@ -6,7 +6,7 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'apricityui-neoforge-26.2'
+rootProject.name = 'kltytonui-neoforge-26.2'
 
 // Attach the shared source tree as a composite build so IDEs (IntelliJ) import
 // common/ as a separate, independently-editable module with its own classpath.

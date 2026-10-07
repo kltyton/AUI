@@ -1,26 +1,26 @@
 ---
-title: Implementing Player Chat Bubbles With AUI
-description: This example uses AUI's WorldWindow class and ClientChatReceivedEvent to show chat bubbles above player heads. It is intended as a reference only.
+title: Implementing Player Chat Bubbles With KUI
+description: This example uses KUI's WorldWindow class and ClientChatReceivedEvent to show chat bubbles above player heads. It is intended as a reference only.
 last_update:
   date: 3/15/2026
   author:
 ---
 
-# Implementing Player Chat Bubbles With AUI
+# Implementing Player Chat Bubbles With KUI
 
-This example uses AUI's `WorldWindow` class. By listening to `ClientChatReceivedEvent`, it reads player chat messages and shows a chat bubble [in-world image UI](./ui-types.md#3-in-world-image-ui) above the sender's head. This is for reference only.
+This example uses KUI's `WorldWindow` class. By listening to `ClientChatReceivedEvent`, it reads player chat messages and shows a chat bubble [in-world image UI](./ui-types.md#3-in-world-image-ui) above the sender's head. This is for reference only.
 
 `PlayerMessageDisplay.java`
 
 ```java
-package com.sighs.apricityui.dev;
+package io.github.kltyton.kltytonui.dev;
 
-import com.sighs.apricityui.ApricityUI;
-import com.sighs.apricityui.init.Drawer;
-import com.sighs.apricityui.init.Element;
-import com.sighs.apricityui.instance.WorldWindow;
-import com.sighs.apricityui.style.Size;
-import com.sighs.apricityui.style.Text;
+import io.github.kltyton.kltytonui.KltytonUI;
+import io.github.kltyton.kltytonui.init.Drawer;
+import io.github.kltyton.kltytonui.init.Element;
+import io.github.kltyton.kltytonui.instance.WorldWindow;
+import io.github.kltyton.kltytonui.style.Size;
+import io.github.kltyton.kltytonui.style.Text;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -41,7 +41,7 @@ import net.minecraftforge.fml.common.Mod;
 
 import java.util.*;
 
-@Mod.EventBusSubscriber(modid = ApricityUI.MODID, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = KltytonUI.MODID, value = Dist.CLIENT)
 public class PlayerMessageDisplay {
     private static final Map<UUID, WorldWindow> messageWindows = new HashMap<>();
     private static final Map<UUID, Player> trackedPlayers = new HashMap<>();
@@ -65,7 +65,7 @@ public class PlayerMessageDisplay {
     private static final long MESSAGE_FADE_MS = 2_000L;
     private static final long MESSAGE_TOTAL_MS = MESSAGE_VISIBLE_MS + MESSAGE_FADE_MS;
 
-    private static final String documentPath = ApricityUI.MODID + "/player_message.html";
+    private static final String documentPath = KltytonUI.MODID + "/player_message.html";
 
     private record ContentSize(float textWidth, float textHeight) {
     }
@@ -344,7 +344,7 @@ public class PlayerMessageDisplay {
 }
 ```
 
-`assets/apricityui/apricity/player_message.html`
+`assets/kltytonui/kltytonui/player_message.html`
 
 ```html
 <body>

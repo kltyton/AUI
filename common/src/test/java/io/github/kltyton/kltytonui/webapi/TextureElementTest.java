@@ -1,0 +1,58 @@
+package io.github.kltyton.kltytonui.webapi;
+
+import io.github.kltyton.kltytonui.element.Texture;
+import io.github.kltyton.kltytonui.init.Document;
+import io.github.kltyton.kltytonui.init.Element;
+import io.github.kltyton.kltytonui.parser.HTML;
+import io.github.kltyton.kltytonui.test.TestRuntime;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class TextureElementTest {
+    @BeforeAll
+    static void registerTextureElement() {
+        Element.register(Texture.TAG_NAME, (document, tagName) -> new Texture(document));
+    }
+
+    @Test
+    void htmlTextureBehavesAsVoidElement() {
+        Document document = TestDocumentFactory.createDocument();
+
+        Element root = HTML.createElement(document, """
+                <div><texture><span>tail</span></div>
+                """);
+
+        assertNotNull(root);
+        assertEquals(2, root.getChildren().size());
+        assertInstanceOf(Texture.class, root.getChildren().get(0));
+        assertEquals("SPAN", root.getChildren().get(1).getNodeName());
+    }
+
+    @Test
+    void sourceInitializesFromHtmlAndTracksRuntimeAttributeChanges() {
+        assumeMinecraftResourceRuntime();
+        Document document = TestDocumentFactory.createDocument();
+        Texture texture = assertInstanceOf(
+                Texture.class,
+                HTML.createElement(document, "<texture src=\"superbwarfare:textures/gun_icon/ak47.png\">")
+        );
+
+        assertEquals("superbwarfare:textures/gun_icon/ak47.png", texture.getCurrentSrc());
+
+        texture.setAttribute("src", "minecraft:textures/gui/icons.png");
+        assertEquals("minecraft:textures/gui/icons.png", texture.getCurrentSrc());
+
+        texture.setAttribute("src", "not a valid resource location");
+        assertEquals("", texture.getCurrentSrc());
+
+        texture.removeAttribute("src");
+        assertEquals("", texture.getCurrentSrc());
+    }
+
+    private static void assumeMinecraftResourceRuntime() {
+        TestRuntime.assumeClassUsable("net.minecraft.resources.ResourceLocation", "texture resource locations");
+    }
+
+}

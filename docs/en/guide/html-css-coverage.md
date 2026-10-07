@@ -1,6 +1,6 @@
 # HTML / CSS Coverage
 
-AUI is a self-built HTML/CSS engine, not an embedded browser. This page answers one question: **which web idioms can be carried over directly, and which will be silently degraded or ignored**.
+KUI is a self-built HTML/CSS engine, not an embedded browser. This page answers one question: **which web idioms can be carried over directly, and which will be silently degraded or ignored**.
 
 Three support tiers:
 
@@ -14,7 +14,7 @@ Overall profile: the selector layer is the most complete; layout is a "common su
 
 ## Migration Cheat Sheet
 
-If you're short on time, read only this section. Before moving a browser page into AUI, check in priority order:
+If you're short on time, read only this section. Before moving a browser page into KUI, check in priority order:
 
 1. **UA styles are zero**: write all styles for h1-h6, p, ul/li yourself; don't use br/hr to express layout;
 2. **Layout to avoid**: float, sticky, grid's areas/auto-flow/named lines, negative margins, table layout;
@@ -31,7 +31,7 @@ A regex-based tokenizer, not a standard tree builder.
 - ✅ All attribute syntaxes, comments, doctype stripping, self-closing and void tags, script/style raw text, always synthesizing html/head/body;
 - 🟡 Only six named entities — `amp apos gt lt nbsp quot` — plus numeric entities; there is pop-stack error recovery, but **no browser-style implicit tag generation** — `<p>` is not auto-closed, `<tbody>` is not inserted;
 - 🟡 A `<script>` with both src and inline content executes **both** (non-standard); no defer/async/module;
-- `<head>` children (title, etc.) don't enter the DOM; there is no `document.title`; `<meta>` only reads the two aui-* specific configs aui-viewport and aui-mouse-events (see the [meta section](apricity-screen#page-meta-configuration)); charset is fixed to UTF-8.
+- `<head>` children (title, etc.) don't enter the DOM; there is no `document.title`; `<meta>` only reads the two kui-* specific configs kui-viewport and kui-mouse-events (see the [meta section](kltytonui-screen#page-meta-configuration)); charset is fixed to UTF-8.
 
 ## HTML Elements
 

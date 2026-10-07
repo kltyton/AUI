@@ -1,24 +1,24 @@
-# AUI 页面开发与调试（AI 专用）
+# KUI 页面开发与调试（AI 专用）
 
-你在为 Minecraft 模组 ApricityUI（AUI）写页面或调试运行中的页面。**本文件覆盖了写出可用页面所需的全部规则**，更细的内容在 GitHub 仓库（见第七步末尾），能获取就看，获取不到以本文件为准。
+你在为 Minecraft 模组 KltytonUI（KUI）写页面或调试运行中的页面。**本文件覆盖了写出可用页面所需的全部规则**，更细的内容在 GitHub 仓库（见第七步末尾），能获取就看，获取不到以本文件为准。
 
-先定个调：AUI 页面就是普通的 HTML/CSS/JS，浏览器常用的特性基本都能用，按正常的 web 方式写就行。只有两条：别用太冷门的特性，别把结构和样式写得过于复杂。真正要注意的是模组本身的东西——路径、页面配置、四种界面形态、容器、调试，这些和 web 经验无关，全在下面。
+先定个调：KUI 页面就是普通的 HTML/CSS/JS，浏览器常用的特性基本都能用，按正常的 web 方式写就行。只有两条：别用太冷门的特性，别把结构和样式写得过于复杂。真正要注意的是模组本身的东西——路径、页面配置、四种界面形态、容器、调试，这些和 web 经验无关，全在下面。
 
 ## 这个模组是什么
 
-AUI 让你用 HTML/CSS/JS 写 Minecraft 界面。它不是内嵌浏览器：HTML 解析、CSS 布局、绘制是自研引擎。支持页面脚本的 target 使用 Rhino（写 `var` + 普通 `function` 最稳）。一个 HTML 文件解析成一个 Document，放进四种宿主之一显示。
+KUI 让你用 HTML/CSS/JS 写 Minecraft 界面。它不是内嵌浏览器：HTML 解析、CSS 布局、绘制是自研引擎。支持页面脚本的 target 使用 Rhino（写 `var` + 普通 `function` 最稳）。一个 HTML 文件解析成一个 Document，放进四种宿主之一显示。
 
-**先确认 loader 和 MC 版本**：页面脚本和 KubeJS 绑定不是所有 target 都提供。Forge 1.20.1、NeoForge 1.21.1 支持页面脚本和 `ApricityUI` KubeJS 绑定；NeoForge 26.1 支持页面脚本，但没有 KubeJS 绑定；Fabric 1.20.1、1.21.1、26.1 当前不执行页面脚本，也没有 KubeJS 绑定。无页面脚本时仍可渲染 HTML/CSS，但依赖 JS 的交互不会运行。完整矩阵见[总览](guide/overview#loader-与脚本支持)。
+**先确认 loader 和 MC 版本**：页面脚本和 KubeJS 绑定不是所有 target 都提供。Forge 1.20.1、NeoForge 1.21.1 支持页面脚本和 `KltytonUI` KubeJS 绑定；NeoForge 26.1 支持页面脚本，但没有 KubeJS 绑定；Fabric 1.20.1、1.21.1、26.1 当前不执行页面脚本，也没有 KubeJS 绑定。无页面脚本时仍可渲染 HTML/CSS，但依赖 JS 的交互不会运行。完整矩阵见[总览](guide/overview#loader-与脚本支持)。
 
 资源管理器、DevTools 和资源重载都有各自的 MC 按键操作，**默认均未绑定**。开始操作前先在 MC 控制设置里绑定它们；左 Alt 默认用于按住释放鼠标。下文按操作名称称呼这些按键。
 
 ## 第一步：你在什么环境？
 
-### 环境 A：Java 模组开发（AUI 作为依赖库）
+### 环境 A：Java 模组开发（KUI 作为依赖库）
 
-特征：你在模组工程里（有 build.gradle、Java 源码），AUI 是依赖。
+特征：你在模组工程里（有 build.gradle、Java 源码），KUI 是依赖。
 
-- 统一入口 `com.sighs.apricityui.ApricityUI` 静态方法：`createDocument(path)`、`screen(path)`、`menu(player, path).bind(...)`、`createWorldWindow(path, pos, distance)`、`getDocument(path)`、`getDocumentByUUID(uuid)`；
+- 统一入口 `io.github.kltyton.kltytonui.KltytonUI` 静态方法：`createDocument(path)`、`screen(path)`、`menu(player, path).bind(...)`、`createWorldWindow(path, pos, distance)`、`getDocument(path)`、`getDocumentByUUID(uuid)`；
 - **线程规则**：一切 DOM/宿主操作必须在客户端线程。异步回调（网络包、线程池）里先 `Minecraft.getInstance().execute(...)` 再碰页面，否则偶发崩溃；
 - **空值约定**：`createDocument` 资源缺失返回 null，要判空；
 - **刷新失效**：页面 refresh/重载会重建整个 DOM，旧 Element 引用、监听器全部失效，重新查询。
@@ -27,13 +27,13 @@ AUI 让你用 HTML/CSS/JS 写 Minecraft 界面。它不是内嵌浏览器：HTML
 
 特征：你在实例目录或整合包仓库里，写 `kubejs/` 下的脚本。
 
-- 在 Forge 1.20.1 和 NeoForge 1.21.1 上，全局对象 `ApricityUI` 注入 KJS，客户端脚本和服务端脚本的方法集**不互通**：客户端管界面（createDocument/screen/createWorldWindow），服务端管容器（menu）；其他 target 请先查上方兼容说明；
+- 在 Forge 1.20.1 和 NeoForge 1.21.1 上，全局对象 `KltytonUI` 注入 KJS，客户端脚本和服务端脚本的方法集**不互通**：客户端管界面（createDocument/screen/createWorldWindow），服务端管容器（menu）；其他 target 请先查上方兼容说明；
 - **创建≠显示**：`createDocument(path)` 建出 Overlay 立即显示；`Document.createInWorld(path)` 单独调用什么都不显示；全屏界面要 `screen(path)`；容器必须服务端 `menu(...).bind(...)`。
 
 ## 第二步：路径规则
 
 - 一切资源用**逻辑路径**：`screens/home.html`。不写 `assets/...` 前缀，不写磁盘路径；
-- 页面文件实际放在 `<游戏目录>/apricity/` 下（如 `<游戏目录>/apricity/screens/home.html`），写完可触发「重载资源」让模组扫到；
+- 页面文件实际放在 `<游戏目录>/kltytonui/` 下（如 `<游戏目录>/kltytonui/screens/home.html`），写完可触发「重载资源」让模组扫到；
 - 页面内引用 CSS/图片/字体用相对路径（相对当前 HTML），`/` 开头表示逻辑资源根；
 - 唯一例外：`<texture>` 的 src 是 MC ResourceLocation（`minecraft:textures/item/diamond.png`），不是逻辑路径。
 
@@ -42,12 +42,12 @@ AUI 让你用 HTML/CSS/JS 写 Minecraft 界面。它不是内嵌浏览器：HTML
 放在 `<head>` 里，只在页面创建和 refresh 时读取：
 
 ```html
-<meta name="aui-viewport" content="mode=browser">
-<meta name="aui-mouse-events" content="intercept">
+<meta name="kui-viewport" content="mode=browser">
+<meta name="kui-mouse-events" content="intercept">
 ```
 
-- **aui-viewport**：`mode` 缺省为 `browser`（跟随窗口，Screen 首选）；`mode=fixed,width=N,height=N` 固定逻辑尺寸（**WorldWindow 必须用它**，否则默认 1920 宽，面板在世界里巨大无比）；`mode=gui` 跟随 MC GUI 缩放（兼容旧页面）。缩放参数 `zoom/min-zoom/max-zoom/zoom-step/user-scalable` 可选，其中 `user-scalable=false` 可禁用 Ctrl+滚轮/Ctrl+`+`/`-`/Ctrl+`0` 缩放；
-- **aui-mouse-events**：写 `intercept` 页面才拦截鼠标。**页面有任何可交互元素就必须写**，否则点击落到游戏而不是页面；纯展示 Overlay 不写（让它穿透）。
+- **kui-viewport**：`mode` 缺省为 `browser`（跟随窗口，Screen 首选）；`mode=fixed,width=N,height=N` 固定逻辑尺寸（**WorldWindow 必须用它**，否则默认 1920 宽，面板在世界里巨大无比）；`mode=gui` 跟随 MC GUI 缩放（兼容旧页面）。缩放参数 `zoom/min-zoom/max-zoom/zoom-step/user-scalable` 可选，其中 `user-scalable=false` 可禁用 Ctrl+滚轮/Ctrl+`+`/`-`/Ctrl+`0` 缩放；
+- **kui-mouse-events**：写 `intercept` 页面才拦截鼠标。**页面有任何可交互元素就必须写**，否则点击落到游戏而不是页面；纯展示 Overlay 不写（让它穿透）。
 
 ## 第四步：选宿主
 
@@ -55,17 +55,17 @@ AUI 让你用 HTML/CSS/JS 写 Minecraft 界面。它不是内嵌浏览器：HTML
 
 | 你要做什么 | 宿主 | 打开方式 | 要点 |
 | --- | --- | --- | --- |
-| 全屏界面：设置页、菜单 | Screen | KJS `ApricityUI.screen("screens/x.html")`；Java `Minecraft.getInstance().setScreen(new ApricityScreen(path))` | meta 按上面配 |
-| HUD、常驻状态、通知 | Overlay | KJS/Java `ApricityUI.createDocument("overlays/x.html")` | 创建即显示；纯展示别配 intercept |
-| 背包、机器——操作**真实物品** | 容器 Screen | **只能**服务端 `ApricityUI.menu(player, path).bind(...)` | 见第六步 |
-| 世界里的显示屏、头顶标签 | WorldWindow | `ApricityUI.createWorldWindow("world/x.html", pos, 32)`（Java 第二参数是 Vec3） | 页面必须 `mode=fixed` 视口；创建即显示 |
+| 全屏界面：设置页、菜单 | Screen | KJS `KltytonUI.screen("screens/x.html")`；Java `Minecraft.getInstance().setScreen(new KltytonScreen(path))` | meta 按上面配 |
+| HUD、常驻状态、通知 | Overlay | KJS/Java `KltytonUI.createDocument("overlays/x.html")` | 创建即显示；纯展示别配 intercept |
+| 背包、机器——操作**真实物品** | 容器 Screen | **只能**服务端 `KltytonUI.menu(player, path).bind(...)` | 见第六步 |
+| 世界里的显示屏、头顶标签 | WorldWindow | `KltytonUI.createWorldWindow("world/x.html", pos, 32)`（Java 第二参数是 Vec3） | 页面必须 `mode=fixed` 视口；创建即显示 |
 
 WorldWindow 补充：`setRotation(Vec3)` 参数顺序是 `(pitch, yaw, roll)`（容易搞反）；`setFacing(true)` 面向玩家；`setFollow(true)` + `setFollowFactor(0.3)` 跟随视线（头顶标签用法）；构造参数的距离是交互射线距离，`setMaxDisplayDistance` 才是显示距离，别搞混。
 
-**从游戏代码操作已打开的页面**：`ApricityUI.getDocument(path)` 返回**列表**（同路径可开多个实例）：
+**从游戏代码操作已打开的页面**：`KltytonUI.getDocument(path)` 返回**列表**（同路径可开多个实例）：
 
 ```javascript
-var docs = ApricityUI.getDocument("screens/hello.html");
+var docs = KltytonUI.getDocument("screens/hello.html");
 if (docs.length > 0) {
     docs[0].getElementById("status").textContent = "HP: 20";
 }
@@ -105,25 +105,25 @@ document.addEventListener("DOMContentLoaded", init);
 **Ore 主题**：内置 MC 风格 CSS 主题（像素边框、深色表面、绿紫金强调色），引一行就有成套组件样式，**别从零写样式**：
 
 ```html
-<link rel="stylesheet" href="/apricityui/theme/ore/ore.css">
+<link rel="stylesheet" href="/kltytonui/theme/ore/ore.css">
 <body class="ore-theme">
 ```
 
 **使用 Ore 前必须读取完整资料，不要只根据下面的类名速查自行猜样式。**按以下顺序获取：
 
-1. 如果当前工作区是 AUI 仓库，直接完整读取本地源文件：
+1. 如果当前工作区是 KUI 仓库，直接完整读取本地源文件：
    - 文档：`docs/guide/ore-theme.md`
-   - 完整主题源码：`common/src/main/resources/assets/apricityui/apricity/apricityui/theme/ore/ore.css`
-   - 完整组件示例：`common/src/main/resources/assets/apricityui/apricity/apricityui/theme/ore/example.html`
+   - 完整主题源码：`common/src/main/resources/assets/kltytonui/kltytonui/kltytonui/theme/ore/ore.css`
+   - 完整组件示例：`common/src/main/resources/assets/kltytonui/kltytonui/kltytonui/theme/ore/example.html`
 2. 如果本地没有这些文件，尝试在线完整读取（不要只读取截断片段）：
-   - 文档：[ore-theme.md](https://raw.githubusercontent.com/Tower-of-Sighs/AUI/refs/heads/snow/docs/guide/ore-theme.md)
-   - `ore.css`：[完整主题源码](https://raw.githubusercontent.com/Tower-of-Sighs/AUI/refs/heads/snow/common/src/main/resources/assets/apricityui/apricity/apricityui/theme/ore/ore.css)
-   - `example.html`：[完整组件示例](https://raw.githubusercontent.com/Tower-of-Sighs/AUI/refs/heads/snow/common/src/main/resources/assets/apricityui/apricity/apricityui/theme/ore/example.html)
+   - 文档：[ore-theme.md](https://raw.githubusercontent.com/kltyton/KltytonUI/refs/heads/snow/docs/guide/ore-theme.md)
+   - `ore.css`：[完整主题源码](https://raw.githubusercontent.com/kltyton/KltytonUI/refs/heads/snow/common/src/main/resources/assets/kltytonui/kltytonui/kltytonui/theme/ore/ore.css)
+   - `example.html`：[完整组件示例](https://raw.githubusercontent.com/kltyton/KltytonUI/refs/heads/snow/common/src/main/resources/assets/kltytonui/kltytonui/kltytonui/theme/ore/example.html)
 3. 只有本地和在线资源都无法获取时，才使用本段速查作为降级依据；此时不要发明未记录的类名、token 或组件行为。
 
 读取时重点确认 `.ore-theme` 根规则、`--ore-*` token、组件完整 DOM 结构、状态/变体类、默认尺寸与背景、响应式规则和浏览器支持限制。业务 CSS 应优先使用 token，只补布局与业务差异；不要重新绘制 `.card`、`.progress` 等已有组件。Overlay 还要特别检查主题根规则是否会绘制整页背景。
 
-类名速查：`.button button-primary/-secondary/-tertiary/-danger`、`.card` + `.card-header/-body/-footer`、`.form-group/.form-label/.form-input`、`.table`（固定四列，列数不同覆写 `tr` 的 `grid-template-columns`）、`.badge`、`.alert`、`.progress` > `.progress-bar`、`.container`、`.stack`/`.cluster`、`.text-center/.text-muted`、`.mt-1..4` 等。Ore 只有样式没有行为——tab 切换、modal 开关自己写 JS。全部组件的运行时演示在游戏内资源管理器中打开 `apricityui/theme/ore/example.html`。
+类名速查：`.button button-primary/-secondary/-tertiary/-danger`、`.card` + `.card-header/-body/-footer`、`.form-group/.form-label/.form-input`、`.table`（固定四列，列数不同覆写 `tr` 的 `grid-template-columns`）、`.badge`、`.alert`、`.progress` > `.progress-bar`、`.container`、`.stack`/`.cluster`、`.text-center/.text-muted`、`.mt-1..4` 等。Ore 只有样式没有行为——tab 切换、modal 开关自己写 JS。全部组件的运行时演示在游戏内资源管理器中打开 `kltytonui/theme/ore/example.html`。
 
 ## 第六步：容器页面（真实物品）
 
@@ -158,7 +158,7 @@ id 对不上 → 槽位全部退化成展示槽位。`saveddata("machine_data", 
 
 ### 内置能力（装好模组就有，优先用这套）
 
-AUI 给"AI 在外面、游戏在跑"的场景内置了一套闭环：**改文件 → 自动重载 → 自动截图 → 看日志**。两个开关都在 `config/apricityui-client.toml` 的 `[debug]` 下：
+KUI 给"AI 在外面、游戏在跑"的场景内置了一套闭环：**改文件 → 自动重载 → 自动截图 → 看日志**。两个开关都在 `config/kltytonui-client.toml` 的 `[debug]` 下：
 
 ```toml
 [debug]
@@ -166,26 +166,26 @@ autoReload = true         # 监听文件变化，自动热重载
 aiAutoScreenshot = true   # 每秒自动截图
 ```
 
-**文件热重载（autoReload）**：开启后模组持续监听资源目录下的 `.html/.css/.js` 文件，保存即生效，不用手动触发「重载资源」。重载是精确到页面的：改 CSS 只给引用了它的页面重挂样式（`@import` 链上游也算），**DOM 和 JS 状态完整保留**——调样式不会丢页面现场；改 HTML/JS 只刷新对应的页面；新建 HTML 只注册模板、不动任何页面；改没被任何打开页面引用的文件则完全不动。这就是 AI 的开发循环：直接改 `<游戏目录>/apricity/` 下的页面文件，改动自动生效，然后截图验证。
+**文件热重载（autoReload）**：开启后模组持续监听资源目录下的 `.html/.css/.js` 文件，保存即生效，不用手动触发「重载资源」。重载是精确到页面的：改 CSS 只给引用了它的页面重挂样式（`@import` 链上游也算），**DOM 和 JS 状态完整保留**——调样式不会丢页面现场；改 HTML/JS 只刷新对应的页面；新建 HTML 只注册模板、不动任何页面；改没被任何打开页面引用的文件则完全不动。这就是 AI 的开发循环：直接改 `<游戏目录>/kltytonui/` 下的页面文件，改动自动生效，然后截图验证。
 
-**自动截图（aiAutoScreenshot）**：开启后**每秒自动截一张游戏画面**，写到 `<游戏目录>/screenshots/aui/`（只保留最新 20 张）。你直接读目录里最新的 PNG 就能看到页面实际渲染效果——布局对不对、样式生没生效、报错长什么样，不用让用户描述。
+**自动截图（aiAutoScreenshot）**：开启后**每秒自动截一张游戏画面**，写到 `<游戏目录>/screenshots/kui/`（只保留最新 20 张）。你直接读目录里最新的 PNG 就能看到页面实际渲染效果——布局对不对、样式生没生效、报错长什么样，不用让用户描述。
 
-**日志**：脚本报错、CSS 解析问题都在 `logs/latest.log`，搜 `[AUI JS]`/`[AUI CSS]`/`[AUI HTML]` 前缀，报错带资源路径。
+**日志**：脚本报错、CSS 解析问题都在 `logs/latest.log`，搜 `[KUI JS]`/`[KUI CSS]`/`[KUI HTML]` 前缀，报错带资源路径。
 
 这三样不需要任何外部工具，是调试的 baseline。
 
 ### MCP 直连运行中的页面（外部工具，能获取就用，获取不到就算了）
 
-模组内置了调试服务（`[debug] remoteDebug = true`，本机 `ws://127.0.0.1:25321/apricity`，连接凭据写在 `run/apricity/debug.json`——**别提交别分享**），但**连它的客户端工具不随模组分发**，在 GitHub 仓库 [Tower-of-Sighs/AUI](https://github.com/Tower-of-Sighs/AUI) 的 `tools/` 目录里：
+模组内置了调试服务（`[debug] remoteDebug = true`，本机 `ws://127.0.0.1:25321/kltytonui`，连接凭据写在 `run/kltytonui/debug.json`——**别提交别分享**），但**连它的客户端工具不随模组分发**，在 GitHub 仓库 [Tower-of-Sighs/KUI](https://github.com/kltyton/KltytonUI) 的 `tools/` 目录里：
 
 - 你就在这个仓库的克隆里工作（本地有 `tools/`）→ 直接用；
-- 不在 → 尝试从 GitHub 获取（raw 文件形如 `https://raw.githubusercontent.com/Tower-of-Sighs/AUI/snow/tools/apricity-mcp/server.mjs`，需要 Node 20+ 并 `npm install`）；
+- 不在 → 尝试从 GitHub 获取（raw 文件形如 `https://raw.githubusercontent.com/kltyton/KltytonUI/main/tools/kltytonui-mcp/server.mjs`，需要 Node 20+ 并 `npm install`）；
 - **获取不到就放弃这条路**——内置三件套已经覆盖"看渲染结果、看报错、改文件验证"，需要点按钮之类的交互验证时，让用户绑定并打开 DevTools 代为操作。
 
 能用时，两种方式接：
 
-1. **MCP 桥** `tools/apricity-mcp/server.mjs`，配进 MCP 客户端（env 指向 debug.json），工具：`apricity_documents`（列 Document 拿 targetId）、`apricity_snapshot`（DOM 树）、`apricity_query`/`apricity_inspect`（查元素）、`apricity_wait_for`（等元素）、`apricity_hover/click/fill`（模拟输入）；
-2. **Node 客户端** `tools/apricity-debug-client.mjs`：`connect()` 默认读 debug.json，`documents()` → `attach(targetId)` → `page.locator("#save").click()`。
+1. **MCP 桥** `tools/kltytonui-mcp/server.mjs`，配进 MCP 客户端（env 指向 debug.json），工具：`kltytonui_documents`（列 Document 拿 targetId）、`kltytonui_snapshot`（DOM 树）、`kltytonui_query`/`kltytonui_inspect`（查元素）、`kltytonui_wait_for`（等元素）、`kltytonui_hover/click/fill`（模拟输入）；
+2. **Node 客户端** `tools/kltytonui-debug-client.mjs`：`connect()` 默认读 debug.json，`documents()` → `attach(targetId)` → `page.locator("#save").click()`。
 
 **调试纪律**（只在接上调试服务后适用）：
 
@@ -198,7 +198,7 @@ aiAutoScreenshot = true   # 每秒自动截图
 
 1. 确认 `autoReload` 和 `aiAutoScreenshot` 开了；
 2. 改页面文件 → 自动重载生效；
-3. 读 `screenshots/aui/` 最新截图，看渲染结果；
+3. 读 `screenshots/kui/` 最新截图，看渲染结果；
 4. 报错看 `logs/latest.log`；
 5. 有 MCP 就用它查 DOM、模拟操作做交互验证；没有就让用户绑定并打开 DevTools 帮你看——它的 DOM 树、拾取模式（点页面元素定位到树）、Inspector 的匹配 CSS 规则列表（哪条生效、被谁覆盖、来自哪个文件）和控制台（脚本输出与报错）能覆盖大部分排查，你告诉用户看什么、把结果转述给你。
 

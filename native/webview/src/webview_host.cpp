@@ -10,7 +10,7 @@
 
 namespace {
 
-const wchar_t* kWindowClass = L"ApricityUIWebViewOffscreen";
+const wchar_t* kWindowClass = L"KltytonUIWebViewOffscreen";
 const UINT kHostWakeMessage = WM_APP + 1;
 
 /**
@@ -191,7 +191,7 @@ void WebViewHost::focus(bool focused) {
 }
 
 void WebViewHost::mouse(int kind, int virtualKeys, int mouseData, int x, int y) {
-    if (kind == AUI_WEBVIEW_MOUSE_MOVE) {
+    if (kind == KUI_WEBVIEW_MOUSE_MOVE) {
         // Keep only the newest position and let the host thread forward it once: a pointer
         // sample that is already stale by the time the browser reads it is pure latency, and
         // a drag produces far more of them than the browser can use.
@@ -207,7 +207,7 @@ void WebViewHost::mouse(int kind, int virtualKeys, int mouseData, int x, int y) 
         }
         return;
     }
-    if (kind == AUI_WEBVIEW_MOUSE_LEAVE) {
+    if (kind == KUI_WEBVIEW_MOUSE_LEAVE) {
         // A queued move must not be forwarded after the pointer has left, or the page keeps
         // its hover state; leave wins.
         pendingMouseMove_ = false;
@@ -234,7 +234,7 @@ void WebViewHost::flushPendingMouseMove() {
     }
     POINT point{pendingMouseX_.load(), pendingMouseY_.load()};
     compositionController_->SendMouseInput(
-            static_cast<COREWEBVIEW2_MOUSE_EVENT_KIND>(AUI_WEBVIEW_MOUSE_MOVE),
+            static_cast<COREWEBVIEW2_MOUSE_EVENT_KIND>(KUI_WEBVIEW_MOUSE_MOVE),
             static_cast<COREWEBVIEW2_MOUSE_EVENT_VIRTUAL_KEYS>(pendingMouseKeys_.load()),
             0, point);
 }
@@ -327,26 +327,26 @@ bool WebViewHost::createWindow(HINSTANCE instance) {
     }
     // Parked off the desktop: the window stays "visible" to the compositor (so the
     // renderer keeps painting and CapturePreview returns real pixels) while the user
-    // never sees it. AUI_WEBVIEW_X/AUI_WEBVIEW_Y override the parking spot for
+    // never sees it. KUI_WEBVIEW_X/KUI_WEBVIEW_Y override the parking spot for
     // diagnosing compositor throttling.
     int originX = -32000;
     int originY = -32000;
     wchar_t envBuffer[32];
-    if (GetEnvironmentVariableW(L"AUI_WEBVIEW_X", envBuffer, 32) > 0) {
+    if (GetEnvironmentVariableW(L"KUI_WEBVIEW_X", envBuffer, 32) > 0) {
         originX = _wtoi(envBuffer);
     }
-    if (GetEnvironmentVariableW(L"AUI_WEBVIEW_Y", envBuffer, 32) > 0) {
+    if (GetEnvironmentVariableW(L"KUI_WEBVIEW_Y", envBuffer, 32) > 0) {
         originY = _wtoi(envBuffer);
     }
     originX_ = originX;
     originY_ = originY;
     windowWidth_ = width_;
     windowHeight_ = height_;
-    // AUI_WEBVIEW_TOPMOST is a diagnostic knob: the composition stream cannot see a window
+    // KUI_WEBVIEW_TOPMOST is a diagnostic knob: the composition stream cannot see a window
     // that something else covers, so this is how to tell "occluded" apart from "capturable
     // content is not exposed at all".
     DWORD exStyle = WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW;
-    if (GetEnvironmentVariableW(L"AUI_WEBVIEW_TOPMOST", envBuffer, 32) > 0 && _wtoi(envBuffer) != 0) {
+    if (GetEnvironmentVariableW(L"KUI_WEBVIEW_TOPMOST", envBuffer, 32) > 0 && _wtoi(envBuffer) != 0) {
         exStyle |= WS_EX_TOPMOST;
     }
     hwnd_ = CreateWindowExW(exStyle, kWindowClass, L"",

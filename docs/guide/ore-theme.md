@@ -5,19 +5,19 @@ Ore 是框架自带的纯 CSS 主题：MC 风格像素边框、深色石材表�
 ## 接入
 
 ```html
-<link rel="stylesheet" href="/apricityui/theme/ore/ore.css">
+<link rel="stylesheet" href="/kltytonui/theme/ore/ore.css">
 <body class="ore-theme">
     <button class="button button-primary">Apply</button>
 </body>
 ```
 
-- href 开头的 `/` 是 AUI 逻辑资源根，不是磁盘根；
+- href 开头的 `/` 是 KUI 逻辑资源根，不是磁盘根；
 - 所有规则以 `.ore-theme` 为作用域，不影响根节点之外的 UI；
 - 自带两个本地字体（`OreRegular` 正文、`OreDisplay` 标题/控件），不依赖网络，加载失败回退系统字体；
 - 默认深色画布背景、16px 字号、box-sizing 传播，但不会帮你铺满屏幕——要满屏自己加 `min-height:100vh`；
 - 许可证 MPL-2.0，随模组分发时保留主题目录里的 `license.txt`。
 
-展示页 `apricityui/theme/ore/example.html` 可以直接用 `new ApricityScreen(...)` 打开，七个页面把所有组件都演示了一遍——**先看它再看本文的类名清单**，比读表格直观。
+展示页 `kltytonui/theme/ore/example.html` 可以直接用 `new KltytonScreen(...)` 打开，七个页面把所有组件都演示了一遍——**先看它再看本文的类名清单**，比读表格直观。
 
 ## 设计 Token
 
@@ -101,7 +101,7 @@ Ore 是框架自带的纯 CSS 主题：MC 风格像素边框、深色石材表�
 新组件统一吃两套状态写法，按你的宿主环境选：
 
 - 属性态：`:checked`、`[disabled]` / `[aria-disabled="true"]`、`[aria-pressed]`、`[aria-selected="true"]`、`[aria-expanded="true"]`、`[aria-invalid="true"]`、`[aria-checked="true"]`、`[data-state="open|closed|on|off|active|loading"]`、`details[open]`；
-- 类名态：`.on` / `.active` / `.show` / `.open` / `.disabled` / `.hidden`，用于纯静态标记或 AUI 不方便挂属性的场景。
+- 类名态：`.on` / `.active` / `.show` / `.open` / `.disabled` / `.hidden`，用于纯静态标记或 KUI 不方便挂属性的场景。
 
 禁用态（`[disabled]`、`.disabled`、`[aria-disabled]`）优先级最高，会盖掉 `:hover` / `:active`。
 

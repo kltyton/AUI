@@ -1,6 +1,6 @@
-# ApricityUI Overview
+# KltytonUI Overview
 
-ApricityUI is a Minecraft mod for building game UIs with HTML, CSS, and JavaScript. It is not an embedded browser; AUI implements its own HTML parsing, CSS layout, and rendering. Page-script support depends on the loader target; see the compatibility matrix below.
+KltytonUI is a Minecraft mod for building game UIs with HTML, CSS, and JavaScript. It is not an embedded browser; KUI implements its own HTML parsing, CSS layout, and rendering. Page-script support depends on the loader target; see the compatibility matrix below.
 
 This page is a map of all capabilities; each direction links to its dedicated topic document.
 
@@ -10,20 +10,20 @@ An HTML page (Document) has four kinds of hosts, covering every Minecraft UI sce
 
 | Host | Scenario | Doc |
 | --- | --- | --- |
-| `ApricityScreen` | Full-screen GUI: settings pages, main-menu-style interfaces | [ApricityScreen](apricity-screen) |
-| `ApricityContainerScreen` | Container interfaces: inventories, machines, storage, with real slots | [Container docs](container) |
+| `KltytonScreen` | Full-screen GUI: settings pages, main-menu-style interfaces | [KltytonScreen](kltytonui-screen) |
+| `KltytonContainerScreen` | Container interfaces: inventories, machines, storage, with real slots | [Container docs](container) |
 | `WorldWindow` | In-world planes: info boards, machine exterior screens, entity overhead labels | [WorldWindow](world-window) |
 | Overlay Document | Overlays: HUD, toasts, persistent panels | [Overlay docs](overlay-document) |
 
 The same page structure and styling can be used in all four hosts. Script execution depends on the target, while display position and input handling depend on the host.
 
-Page behavior is controlled by two metas — logical viewport (`aui-viewport`) and mouse interception (`aui-mouse-events`). The full explanation is consolidated in [the meta section of ApricityScreen](apricity-screen#page-meta-configuration).
+Page behavior is controlled by two metas — logical viewport (`kui-viewport`) and mouse interception (`kui-mouse-events`). The full explanation is consolidated in [the meta section of KltytonScreen](kltytonui-screen#page-meta-configuration).
 
 ## Loader and script support
 
 The repository currently contains these targets. This table reflects the source tree and CI configuration; it does not imply that every target is currently published:
 
-| Target | Minecraft | Page scripts | KubeJS `ApricityUI` bindings | CI JDK |
+| Target | Minecraft | Page scripts | KubeJS `KltytonUI` bindings | CI JDK |
 | --- | --- | --- | --- | --- |
 | Forge | 1.20.1 | Supported | Provided | 21 |
 | Fabric | 1.20.1 | Not currently executed | Not provided | 17 |
@@ -32,7 +32,7 @@ The repository currently contains these targets. This table reflects the source 
 | Fabric | 26.1 | Not currently executed | Not provided | 25 |
 | NeoForge | 26.1 | Supported | Not provided | 25 |
 
-The Java common API and HTML/CSS rendering are shared across these targets. Fabric targets currently do not execute page scripts; where page-script support is unavailable, pages still render but `<script>` does not run. For Java-side interaction or a target with page-script support, see [Mod-specific API](apricity-api).
+The Java common API and HTML/CSS rendering are shared across these targets. Fabric targets currently do not execute page scripts; where page-script support is unavailable, pages still render but `<script>` does not run. For Java-side interaction or a target with page-script support, see [Mod-specific API](kltytonui-api).
 
 ## What you can use in a page
 
@@ -50,19 +50,19 @@ The Java common API and HTML/CSS rendering are shared across these targets. Fabr
 
 ## Containers: working with real items
 
-Container pages can bind HTML slots to real data sources — player inventories, block entity capabilities, entity capabilities, and world-level SavedData persistent inventories. HTML handles structure and styling, while the server-side menu handles item logic and security checks; shift-click, dragging, and permissions all follow MC's native menu rules. There is only one proper way to open one: the server-side `ApricityUI.menu(player, path).bind(...)`. Details: [Container docs](container).
+Container pages can bind HTML slots to real data sources — player inventories, block entity capabilities, entity capabilities, and world-level SavedData persistent inventories. HTML handles structure and styling, while the server-side menu handles item logic and security checks; shift-click, dragging, and permissions all follow MC's native menu rules. There is only one proper way to open one: the server-side `KltytonUI.menu(player, path).bind(...)`. Details: [Container docs](container).
 
 ## Where resources come from
 
-Pages and resources (CSS, images, fonts, data JSON) are referenced by **logical paths**, such as `screens/home.html`. Resources have three tiers of sources: built into the mod jar, resource packs, and the local `apricity/` directory; upper tiers override lower ones. Remote resources go through a restricted HTTPS pipeline. Bind the **Reload Resources** and **Open Resource Manager** actions in Minecraft's Controls settings; both are unbound by default. The Resource Manager can browse, preview, create files, edit metas, and check references. Rules: [Resource Management](resource-manager).
+Pages and resources (CSS, images, fonts, data JSON) are referenced by **logical paths**, such as `screens/home.html`. Resources have three tiers of sources: built into the mod jar, resource packs, and the local `kltytonui/` directory; upper tiers override lower ones. Remote resources go through a restricted HTTPS pipeline. Bind the **Reload Resources** and **Open Resource Manager** actions in Minecraft's Controls settings; both are unbound by default. The Resource Manager can browse, preview, create files, edit metas, and check references. Rules: [Resource Management](resource-manager).
 
 ## How to open a page
 
-**Java**: the unified entry point is `com.sighs.apricityui.ApricityUI` — `createDocument`, `new ApricityScreen(path)`, `menu(player, path).bind(...)`, `createWorldWindow(...)`.
+**Java**: the unified entry point is `io.github.kltyton.kltytonui.KltytonUI` — `createDocument`, `new KltytonScreen(path)`, `menu(player, path).bind(...)`, `createWorldWindow(...)`.
 
-**KubeJS**: the global `ApricityUI` client/server bindings are available only on Forge 1.20.1 and NeoForge 1.21.1, with method sets isolated by side (client manages Document/Toast/WorldWindow; server manages containers). Mods can also register their own KJS bindings in supported environments.
+**KubeJS**: the global `KltytonUI` client/server bindings are available only on Forge 1.20.1 and NeoForge 1.21.1, with method sets isolated by side (client manages Document/Toast/WorldWindow; server manages containers). Mods can also register their own KJS bindings in supported environments.
 
-Full API tables and thread/null/refresh rules: [Mod-specific API](apricity-api).
+Full API tables and thread/null/refresh rules: [Mod-specific API](kltytonui-api).
 
 ## Debugging and tooling
 
@@ -70,9 +70,9 @@ Full API tables and thread/null/refresh rules: [Mod-specific API](apricity-api).
 
 **External debug protocol**: with `remoteDebug` enabled in game, a local WebSocket (`127.0.0.1:25321`) can query the DOM, read styles, and simulate clicks and input. The repo ships a Node client and an MCP bridge, so AI tools can connect directly to a running page. Two screenshot scripts are also included for visual regression. See [Additional Tools](tools).
 
-**Frame timing HUD**: `debug.frameTimingHud` shows AUI render timing and batch statistics for locating performance problems. See [Secondary Development](secondary-development).
+**Frame timing HUD**: `debug.frameTimingHud` shows KUI render timing and batch statistics for locating performance problems. See [Secondary Development](secondary-development).
 
-**WPT layout comparison**: takes Web Platform Tests CSS layout pages and captures geometry snapshots in both Chromium and AUI, then diffs them to verify the layout engine's browser consistency. See [WPT](wpt).
+**WPT layout comparison**: takes Web Platform Tests CSS layout pages and captures geometry snapshots in both Chromium and KUI, then diffs them to verify the layout engine's browser consistency. See [WPT](wpt).
 
 ## Extension points for mod authors
 
@@ -90,7 +90,7 @@ The repository uses a `common + targets` multi-loader structure: `common/` is lo
 
 | Topic | Doc |
 | --- | --- |
-| Full-screen pages; authoritative reference for the three metas | [apricity-screen.md](apricity-screen) |
+| Full-screen pages; authoritative reference for the three metas | [kltytonui-screen.md](kltytonui-screen) |
 | Overlay / HUD | [overlay-document.md](overlay-document) |
 | Containers and real slots | [container.md](container) |
 | Minecraft item and recipe elements | [mc-elements.md](mc-elements) |
@@ -101,7 +101,7 @@ The repository uses a `common + targets` multi-loader structure: `common/` is lo
 | WebView / iframe | [webview.md](webview) |
 | Zoom, selection, clipboard, and other assistive behaviors | [browser-features.md](browser-features) |
 | Resource paths and the Resource Manager | [resource-manager.md](resource-manager) |
-| KJS / Java mod API | [apricity-api.md](apricity-api) |
+| KJS / Java mod API | [kltytonui-api.md](kltytonui-api) |
 | Ore theme and visual editor | [ore-theme.md](ore-theme) |
 | McUI theme | [mcui-theme.md](mcui-theme) |
 | Java component library | [ui-library.md](ui-library) |

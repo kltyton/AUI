@@ -1,6 +1,6 @@
 # 内置 UI 库
 
-`com.sighs.apricityui.ui` 是框架自带的 Java 组件库：弹窗、右键菜单、Toast、Tooltip、颜色选择器、文件选择器、翻译工具。DevTools 和资源管理器就是用它们搭的，业务代码可以直接复用。组件创建的都是普通 AUI DOM，参与布局、绘制、命中测试，不需要页面引任何 JS 库。
+`io.github.kltyton.kltytonui.ui` 是框架自带的 Java 组件库：弹窗、右键菜单、Toast、Tooltip、颜色选择器、文件选择器、翻译工具。DevTools 和资源管理器就是用它们搭的，业务代码可以直接复用。组件创建的都是普通 KUI DOM，参与布局、绘制、命中测试，不需要页面引任何 JS 库。
 
 ## 四条通用规则
 
@@ -97,7 +97,7 @@ HEX / RGB / HSL 三种编辑模式 + Alpha；结果格式跟随当前模式（`#
 
 ## FilePicker：资源文件选择器
 
-不是系统文件对话框——它列的是 AUI 扫描到的资源（资源包、本地 apricity 目录、开发目录）：
+不是系统文件对话框——它列的是 KUI 扫描到的资源（资源包、本地 kltytonui 目录、开发目录）：
 
 ```java
 FilePicker.pick(FilePicker.Options.html("SELECT HTML", false))   // false=不含资源包文件
@@ -113,7 +113,7 @@ FilePicker.pick(FilePicker.Options.html("SELECT HTML", false))   // false=不含
 ## UiTranslations：Java 侧翻译
 
 ```java
-String title = UiTranslations.translate("devtools.apricityui.edit_meta");
+String title = UiTranslations.translate("devtools.kltytonui.edit_meta");
 button.setAttribute("aria-label", title);
 ```
 

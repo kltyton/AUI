@@ -5,19 +5,19 @@ Ore is the framework's built-in pure-CSS theme: MC-style pixel borders, dark sto
 ## Getting Started
 
 ```html
-<link rel="stylesheet" href="/apricityui/theme/ore/ore.css">
+<link rel="stylesheet" href="/kltytonui/theme/ore/ore.css">
 <body class="ore-theme">
     <button class="button button-primary">Apply</button>
 </body>
 ```
 
-- The leading `/` in href is the AUI logical resource root, not the disk root;
+- The leading `/` in href is the KUI logical resource root, not the disk root;
 - All rules are scoped under `.ore-theme` and do not affect UI outside the root node;
 - It ships two local fonts (`OreRegular` for body text, `OreDisplay` for headings/controls), requires no network, and falls back to system fonts if loading fails;
 - It provides a dark canvas background, 16px font size, and box-sizing propagation by default, but it won't fill the screen for you — add `min-height:100vh` yourself for fullscreen;
 - Licensed under MPL-2.0; keep the `license.txt` in the theme directory when redistributing with your mod.
 
-The showcase page `apricityui/theme/ore/example.html` can be opened directly with `new ApricityScreen(...)` — its seven pages demonstrate every component — **look at it before reading the class list in this document**; it's more intuitive than reading tables.
+The showcase page `kltytonui/theme/ore/example.html` can be opened directly with `new KltytonScreen(...)` — its seven pages demonstrate every component — **look at it before reading the class list in this document**; it's more intuitive than reading tables.
 
 ## Design Tokens
 
@@ -101,7 +101,7 @@ How to override (attach to the theme root or your own class):
 New components accept two equivalent ways of expressing state — pick whichever fits your host environment:
 
 - Attribute states: `:checked`, `[disabled]` / `[aria-disabled="true"]`, `[aria-pressed]`, `[aria-selected="true"]`, `[aria-expanded="true"]`, `[aria-invalid="true"]`, `[aria-checked="true"]`, `[data-state="open|closed|on|off|active|loading"]`, `details[open]`;
-- Class states: `.on` / `.active` / `.show` / `.open` / `.disabled` / `.hidden`, for purely static markup or places where attributes are awkward in AUI.
+- Class states: `.on` / `.active` / `.show` / `.open` / `.disabled` / `.hidden`, for purely static markup or places where attributes are awkward in KUI.
 
 The disabled state (`[disabled]`, `.disabled`, `[aria-disabled]`) has the highest priority and overrides `:hover` / `:active`.
 

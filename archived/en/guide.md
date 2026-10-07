@@ -2,7 +2,7 @@
 
 ### UI Types
 
-ApricityUI currently has three common usage patterns:
+KltytonUI currently has three common usage patterns:
 
 1. Overlay
 2. Screen
@@ -21,15 +21,15 @@ You only need to create a `Document`, and it is added to the render queue direct
 Common KJS or client-script entry points:
 
 ```javascript
-let doc = ApricityUI.createDocument("demo/index.html")
-ApricityUI.removeDocument("demo/index.html")
+let doc = KltytonUI.createDocument("demo/index.html")
+KltytonUI.removeDocument("demo/index.html")
 ```
 
 The Java side can now use the same main-class entry points:
 
 ```java
-ApricityUI.createDocument("demo/index.html");
-ApricityUI.removeDocument("demo/index.html");
+KltytonUI.createDocument("demo/index.html");
+KltytonUI.removeDocument("demo/index.html");
 ```
 
 If you prefer lower-level APIs, those still work:
@@ -66,15 +66,15 @@ If you only want to preview a UI and do not need real container binding, opening
 KJS:
 
 ```javascript
-ApricityUI.openScreen("demo/index.html")
-ApricityUI.closeScreen()
+KltytonUI.openScreen("demo/index.html")
+KltytonUI.closeScreen()
 ```
 
 Java:
 
 ```java
-ApricityUI.openScreen("demo/index.html");
-ApricityUI.closeScreen();
+KltytonUI.openScreen("demo/index.html");
+KltytonUI.closeScreen();
 ```
 
 This is suitable for:
@@ -92,7 +92,7 @@ the template, and the client `openScreen` automatically extracts container decla
 ```javascript
 // Container info is declared by <container> elements in the template
 // Client openScreen automatically extracts and sends declarations to the server
-ApricityUI.openScreen("demo/index.html")
+KltytonUI.openScreen("demo/index.html")
 ```
 
 Java uses the same API model:
@@ -100,7 +100,7 @@ Java uses the same API model:
 ```java
 // Container info is declared by <container> elements in the template
 // Client openScreen automatically extracts and sends declarations to the server
-ApricityUI.openScreen("demo/index.html");
+KltytonUI.openScreen("demo/index.html");
 ```
 
 One key rule:
@@ -168,19 +168,19 @@ Creating an in-world document alone is not enough, because that only creates the
 To make it render, attach it to a `WorldWindow`:
 
 ```java
-WorldWindow window = ApricityUI.createWorldWindow("demo/world.html", position, 180, 100, 16);
+WorldWindow window = KltytonUI.createWorldWindow("demo/world.html", position, 180, 100, 16);
 window.setMaxDisplayDistance(32);
 
-ApricityUI.removeWorldWindow(window);
+KltytonUI.removeWorldWindow(window);
 ```
 
 Equivalent KJS client API:
 
 ```javascript
-let window = ApricityUI.createWorldWindow("demo/world.html", 0, 65, 0, 180, 100, 16)
+let window = KltytonUI.createWorldWindow("demo/world.html", 0, 65, 0, 180, 100, 16)
 window.setMaxDisplayDistance(32)
 
-ApricityUI.removeWorldWindow(window)
+KltytonUI.removeWorldWindow(window)
 ```
 
 This flat world-space UI supports:
@@ -193,13 +193,13 @@ This flat world-space UI supports:
 
 When `setMaxDisplayDistance()` has not been called, a window uses the global
 default from `[worldWindow] maxDisplayDistance` in
-`config/apricityui-client.toml`. The default is `128` blocks; set it to
+`config/kltytonui-client.toml`. The default is `128` blocks; set it to
 `2147483647` for unlimited distance.
 Calling `setMaxDisplayDistance(distance)` overrides the global value for that
 instance; `clearMaxDisplayDistanceOverride()` restores the global default.
 
 LOD is disabled by default. To enable it globally, set these values in the
-`[worldWindow]` section of `config/apricityui-client.toml`:
+`[worldWindow]` section of `config/kltytonui-client.toml`:
 
 ```toml
 lodEnabled = true
@@ -246,7 +246,7 @@ It is useful for cases such as:
 Java:
 
 ```java
-FollowFacingWorldWindow window = ApricityUI.createFollowFacingWorldWindow(
+FollowFacingWorldWindow window = KltytonUI.createFollowFacingWorldWindow(
     "demo/follow.html",
     position,
     180,
@@ -259,7 +259,7 @@ FollowFacingWorldWindow window = ApricityUI.createFollowFacingWorldWindow(
 KJS:
 
 ```javascript
-let window = ApricityUI.createFollowFacingWorldWindow(
+let window = KltytonUI.createFollowFacingWorldWindow(
     "demo/follow.html",
     0, 65, 0,
     180, 100,
@@ -321,10 +321,10 @@ This is useful for both Overlay and Screen.
 
 ### Screen Viewport Meta
 
-Screen documents can choose their logical root viewport with an `aui-viewport` meta tag:
+Screen documents can choose their logical root viewport with an `kui-viewport` meta tag:
 
 ```html
-<meta name="aui-viewport" content="mode=gui">
+<meta name="kui-viewport" content="mode=gui">
 ```
 
 Supported modes:
@@ -355,18 +355,18 @@ When user scaling is enabled, Screen documents support:
 Examples:
 
 ```html
-<meta name="aui-viewport" content="mode=window">
-<meta name="aui-viewport" content="mode=browser">
-<meta name="aui-viewport" content="mode=fixed,width=427,height=249">
-<meta name="aui-viewport" content="mode=fixed,width=1920,height=1080,scale=fit">
-<meta name="aui-viewport" content="mode=gui,zoom=1,min-zoom=0.75,max-zoom=2,zoom-step=0.1">
+<meta name="kui-viewport" content="mode=window">
+<meta name="kui-viewport" content="mode=browser">
+<meta name="kui-viewport" content="mode=fixed,width=427,height=249">
+<meta name="kui-viewport" content="mode=fixed,width=1920,height=1080,scale=fit">
+<meta name="kui-viewport" content="mode=gui,zoom=1,min-zoom=0.75,max-zoom=2,zoom-step=0.1">
 ```
 
 ---
 
 ### Scrollbar Styling
 
-ApricityUI currently treats browser scrollbar pseudo-elements as unsupported CSS extensions:
+KltytonUI currently treats browser scrollbar pseudo-elements as unsupported CSS extensions:
 
 ```css
 ::-webkit-scrollbar {}

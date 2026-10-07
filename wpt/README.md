@@ -1,13 +1,13 @@
-# AUI Layout WPT Automation
+# KUI Layout WPT Automation
 
 ## Purpose
 
-This document defines how ApricityUI uses the Web Platform Tests (WPT) layout
+This document defines how KltytonUI uses the Web Platform Tests (WPT) layout
 corpus as a browser-compatibility oracle. WPT is upstream test data, not an
-executable test suite for AUI: most WPT pages assume a full browser, a web
-server, the WPT runner, and APIs that AUI intentionally does not implement.
+executable test suite for KUI: most WPT pages assume a full browser, a web
+server, the WPT runner, and APIs that KUI intentionally does not implement.
 
-The goal is to turn supported layout cases into deterministic AUI regression
+The goal is to turn supported layout cases into deterministic KUI regression
 tests while retaining their WPT path, revision, and browser result as
 traceability data.
 
@@ -41,7 +41,7 @@ Downloaded layout scope:
 This is the complete local layout scope for the first integration. It excludes
 unrelated specifications such as WebGL, media, service workers, IndexedDB and
 networking. A sparse checkout does not imply that every selected directory is
-currently supported by AUI.
+currently supported by KUI.
 
 At the pinned revision, this checkout contains 19,873 HTML/XHTML test documents
 in the selected CSS directories (54.2 MB including their checked-out support
@@ -53,7 +53,7 @@ change when the pin changes.
 The following command sequence recreates the local corpus from an empty
 `wpt/corpus/` directory. It is deliberately not part of Gradle or
 CI: the corpus is developer-maintained test input, while adopted fixtures and
-their browser baselines are versioned in AUI.
+their browser baselines are versioned in KUI.
 
 ```powershell
 git clone --filter=blob:none --no-checkout https://github.com/web-platform-tests/wpt.git wpt/corpus
@@ -80,7 +80,7 @@ git -C wpt/corpus rev-parse HEAD
 ```
 
 Do not make `git pull` part of ordinary CI. A changing upstream corpus would
-make a previously reproducible AUI result non-reproducible.
+make a previously reproducible KUI result non-reproducible.
 
 ## Test Model
 
@@ -102,9 +102,9 @@ owners: [style/Flex.java]
 
 `status` is mandatory and is one of:
 
-- `supported`: must pass in Chromium and AUI.
+- `supported`: must pass in Chromium and KUI.
 - `expected-unsupported`: kept in the inventory with a precise missing feature.
-- `blocked`: AUI could support it, but its WPT dependency cannot yet be adapted.
+- `blocked`: KUI could support it, but its WPT dependency cannot yet be adapted.
 - `quarantined`: known regression; must include issue/bug reference and expiry.
 
 No case may silently disappear because it fails.
@@ -114,7 +114,7 @@ No case may silently disappear because it fails.
 ### 1. Geometry Lane: the default
 
 Use for most layout cases. Chromium creates a JSON baseline at a fixed viewport;
-AUI creates the same JSON from its document and compares it in JUnit.
+KUI creates the same JSON from its document and compares it in JUnit.
 
 The probe records only stable values:
 
@@ -136,7 +136,7 @@ The probe records only stable values:
 ```
 
 Probe selectors are case-owned `data-wpt-probe` attributes added only to the
-AUI adapter fixture, never written back into WPT. Compare `x`, `y`, `width`,
+KUI adapter fixture, never written back into WPT. Compare `x`, `y`, `width`,
 `height`, `right`, `bottom`, `scrollWidth`, `scrollHeight`, `clientWidth`, and
 `clientHeight`; compare integer-like values exactly and geometry with the case
 tolerance. Do not compare font raster pixels in this lane.
@@ -159,15 +159,15 @@ Examples:
   expected values recorded from Chromium.
 
 Do not emulate `testharness.js`, `testdriver.js`, or browser internals inside
-AUI. That would test an adapter rather than layout conformance.
+KUI. That would test an adapter rather than layout conformance.
 
 ### 3. Visual Lane: only when geometry is insufficient
 
-Use WPT reftests and AUI screenshots for rounded clipping, gradient edges,
+Use WPT reftests and KUI screenshots for rounded clipping, gradient edges,
 paint order, transformed clipping, shadows and other rules where equal boxes
 can still produce different pixels.
 
-The browser reference page is rendered by Chromium; AUI renders the adapter
+The browser reference page is rendered by Chromium; KUI renders the adapter
 fixture at the same CSS viewport, DPR 1 and named font. Mask known unavoidable
 differences such as glyph anti-aliasing. Pixel comparison must report changed
 pixel count, changed bounding box and a diff image under ignored `run/`.
@@ -191,9 +191,9 @@ The first run has already produced an inventory of 19,775 layout pages. The
 source count differs from the broader corpus file count because support pages
 outside the selected layout directories are resources, not candidate cases.
 `incremental` and `full` modes now run the Chromium adapter. A browser snapshot
-without its corresponding AUI snapshot remains `pending`; a Chromium loading
+without its corresponding KUI snapshot remains `pending`; a Chromium loading
 failure is recorded as `browser-test-failed`, `timeout`, or `infra-blocked`.
-The AUI adapter is the next stage and is the only component allowed to turn a
+The KUI adapter is the next stage and is the only component allowed to turn a
 browser-passed case into `pass` or `layout-mismatch`.
 
 ### Inventory
@@ -204,7 +204,7 @@ emits `wpt/output/inventory.json` with:
 - WPT path and test type: `testharness`, `reftest`, `manual`, or unsupported.
 - referenced support files and external server dependencies.
 - CSS features found in the page.
-- candidate AUI subsystem based on path.
+- candidate KUI subsystem based on path.
 
 This inventory is advisory; a reviewed manifest decides what enters CI.
 
@@ -225,14 +225,14 @@ node wpt/tools/capture-baseline.mjs --case css/css-flexbox/example.html
 The command must fail if Chromium reports a test failure. It writes the WPT SHA,
 Chromium version, viewport, DPR, font policy and capture timestamp alongside the
 oracle. Rebaseline only after reviewing a browser change or a fixture error;
-never to make AUI failures disappear.
+never to make KUI failures disappear.
 
-### AUI Fast Regression
+### KUI Fast Regression
 
 The first adopted batch adds a parameterized JUnit class:
 
 ```text
-src/test/java/com/sighs/apricityui/wptlayout/WptLayoutCaseTest.java
+src/test/java/io/github/kltyton/kltytonui/wptlayout/WptLayoutCaseTest.java
 ```
 
 For every `supported` manifest record it loads the adapted fixture using
@@ -240,16 +240,16 @@ For every `supported` manifest record it loads the adapted fixture using
 against the checked-in Chromium baseline. It runs with the normal unit suite:
 
 ```powershell
-.\gradlew.bat test --tests com.sighs.apricityui.wptlayout.WptLayoutCaseTest --console plain --no-daemon
+.\gradlew.bat test --tests io.github.kltyton.kltytonui.wptlayout.WptLayoutCaseTest --console plain --no-daemon
 ```
 
-The JUnit failure message must include WPT path, AUI subsystem owner, expected
+The JUnit failure message must include WPT path, KUI subsystem owner, expected
 and actual property, tolerance, and the baseline file path.
 
-### AUI Client and Visual Regression
+### KUI Client and Visual Regression
 
 Cases that depend on Minecraft rendering, font upload, clipping stencil state,
-or input routing also get an AUI client fixture under:
+or input routing also get an KUI client fixture under:
 
 ```text
 wpt/config/client-fixtures/
@@ -262,7 +262,7 @@ nightly/manual compatibility jobs, not on every Java edit.
 
 ## Admission Rules
 
-1. Copy or adapt the smallest WPT fixture into AUI test resources; preserve
+1. Copy or adapt the smallest WPT fixture into KUI test resources; preserve
    the original WPT path and license header/reference in the manifest.
 2. Run the original or equivalent probe in Chromium and record the baseline.
 3. Add the JUnit geometry assertion before changing engine code.
@@ -272,7 +272,7 @@ nightly/manual compatibility jobs, not on every Java edit.
 
 ## Initial Rollout Order
 
-| Batch | WPT areas | AUI owners | Gate |
+| Batch | WPT areas | KUI owners | Gate |
 | --- | --- | --- | --- |
 | 1 | `css-box`, `css-sizing`, `CSS2/box_display` | `Box`, `Size`, `NormalFlow` | Geometry |
 | 2 | `css-position`, `CSS2/positioning` | `Position`, `LayoutCommit` | Geometry |
@@ -288,7 +288,7 @@ algorithmic branch, not an untriaged import of thousands of red tests.
 ## Pass Criteria
 
 A supported geometry case passes only when Chromium baseline capture succeeds,
-AUI snapshot matches within tolerance, and the normal JUnit suite is green. A
+KUI snapshot matches within tolerance, and the normal JUnit suite is green. A
 supported visual case additionally meets its pixel threshold. The dashboard
 must report counts by `supported`, `expected-unsupported`, `blocked`, and
 `quarantined`; a raw percentage without those categories is misleading.
@@ -297,7 +297,7 @@ must report counts by `supported`, `expected-unsupported`, `blocked`, and
 
 This change downloads and pins the source corpus, records the execution design,
 and keeps the corpus outside version control. It intentionally does not claim
-that all 19,873 pages execute in AUI today, nor does it add a synthetic
+that all 19,873 pages execute in KUI today, nor does it add a synthetic
 `all-WPT` Gradle task that would produce untriaged failures. The first
 deliverable after this document is the inventory tool and a reviewed batch of
 10-20 geometry fixtures; only `supported` manifest cases become mandatory
@@ -310,7 +310,7 @@ All WPT automation belongs under `wpt/`:
 | Path | Ownership |
 | --- | --- |
 | `corpus/` | Ignored sparse checkout of the upstream WPT revision. |
-| `tools/` | Tracked inventory, browser, AUI, comparison and report executors. |
+| `tools/` | Tracked inventory, browser, KUI, comparison and report executors. |
 | `config/` | Tracked runner configuration, generated-case policy and client fixtures. |
 | `output/` | Ignored per-case snapshots, cache, logs and diff artifacts. |
 | `progress.md` | Tracked generated compatibility progress table. |
@@ -321,7 +321,7 @@ added outside this directory.
 ## Known Limits
 
 WPT files may rely on HTML parsing recovery, browser UA styles, fonts, network
-server endpoints, `iframe`, testdriver, or APIs absent from AUI. Such cases are
+server endpoints, `iframe`, testdriver, or APIs absent from KUI. Such cases are
 valuable specification references but are not automatically runnable. The
 manifest makes that boundary visible and gives each excluded case a future home
-instead of presenting AUI as fully browser-conformant.
+instead of presenting KUI as fully browser-conformant.

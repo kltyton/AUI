@@ -1,14 +1,14 @@
 # Overlay Document Usage Documentation
 
-An Overlay is a Document not attached to any Minecraft Screen: `ApricityUI.createDocument(path)` creates one and adds it to a global list, and the client renders it automatically during the GUI/HUD draw phase. It suits HUDs, Toasts, notification bars, floating panels, fullscreen masks, and dev tools. It does not open a new Screen and has no container slots — for slots, see the [container documentation](container).
+An Overlay is a Document not attached to any Minecraft Screen: `KltytonUI.createDocument(path)` creates one and adds it to a global list, and the client renders it automatically during the GUI/HUD draw phase. It suits HUDs, Toasts, notification bars, floating panels, fullscreen masks, and dev tools. It does not open a new Screen and has no container slots — for slots, see the [container documentation](container).
 
 The KubeJS examples in this guide apply to Forge 1.20.1 and NeoForge 1.21.1; the Java API is available on the other targets. See the [overview](overview#loader-and-script-support).
 
-## Differences from ApricityScreen
+## Differences from KltytonScreen
 
-| | Overlay | ApricityScreen |
+| | Overlay | KltytonScreen |
 | --- | --- | --- |
-| Creation | `ApricityUI.createDocument(path)` | `new ApricityScreen(path)` |
+| Creation | `KltytonUI.createDocument(path)` | `new KltytonScreen(path)` |
 | Replaces the current Screen | No | Yes |
 | In-game with no Screen | Visible | — |
 | After a Screen opens | Normal Overlays hide; persistent ones stay visible | Drawn as the current Screen |
@@ -23,7 +23,7 @@ The KubeJS examples in this guide apply to Forge 1.20.1 and NeoForge 1.21.1; the
 <html>
 <head>
     <meta charset="utf-8">
-    <meta name="aui-viewport" content="mode=browser">
+    <meta name="kui-viewport" content="mode=browser">
 </head>
 <body>
     <div id="status">Loading...</div>
@@ -38,7 +38,7 @@ private static Document document;
 
 public static void open() {
     if (document != null && document.isActive()) return;
-    document = ApricityUI.createDocument("overlays/status.html");
+    document = KltytonUI.createDocument("overlays/status.html");
     if (document == null) return;
     Element status = document.getElementById("status");
     if (status != null) status.setTextContent("Ready");
@@ -51,16 +51,16 @@ public static void close() {
 }
 ```
 
-Creation and modification must happen on the client thread; in network callbacks, wrap with `Minecraft.getInstance().execute(...)` first. KubeJS client scripts use the same set of APIs (`ApricityUI.createDocument(...)`), while a page's own script uses the in-page `document` directly.
+Creation and modification must happen on the client thread; in network callbacks, wrap with `Minecraft.getInstance().execute(...)` first. KubeJS client scripts use the same set of APIs (`KltytonUI.createDocument(...)`), while a page's own script uses the in-page `document` directly.
 
 ## API
 
 ```java
-Document ApricityUI.createDocument(String path)        // returns null if the resource doesn't exist
-void     ApricityUI.removeDocument(String path)        // removes all instances of that path
-ArrayList<Document> ApricityUI.getDocument(String path)
-Document ApricityUI.getDocumentByUUID(String uuid)
-List<Document> ApricityUI.getAllDocument()
+Document KltytonUI.createDocument(String path)        // returns null if the resource doesn't exist
+void     KltytonUI.removeDocument(String path)        // removes all instances of that path
+ArrayList<Document> KltytonUI.getDocument(String path)
+Document KltytonUI.getDocumentByUUID(String uuid)
+List<Document> KltytonUI.getAllDocument()
 ```
 
 The same path can create multiple instances, which is why `getDocument` returns a list and `removeDocument(path)` removes them all at once. To close only your own instance, keep the returned value and call `document.remove()`.
@@ -73,7 +73,7 @@ Common Document methods: `getPath()`, `getUuid()`, `isActive()`, `isDisposed()`,
 | --- | --- | --- |
 | In-game, no Screen | Visible | Visible |
 | Vanilla Screen open | Hidden | Visible |
-| ApricityScreen / container Screen open | Hidden | Drawn on behalf of that Screen |
+| KltytonScreen / container Screen open | Hidden | Drawn on behalf of that Screen |
 
 ```java
 overlay.setReloadPersistent(true);   // for things like toasts and global notifications that must stay visible
@@ -114,14 +114,14 @@ It keeps the original DOM relationships and event paths, only drawing after norm
 
 Input is dispatched to Documents front to back; if it isn't hit or consumed it passes further down. Event coordinates are logical coordinates — don't multiply by any scale.
 
-For a fullscreen Canvas in an Overlay, or when reading the mouse yourself: size from `document.getViewportSize()` and read the cursor via `document.getMouseDocumentPosition()` (at GUI scale ≥ 6 MC GUI coordinates and document coordinates diverge — see [Coordinate Conversion in gui Mode](apricity-screen#coordinate-conversion-in-gui-mode)).
+For a fullscreen Canvas in an Overlay, or when reading the mouse yourself: size from `document.getViewportSize()` and read the cursor via `document.getMouseDocumentPosition()` (at GUI scale ≥ 6 MC GUI coordinates and document coordinates diverge — see [Coordinate Conversion in gui Mode](kltytonui-screen#coordinate-conversion-in-gui-mode)).
 
 Two common patterns:
 
-**Modal mask** — enable interception via meta (see the [ApricityScreen meta section](apricity-screen#page-meta-configuration)) and cover the whole viewport with the mask:
+**Modal mask** — enable interception via meta (see the [KltytonScreen meta section](kltytonui-screen#page-meta-configuration)) and cover the whole viewport with the mask:
 
 ```html
-<meta name="aui-mouse-events" content="intercept">
+<meta name="kui-mouse-events" content="intercept">
 ```
 
 ```css
@@ -135,7 +135,7 @@ Two common patterns:
 .toast { pointer-events: auto; }
 ```
 
-Ctrl+scroll zoom targets the topmost hit Document; when `config/apricityui-client.toml` has `[input] viewportZoomPassThrough = true`, persistent Overlays that didn't declare intercept are skipped by the zoom logic.
+Ctrl+scroll zoom targets the topmost hit Document; when `config/kltytonui-client.toml` has `[input] viewportZoomPassThrough = true`, persistent Overlays that didn't declare intercept are skipped by the zoom logic.
 
 ## Common Patterns
 

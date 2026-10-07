@@ -94,7 +94,7 @@
 
 <body>
 <div class="page">
-    <div class="title">ApricityUI Showcase</div>
+    <div class="title">KltytonUI Showcase</div>
 
     <div class="stage-1">
         <div class="group-title">Group 2: `sprite` element (lava bucket, bucket_cycle only)</div>

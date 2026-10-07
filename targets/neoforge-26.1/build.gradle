@@ -13,7 +13,7 @@ group = mod_group_id
 version = mod_version
 
 jar {
-    manifest.attributes(["Automatic-Module-Name": "apricityui"])
+    manifest.attributes(["Automatic-Module-Name": "kltytonui"])
 }
 
 base {
@@ -44,13 +44,13 @@ sourceSets {
 tasks.register('prepareCommonSources', Sync) {
     from('../../common/src/minecraft-26/java')
     from('../../common/src/client/java') {
-        exclude 'com/sighs/apricityui/chunkmap/AuiMapDepthTarget.java'
+        exclude 'io/github/kltyton/kltytonui/chunkmap/KuiMapDepthTarget.java'
     }
     from('../../common/src/main/java') {
-        exclude 'com/sighs/apricityui/network/**'
+        exclude 'io/github/kltyton/kltytonui/network/**'
         // 26.1 的 KeyboardHandler#charTyped 签名改为 (long, CharacterEvent)，
         // 该 target 提供自己的 CommonKeyboardHandlerMixin（见 src/main/java）。
-        exclude 'com/sighs/apricityui/mixin/CommonKeyboardHandlerMixin.java'
+        exclude 'io/github/kltyton/kltytonui/mixin/CommonKeyboardHandlerMixin.java'
     }
     into "$buildDir/generated/common-main"
 }
@@ -65,28 +65,28 @@ neoForge {
             gameDirectory = file('run')
             // Render smoke test: `./gradlew -p targets/neoforge-26.1 runClient -PauiSelfTest`
             // auto-opens the resource manager, validates it, screenshots the main
-            // target to run/aui-selftest.png, writes run/aui-selftest-result.txt and exits.
+            // target to run/kui-selftest.png, writes run/kui-selftest-result.txt and exits.
             // Optional: `-PauiSelfTestScenario=metaDialog` additionally opens DevTools on
             // the resource manager and clicks the title-bar meta button, so the
             // screenshot shows the meta dialog with its dimmed backdrop.
-            if (project.hasProperty('auiSelfTest')) {
-                systemProperty 'apricityui.clientSelfTest', 'true'
-                systemProperty 'apricityui.clientSelfTest.exitOnFinish', 'true'
-                systemProperty 'apricityui.clientSelfTest.resultFile', project.hasProperty('auiSelfTestResultFile')
-                        ? project.property('auiSelfTestResultFile').toString() : file('run/aui-selftest-result.txt').absolutePath
-                systemProperty 'apricityui.clientSelfTest.screenshotFile', project.hasProperty('auiSelfTestScreenshotFile')
-                        ? project.property('auiSelfTestScreenshotFile').toString() : file('run/aui-selftest.png').absolutePath
-                if (project.hasProperty('auiSelfTestScenario')) {
-                    systemProperty 'apricityui.clientSelfTest.scenario', project.property('auiSelfTestScenario').toString()
+            if (project.hasProperty('kuiSelfTest')) {
+                systemProperty 'kltytonui.clientSelfTest', 'true'
+                systemProperty 'kltytonui.clientSelfTest.exitOnFinish', 'true'
+                systemProperty 'kltytonui.clientSelfTest.resultFile', project.hasProperty('kuiSelfTestResultFile')
+                        ? project.property('kuiSelfTestResultFile').toString() : file('run/kui-selftest-result.txt').absolutePath
+                systemProperty 'kltytonui.clientSelfTest.screenshotFile', project.hasProperty('kuiSelfTestScreenshotFile')
+                        ? project.property('kuiSelfTestScreenshotFile').toString() : file('run/kui-selftest.png').absolutePath
+                if (project.hasProperty('kuiSelfTestScenario')) {
+                    systemProperty 'kltytonui.clientSelfTest.scenario', project.property('kuiSelfTestScenario').toString()
                 }
-                if (project.hasProperty('auiSelfTestScrollY')) {
-                    systemProperty 'apricityui.clientSelfTest.scrollY', project.property('auiSelfTestScrollY').toString()
+                if (project.hasProperty('kuiSelfTestScrollY')) {
+                    systemProperty 'kltytonui.clientSelfTest.scrollY', project.property('kuiSelfTestScrollY').toString()
                 }
-                if (project.hasProperty('auiSelfTestWidth') && project.hasProperty('auiSelfTestHeight')) {
+                if (project.hasProperty('kuiSelfTestWidth') && project.hasProperty('kuiSelfTestHeight')) {
                     programArgument '--width'
-                    programArgument project.property('auiSelfTestWidth').toString()
+                    programArgument project.property('kuiSelfTestWidth').toString()
                     programArgument '--height'
-                    programArgument project.property('auiSelfTestHeight').toString()
+                    programArgument project.property('kuiSelfTestHeight').toString()
                 }
             }
         }
@@ -189,7 +189,7 @@ tasks.withType(JavaCompile).configureEach {
 // modDevRuntimeDependencies itself is non-resolvable (canBeResolved=false), so
 // extend it, mirroring the forge-1.20.1 and neoforge-1.21.1 targets.
 configurations {
-    auiTestModRuntime {
+    kuiTestModRuntime {
         canBeConsumed = false
         canBeResolved = true
         extendsFrom modDevRuntimeDependencies
@@ -199,9 +199,9 @@ configurations {
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
     // common/ main code links against Minecraft/NeoForge classes (e.g.
-    // ApricityUI.LOGGER -> LogUtils), so the unit-test worker needs the mod
+    // KltytonUI.LOGGER -> LogUtils), so the unit-test worker needs the mod
     // runtime on its classpath.
-    classpath += configurations.auiTestModRuntime
+    classpath += configurations.kuiTestModRuntime
 }
 
 apply from: file('../../gradle/target-conventions/publish.gradle')

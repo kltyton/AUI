@@ -1,24 +1,24 @@
-# AUI Page Development and Debugging (For AI)
+# KUI Page Development and Debugging (For AI)
 
-You are writing pages for, or debugging running pages of, the Minecraft mod ApricityUI (AUI). **This file covers every rule needed to produce working pages.** Finer details live in the GitHub repository (see the end of Step 7) — read them if you can fetch them; if you can't, this file is authoritative.
+You are writing pages for, or debugging running pages of, the Minecraft mod KltytonUI (KUI). **This file covers every rule needed to produce working pages.** Finer details live in the GitHub repository (see the end of Step 7) — read them if you can fetch them; if you can't, this file is authoritative.
 
-Setting the tone first: AUI pages are plain HTML/CSS/JS. Most commonly used browser features work, so just write them the normal web way. Only two caveats: don't use overly obscure features, and don't make structure and styling excessively complex. What genuinely needs attention is the mod's own stuff — paths, page configuration, the four UI forms, containers, debugging — none of which comes from web experience. It's all below.
+Setting the tone first: KUI pages are plain HTML/CSS/JS. Most commonly used browser features work, so just write them the normal web way. Only two caveats: don't use overly obscure features, and don't make structure and styling excessively complex. What genuinely needs attention is the mod's own stuff — paths, page configuration, the four UI forms, containers, debugging — none of which comes from web experience. It's all below.
 
 ## What This Mod Is
 
-AUI lets you build Minecraft UIs with HTML/CSS/JS. It is not an embedded browser: HTML parsing, CSS layout, and rendering are a self-built engine. Targets that support page scripts use Rhino (`var` + plain `function` is the safest style). One HTML file is parsed into one Document, which is placed into one of four hosts for display.
+KUI lets you build Minecraft UIs with HTML/CSS/JS. It is not an embedded browser: HTML parsing, CSS layout, and rendering are a self-built engine. Targets that support page scripts use Rhino (`var` + plain `function` is the safest style). One HTML file is parsed into one Document, which is placed into one of four hosts for display.
 
-**First confirm the loader and Minecraft version**: page scripts and KubeJS bindings are not available on every target. Forge 1.20.1 and NeoForge 1.21.1 support page scripts and the `ApricityUI` KubeJS bindings; NeoForge 26.1 supports page scripts but has no KubeJS bindings; Fabric 1.20.1, 1.21.1, and 26.1 currently execute no page scripts and provide no KubeJS bindings. HTML/CSS still render without page scripts, but JS-dependent interactions will not run. See the [overview](guide/overview#loader-and-script-support) for the full matrix.
+**First confirm the loader and Minecraft version**: page scripts and KubeJS bindings are not available on every target. Forge 1.20.1 and NeoForge 1.21.1 support page scripts and the `KltytonUI` KubeJS bindings; NeoForge 26.1 supports page scripts but has no KubeJS bindings; Fabric 1.20.1, 1.21.1, and 26.1 currently execute no page scripts and provide no KubeJS bindings. HTML/CSS still render without page scripts, but JS-dependent interactions will not run. See the [overview](guide/overview#loader-and-script-support) for the full matrix.
 
 The resource manager, DevTools, and resource reload each have an MC key action, and **all are unbound by default**. Bind them in Minecraft's Controls settings before use; Left Alt is bound by default to release the mouse while held. This guide refers to the actions by name rather than assuming specific keys.
 
 ## Step 1: What Environment Are You In?
 
-### Environment A: Java mod development (AUI as a dependency)
+### Environment A: Java mod development (KUI as a dependency)
 
-Signs: you're in a mod project (build.gradle, Java sources present), with AUI as a dependency.
+Signs: you're in a mod project (build.gradle, Java sources present), with KUI as a dependency.
 
-- Unified entry point: static methods of `com.sighs.apricityui.ApricityUI`: `createDocument(path)`, `screen(path)`, `menu(player, path).bind(...)`, `createWorldWindow(path, pos, distance)`, `getDocument(path)`, `getDocumentByUUID(uuid)`;
+- Unified entry point: static methods of `io.github.kltyton.kltytonui.KltytonUI`: `createDocument(path)`, `screen(path)`, `menu(player, path).bind(...)`, `createWorldWindow(path, pos, distance)`, `getDocument(path)`, `getDocumentByUUID(uuid)`;
 - **Thread rule**: all DOM/host operations must happen on the client thread. In async callbacks (network packets, thread pools), wrap with `Minecraft.getInstance().execute(...)` before touching a page, or you'll get sporadic crashes;
 - **Null convention**: `createDocument` returns null when the resource is missing — null-check it;
 - **Refresh invalidation**: page refresh/reload rebuilds the entire DOM; old Element references and listeners all go stale — re-query them.
@@ -27,13 +27,13 @@ Signs: you're in a mod project (build.gradle, Java sources present), with AUI as
 
 Signs: you're in an instance directory or a modpack repo, writing scripts under `kubejs/`.
 
-- On Forge 1.20.1 and NeoForge 1.21.1, the global object `ApricityUI` is injected into KJS. The method sets of client scripts and server scripts **do not overlap**: the client side manages UIs (createDocument/screen/createWorldWindow), the server side manages containers (menu). Check the compatibility note above for other targets;
+- On Forge 1.20.1 and NeoForge 1.21.1, the global object `KltytonUI` is injected into KJS. The method sets of client scripts and server scripts **do not overlap**: the client side manages UIs (createDocument/screen/createWorldWindow), the server side manages containers (menu). Check the compatibility note above for other targets;
 - **Creating ≠ showing**: `createDocument(path)` creates an Overlay and shows it immediately; calling `Document.createInWorld(path)` alone shows nothing; full-screen UIs need `screen(path)`; containers must be opened server-side with `menu(...).bind(...)`.
 
 ## Step 2: Path Rules
 
 - All resources use **logical paths**: `screens/home.html`. No `assets/...` prefix, no disk paths;
-- Page files actually live under `<game directory>/apricity/` (e.g. `<game directory>/apricity/screens/home.html`); after writing, trigger **Reload Resources** so the mod picks them up;
+- Page files actually live under `<game directory>/kltytonui/` (e.g. `<game directory>/kltytonui/screens/home.html`); after writing, trigger **Reload Resources** so the mod picks them up;
 - Inside a page, reference CSS/images/fonts with relative paths (relative to the current HTML); a leading `/` means the logical resource root;
 - The only exception: a `<texture>`'s src is an MC ResourceLocation (`minecraft:textures/item/diamond.png`), not a logical path.
 
@@ -42,12 +42,12 @@ Signs: you're in an instance directory or a modpack repo, writing scripts under 
 Placed in `<head>`, read only at page creation and refresh:
 
 ```html
-<meta name="aui-viewport" content="mode=browser">
-<meta name="aui-mouse-events" content="intercept">
+<meta name="kui-viewport" content="mode=browser">
+<meta name="kui-mouse-events" content="intercept">
 ```
 
-- **aui-viewport**: `mode` defaults to `browser` (follows the window; first choice for Screen); `mode=fixed,width=N,height=N` fixed logical size (**WorldWindow must use this**, otherwise the default 1920 width makes the panel enormous in the world); `mode=gui` follows MC GUI scale (for compatibility with old pages). Zoom parameters `zoom/min-zoom/max-zoom/zoom-step/user-scalable` are optional; `user-scalable=false` disables Ctrl+wheel / Ctrl+`+`/`-` / Ctrl+`0` zoom;
-- **aui-mouse-events**: the page only intercepts the mouse if you write `intercept`. **Any page with interactive elements must set it**, otherwise clicks fall through to the game instead of the page; purely presentational Overlays should not set it (let clicks pass through).
+- **kui-viewport**: `mode` defaults to `browser` (follows the window; first choice for Screen); `mode=fixed,width=N,height=N` fixed logical size (**WorldWindow must use this**, otherwise the default 1920 width makes the panel enormous in the world); `mode=gui` follows MC GUI scale (for compatibility with old pages). Zoom parameters `zoom/min-zoom/max-zoom/zoom-step/user-scalable` are optional; `user-scalable=false` disables Ctrl+wheel / Ctrl+`+`/`-` / Ctrl+`0` zoom;
+- **kui-mouse-events**: the page only intercepts the mouse if you write `intercept`. **Any page with interactive elements must set it**, otherwise clicks fall through to the game instead of the page; purely presentational Overlays should not set it (let clicks pass through).
 
 ## Step 4: Choose a Host
 
@@ -55,17 +55,17 @@ The same HTML works across all four hosts; the difference is where it appears an
 
 | What you want | Host | How to open | Key points |
 | --- | --- | --- | --- |
-| Full-screen UI: settings pages, menus | Screen | KJS `ApricityUI.screen("screens/x.html")`; Java `Minecraft.getInstance().setScreen(new ApricityScreen(path))` | Configure metas as above |
-| HUD, persistent status, notifications | Overlay | KJS/Java `ApricityUI.createDocument("overlays/x.html")` | Shows on creation; don't set intercept for purely presentational ones |
-| Inventories, machines — operating on **real items** | Container Screen | **Only** server-side `ApricityUI.menu(player, path).bind(...)` | See Step 6 |
-| Display screens in the world, labels above heads | WorldWindow | `ApricityUI.createWorldWindow("world/x.html", pos, 32)` (in Java the second parameter is a Vec3) | Page must use a `mode=fixed` viewport; shows on creation |
+| Full-screen UI: settings pages, menus | Screen | KJS `KltytonUI.screen("screens/x.html")`; Java `Minecraft.getInstance().setScreen(new KltytonScreen(path))` | Configure metas as above |
+| HUD, persistent status, notifications | Overlay | KJS/Java `KltytonUI.createDocument("overlays/x.html")` | Shows on creation; don't set intercept for purely presentational ones |
+| Inventories, machines — operating on **real items** | Container Screen | **Only** server-side `KltytonUI.menu(player, path).bind(...)` | See Step 6 |
+| Display screens in the world, labels above heads | WorldWindow | `KltytonUI.createWorldWindow("world/x.html", pos, 32)` (in Java the second parameter is a Vec3) | Page must use a `mode=fixed` viewport; shows on creation |
 
 WorldWindow additions: the parameter order of `setRotation(Vec3)` is `(pitch, yaw, roll)` (easy to get backwards); `setFacing(true)` faces the player; `setFollow(true)` + `setFollowFactor(0.3)` follows the view (the above-head label usage); the distance constructor parameter is the interaction ray distance, while `setMaxDisplayDistance` is the display distance — don't mix them up.
 
-**Driving an already-open page from game code**: `ApricityUI.getDocument(path)` returns a **list** (the same path can have multiple instances open):
+**Driving an already-open page from game code**: `KltytonUI.getDocument(path)` returns a **list** (the same path can have multiple instances open):
 
 ```javascript
-var docs = ApricityUI.getDocument("screens/hello.html");
+var docs = KltytonUI.getDocument("screens/hello.html");
 if (docs.length > 0) {
     docs[0].getElementById("status").textContent = "HP: 20";
 }
@@ -105,25 +105,25 @@ document.addEventListener("DOMContentLoaded", init);
 **Ore theme**: a built-in MC-style CSS theme (pixel borders, dark surfaces, green/purple/gold accents). One include line gives you a full set of component styles — **don't write styles from scratch**:
 
 ```html
-<link rel="stylesheet" href="/apricityui/theme/ore/ore.css">
+<link rel="stylesheet" href="/kltytonui/theme/ore/ore.css">
 <body class="ore-theme">
 ```
 
 **Before using Ore, read the complete resources. Do not infer its appearance from the class-name summary below.** Obtain them in this order:
 
-1. If the current workspace is an AUI checkout, read these local source files in full:
+1. If the current workspace is an KUI checkout, read these local source files in full:
    - Documentation: `docs/guide/ore-theme.md`
-   - Complete theme source: `common/src/main/resources/assets/apricityui/apricity/apricityui/theme/ore/ore.css`
-   - Complete component example: `common/src/main/resources/assets/apricityui/apricity/apricityui/theme/ore/example.html`
+   - Complete theme source: `common/src/main/resources/assets/kltytonui/kltytonui/kltytonui/theme/ore/ore.css`
+   - Complete component example: `common/src/main/resources/assets/kltytonui/kltytonui/kltytonui/theme/ore/example.html`
 2. If those local files are unavailable, retrieve and read the complete online files (not truncated excerpts):
-   - Documentation: [ore-theme.md](https://raw.githubusercontent.com/Tower-of-Sighs/AUI/refs/heads/snow/docs/guide/ore-theme.md)
-   - `ore.css`: [complete theme source](https://raw.githubusercontent.com/Tower-of-Sighs/AUI/refs/heads/snow/common/src/main/resources/assets/apricityui/apricity/apricityui/theme/ore/ore.css)
-   - `example.html`: [complete component example](https://raw.githubusercontent.com/Tower-of-Sighs/AUI/refs/heads/snow/common/src/main/resources/assets/apricityui/apricity/apricityui/theme/ore/example.html)
+   - Documentation: [ore-theme.md](https://raw.githubusercontent.com/kltyton/KltytonUI/refs/heads/snow/docs/guide/ore-theme.md)
+   - `ore.css`: [complete theme source](https://raw.githubusercontent.com/kltyton/KltytonUI/refs/heads/snow/common/src/main/resources/assets/kltytonui/kltytonui/kltytonui/theme/ore/ore.css)
+   - `example.html`: [complete component example](https://raw.githubusercontent.com/kltyton/KltytonUI/refs/heads/snow/common/src/main/resources/assets/kltytonui/kltytonui/kltytonui/theme/ore/example.html)
 3. Only when neither the local nor online resources can be obtained should this section's quick reference be used as a fallback. In that case, do not invent undocumented classes, tokens, or component behavior.
 
 While reading, verify the `.ore-theme` root rules, `--ore-*` tokens, complete component DOM structures, state and variant classes, default dimensions and backgrounds, responsive rules, and browser-support limitations. Business CSS should use theme tokens and add only layout or domain-specific differences; do not redraw existing components such as `.card` and `.progress`. For overlays, specifically check whether the theme root paints a full-page background.
 
-Class-name quick reference: `.button button-primary/-secondary/-tertiary/-danger`, `.card` + `.card-header/-body/-footer`, `.form-group/.form-label/.form-input`, `.table` (fixed four columns — for a different column count override `grid-template-columns` on `tr`), `.badge`, `.alert`, `.progress` > `.progress-bar`, `.container`, `.stack`/`.cluster`, `.text-center/.text-muted`, `.mt-1..4`, etc. Ore is styles only, no behavior — write your own JS for tab switching, modal toggling, and the like. The runtime demo of every component is available by opening `apricityui/theme/ore/example.html` in the resource manager.
+Class-name quick reference: `.button button-primary/-secondary/-tertiary/-danger`, `.card` + `.card-header/-body/-footer`, `.form-group/.form-label/.form-input`, `.table` (fixed four columns — for a different column count override `grid-template-columns` on `tr`), `.badge`, `.alert`, `.progress` > `.progress-bar`, `.container`, `.stack`/`.cluster`, `.text-center/.text-muted`, `.mt-1..4`, etc. Ore is styles only, no behavior — write your own JS for tab switching, modal toggling, and the like. The runtime demo of every component is available by opening `kltytonui/theme/ore/example.html` in the resource manager.
 
 ## Step 6: Container Pages (Real Items)
 
@@ -158,7 +158,7 @@ Rules:
 
 ### Built-in capabilities (available as soon as the mod is installed — prefer this set)
 
-AUI ships a built-in closed loop for the "AI on the outside, game running" scenario: **edit files → auto reload → auto screenshots → read logs**. Both switches are under `[debug]` in `config/apricityui-client.toml`:
+KUI ships a built-in closed loop for the "AI on the outside, game running" scenario: **edit files → auto reload → auto screenshots → read logs**. Both switches are under `[debug]` in `config/kltytonui-client.toml`:
 
 ```toml
 [debug]
@@ -166,26 +166,26 @@ autoReload = true         # watches file changes, hot-reloads automatically
 aiAutoScreenshot = true   # auto screenshot every second
 ```
 
-**File hot reload (autoReload)**: when enabled, the mod continuously watches `.html/.css/.js` files under the resource directory; saving takes effect immediately, with no need to trigger **Reload Resources** manually. Reloads are page-precise: a CSS change only re-attaches styles to the pages that reference it (upstream files in the `@import` chain count too), with **DOM and JS state fully preserved** — tweaking styles won't lose the page's live state; an HTML/JS change only refreshes the corresponding pages; a newly created HTML file only registers a template and touches no pages; changing a file not referenced by any open page does nothing at all. This is the AI's development loop: directly edit the page files under `<game directory>/apricity/`, the changes take effect automatically, then verify via screenshots.
+**File hot reload (autoReload)**: when enabled, the mod continuously watches `.html/.css/.js` files under the resource directory; saving takes effect immediately, with no need to trigger **Reload Resources** manually. Reloads are page-precise: a CSS change only re-attaches styles to the pages that reference it (upstream files in the `@import` chain count too), with **DOM and JS state fully preserved** — tweaking styles won't lose the page's live state; an HTML/JS change only refreshes the corresponding pages; a newly created HTML file only registers a template and touches no pages; changing a file not referenced by any open page does nothing at all. This is the AI's development loop: directly edit the page files under `<game directory>/kltytonui/`, the changes take effect automatically, then verify via screenshots.
 
-**Auto screenshots (aiAutoScreenshot)**: when enabled, **a screenshot of the game is taken automatically every second**, written to `<game directory>/screenshots/aui/` (only the latest 20 are kept). Just read the newest PNG in that directory to see the page's actual rendered result — whether the layout is right, whether styles took effect, what an error looks like — without asking the user to describe it.
+**Auto screenshots (aiAutoScreenshot)**: when enabled, **a screenshot of the game is taken automatically every second**, written to `<game directory>/screenshots/kui/` (only the latest 20 are kept). Just read the newest PNG in that directory to see the page's actual rendered result — whether the layout is right, whether styles took effect, what an error looks like — without asking the user to describe it.
 
-**Logs**: script errors and CSS parsing problems are all in `logs/latest.log`; search for the `[AUI JS]`/`[AUI CSS]`/`[AUI HTML]` prefixes — errors come with resource paths.
+**Logs**: script errors and CSS parsing problems are all in `logs/latest.log`; search for the `[KUI JS]`/`[KUI CSS]`/`[KUI HTML]` prefixes — errors come with resource paths.
 
 These three need no external tools and are the debugging baseline.
 
 ### Direct MCP connection to running pages (external tool — use it if you can get it, skip it if you can't)
 
-The mod has a built-in debug service (`[debug] remoteDebug = true`, local `ws://127.0.0.1:25321/apricity`, connection credentials written to `run/apricity/debug.json` — **do not commit or share it**), but **the client tools for connecting to it are not distributed with the mod**. They live in the `tools/` directory of the GitHub repository [Tower-of-Sighs/AUI](https://github.com/Tower-of-Sighs/AUI):
+The mod has a built-in debug service (`[debug] remoteDebug = true`, local `ws://127.0.0.1:25321/kltytonui`, connection credentials written to `run/kltytonui/debug.json` — **do not commit or share it**), but **the client tools for connecting to it are not distributed with the mod**. They live in the `tools/` directory of the GitHub repository [Tower-of-Sighs/KUI](https://github.com/kltyton/KltytonUI):
 
 - You're working in a clone of this repo (local `tools/` exists) → use them directly;
-- Not in one → try fetching from GitHub (raw files look like `https://raw.githubusercontent.com/Tower-of-Sighs/AUI/snow/tools/apricity-mcp/server.mjs`; requires Node 20+ and `npm install`);
+- Not in one → try fetching from GitHub (raw files look like `https://raw.githubusercontent.com/kltyton/KltytonUI/main/tools/kltytonui-mcp/server.mjs`; requires Node 20+ and `npm install`);
 - **If you can't fetch them, give up on this route** — the built-in trio already covers "see the rendered result, see errors, edit files to verify"; when you need interaction verification like clicking buttons, ask the user to bind and open DevTools on your behalf.
 
 When available, two ways to connect:
 
-1. **MCP bridge** `tools/apricity-mcp/server.mjs`, configured into an MCP client (env pointing at debug.json). Tools: `apricity_documents` (list Documents to get targetIds), `apricity_snapshot` (DOM tree), `apricity_query`/`apricity_inspect` (query elements), `apricity_wait_for` (wait for elements), `apricity_hover/click/fill` (simulate input);
-2. **Node client** `tools/apricity-debug-client.mjs`: `connect()` reads debug.json by default; `documents()` → `attach(targetId)` → `page.locator("#save").click()`.
+1. **MCP bridge** `tools/kltytonui-mcp/server.mjs`, configured into an MCP client (env pointing at debug.json). Tools: `kltytonui_documents` (list Documents to get targetIds), `kltytonui_snapshot` (DOM tree), `kltytonui_query`/`kltytonui_inspect` (query elements), `kltytonui_wait_for` (wait for elements), `kltytonui_hover/click/fill` (simulate input);
+2. **Node client** `tools/kltytonui-debug-client.mjs`: `connect()` reads debug.json by default; `documents()` → `attach(targetId)` → `page.locator("#save").click()`.
 
 **Debugging discipline** (applies only after connecting to the debug service):
 
@@ -198,7 +198,7 @@ When available, two ways to connect:
 
 1. Confirm `autoReload` and `aiAutoScreenshot` are on;
 2. Edit page files → auto reload takes effect;
-3. Read the latest screenshot in `screenshots/aui/` to see the rendered result;
+3. Read the latest screenshot in `screenshots/kui/` to see the rendered result;
 4. For errors, look in `logs/latest.log`;
 5. If you have MCP, use it to query the DOM and simulate operations for interaction verification; if not, ask the user to bind and open DevTools and look for you — its DOM tree, pick mode (click a page element to locate it in the tree), the Inspector's matched CSS rules list (which rule wins, what overrides it, and which file it comes from), and the console (script output and errors) cover most troubleshooting. You tell the user what to look at and have them relay the results back to you.
 

@@ -94,7 +94,7 @@
 
 <body>
 <div class="page">
-    <div class="title">ApricityUI Showcase</div>
+    <div class="title">KltytonUI Showcase</div>
 
     <div class="stage-1">
         <div class="group-title">组2：sprite 元素（熔岩桶，仅 bucket_cycle）</div>

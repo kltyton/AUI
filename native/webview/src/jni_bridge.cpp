@@ -1,6 +1,6 @@
 // JNI surface for the offscreen WebView host.
 //
-// Java side: com.sighs.apricityui.webview.WebViewNative
+// Java side: io.github.kltyton.kltytonui.webview.WebViewNative
 #include "webview_host.h"
 
 #include <jni.h>
@@ -78,7 +78,7 @@ WebViewHost* resolve(jlong handle) {
 
 extern "C" {
 
-JNIEXPORT jboolean JNICALL Java_com_sighs_apricityui_webview_WebViewNative_nAvailable(JNIEnv*, jclass) {
+JNIEXPORT jboolean JNICALL Java_io_github_kltyton_kltytonui_webview_WebViewNative_nAvailable(JNIEnv*, jclass) {
     LPWSTR version = nullptr;
     const HRESULT hr = GetAvailableCoreWebView2BrowserVersionString(nullptr, &version);
     if (version != nullptr) {
@@ -87,7 +87,7 @@ JNIEXPORT jboolean JNICALL Java_com_sighs_apricityui_webview_WebViewNative_nAvai
     return SUCCEEDED(hr) ? JNI_TRUE : JNI_FALSE;
 }
 
-JNIEXPORT jstring JNICALL Java_com_sighs_apricityui_webview_WebViewNative_nBrowserVersion(JNIEnv* env, jclass) {
+JNIEXPORT jstring JNICALL Java_io_github_kltyton_kltytonui_webview_WebViewNative_nBrowserVersion(JNIEnv* env, jclass) {
     LPWSTR version = nullptr;
     const HRESULT hr = GetAvailableCoreWebView2BrowserVersionString(nullptr, &version);
     if (FAILED(hr) || version == nullptr) {
@@ -98,7 +98,7 @@ JNIEXPORT jstring JNICALL Java_com_sighs_apricityui_webview_WebViewNative_nBrows
     return result;
 }
 
-JNIEXPORT jlong JNICALL Java_com_sighs_apricityui_webview_WebViewNative_nCreate(
+JNIEXPORT jlong JNICALL Java_io_github_kltyton_kltytonui_webview_WebViewNative_nCreate(
         JNIEnv* env, jclass, jstring url, jstring userDataDir, jint width, jint height,
         jboolean transparent, jboolean autoCapture, jint frameIntervalMs, jint frameFormat) {
     setCreateError(L"");
@@ -123,12 +123,12 @@ JNIEXPORT jlong JNICALL Java_com_sighs_apricityui_webview_WebViewNative_nCreate(
     return handle;
 }
 
-JNIEXPORT jstring JNICALL Java_com_sighs_apricityui_webview_WebViewNative_nLastCreateError(JNIEnv* env, jclass) {
+JNIEXPORT jstring JNICALL Java_io_github_kltyton_kltytonui_webview_WebViewNative_nLastCreateError(JNIEnv* env, jclass) {
     std::lock_guard<std::mutex> lock(g_errorMutex);
     return wideToJstring(env, g_lastCreateError);
 }
 
-JNIEXPORT void JNICALL Java_com_sighs_apricityui_webview_WebViewNative_nDestroy(JNIEnv*, jclass, jlong handle) {
+JNIEXPORT void JNICALL Java_io_github_kltyton_kltytonui_webview_WebViewNative_nDestroy(JNIEnv*, jclass, jlong handle) {
     bool live = false;
     {
         std::lock_guard<std::mutex> lock(g_registryMutex);
@@ -142,84 +142,84 @@ JNIEXPORT void JNICALL Java_com_sighs_apricityui_webview_WebViewNative_nDestroy(
     delete host;
 }
 
-JNIEXPORT jboolean JNICALL Java_com_sighs_apricityui_webview_WebViewNative_nIsAlive(JNIEnv*, jclass, jlong handle) {
+JNIEXPORT jboolean JNICALL Java_io_github_kltyton_kltytonui_webview_WebViewNative_nIsAlive(JNIEnv*, jclass, jlong handle) {
     return resolve(handle) != nullptr ? JNI_TRUE : JNI_FALSE;
 }
 
-JNIEXPORT jstring JNICALL Java_com_sighs_apricityui_webview_WebViewNative_nStatus(JNIEnv* env, jclass, jlong handle) {
+JNIEXPORT jstring JNICALL Java_io_github_kltyton_kltytonui_webview_WebViewNative_nStatus(JNIEnv* env, jclass, jlong handle) {
     WebViewHost* host = resolve(handle);
     return wideToJstring(env, host == nullptr ? std::wstring(L"no such handle") : host->statusText());
 }
 
-JNIEXPORT jstring JNICALL Java_com_sighs_apricityui_webview_WebViewNative_nLastError(JNIEnv* env, jclass, jlong handle) {
+JNIEXPORT jstring JNICALL Java_io_github_kltyton_kltytonui_webview_WebViewNative_nLastError(JNIEnv* env, jclass, jlong handle) {
     WebViewHost* host = resolve(handle);
     return wideToJstring(env, host == nullptr ? std::wstring() : host->lastError());
 }
 
-JNIEXPORT void JNICALL Java_com_sighs_apricityui_webview_WebViewNative_nNavigate(
+JNIEXPORT void JNICALL Java_io_github_kltyton_kltytonui_webview_WebViewNative_nNavigate(
         JNIEnv* env, jclass, jlong handle, jstring url) {
     if (WebViewHost* host = resolve(handle)) {
         host->navigate(utf8ToWide(env, url));
     }
 }
 
-JNIEXPORT void JNICALL Java_com_sighs_apricityui_webview_WebViewNative_nSetBoundsAndZoom(
+JNIEXPORT void JNICALL Java_io_github_kltyton_kltytonui_webview_WebViewNative_nSetBoundsAndZoom(
         JNIEnv*, jclass, jlong handle, jint width, jint height, jdouble zoom) {
     if (WebViewHost* host = resolve(handle)) {
         host->setBoundsAndZoom(width, height, zoom);
     }
 }
 
-JNIEXPORT void JNICALL Java_com_sighs_apricityui_webview_WebViewNative_nSetFrameFormat(
+JNIEXPORT void JNICALL Java_io_github_kltyton_kltytonui_webview_WebViewNative_nSetFrameFormat(
         JNIEnv*, jclass, jlong handle, jint format) {
     if (WebViewHost* host = resolve(handle)) {
         host->setFrameFormat(format);
     }
 }
 
-JNIEXPORT void JNICALL Java_com_sighs_apricityui_webview_WebViewNative_nSetFrameInterval(
+JNIEXPORT void JNICALL Java_io_github_kltyton_kltytonui_webview_WebViewNative_nSetFrameInterval(
         JNIEnv*, jclass, jlong handle, jint milliseconds) {
     if (WebViewHost* host = resolve(handle)) {
         host->setFrameInterval(milliseconds);
     }
 }
 
-JNIEXPORT void JNICALL Java_com_sighs_apricityui_webview_WebViewNative_nSetAutoCapture(
+JNIEXPORT void JNICALL Java_io_github_kltyton_kltytonui_webview_WebViewNative_nSetAutoCapture(
         JNIEnv*, jclass, jlong handle, jboolean enabled) {
     if (WebViewHost* host = resolve(handle)) {
         host->setAutoCapture(enabled == JNI_TRUE);
     }
 }
 
-JNIEXPORT void JNICALL Java_com_sighs_apricityui_webview_WebViewNative_nRequestCapture(
+JNIEXPORT void JNICALL Java_io_github_kltyton_kltytonui_webview_WebViewNative_nRequestCapture(
         JNIEnv*, jclass, jlong handle) {
     if (WebViewHost* host = resolve(handle)) {
         host->requestCapture();
     }
 }
 
-JNIEXPORT void JNICALL Java_com_sighs_apricityui_webview_WebViewNative_nFocus(
+JNIEXPORT void JNICALL Java_io_github_kltyton_kltytonui_webview_WebViewNative_nFocus(
         JNIEnv*, jclass, jlong handle, jboolean focused) {
     if (WebViewHost* host = resolve(handle)) {
         host->focus(focused == JNI_TRUE);
     }
 }
 
-JNIEXPORT void JNICALL Java_com_sighs_apricityui_webview_WebViewNative_nMouse(
+JNIEXPORT void JNICALL Java_io_github_kltyton_kltytonui_webview_WebViewNative_nMouse(
         JNIEnv*, jclass, jlong handle, jint kind, jint virtualKeys, jint mouseData, jint x, jint y) {
     if (WebViewHost* host = resolve(handle)) {
         host->mouse(kind, virtualKeys, mouseData, x, y);
     }
 }
 
-JNIEXPORT void JNICALL Java_com_sighs_apricityui_webview_WebViewNative_nEval(
+JNIEXPORT void JNICALL Java_io_github_kltyton_kltytonui_webview_WebViewNative_nEval(
         JNIEnv* env, jclass, jlong handle, jstring script) {
     if (WebViewHost* host = resolve(handle)) {
         host->eval(utf8ToWide(env, script));
     }
 }
 
-JNIEXPORT jobject JNICALL Java_com_sighs_apricityui_webview_WebViewNative_nMapChannel(
+JNIEXPORT jobject JNICALL Java_io_github_kltyton_kltytonui_webview_WebViewNative_nMapChannel(
         JNIEnv* env, jclass, jlong handle) {
     WebViewHost* host = resolve(handle);
     if (host == nullptr) {

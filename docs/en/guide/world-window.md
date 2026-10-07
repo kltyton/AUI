@@ -1,6 +1,6 @@
 # WorldWindow — In-World Windows
 
-WorldWindow renders an HTML Document as a flat plane inside the Minecraft world: info signs, machine external screens, entity overhead labels, floating hints. It is neither a Screen nor an Overlay — it has world coordinates, orientation, perspective scaling, and block occlusion, and interaction works via crosshair raycasts. The page itself is still a normal AUI page; DOM, events, and form capabilities all work.
+WorldWindow renders an HTML Document as a flat plane inside the Minecraft world: info signs, machine external screens, entity overhead labels, floating hints. It is neither a Screen nor an Overlay — it has world coordinates, orientation, perspective scaling, and block occlusion, and interaction works via crosshair raycasts. The page itself is still a normal KUI page; DOM, events, and form capabilities all work.
 
 The KubeJS examples in this guide apply to Forge 1.20.1 and NeoForge 1.21.1; the Java API is available on the other targets. See the [overview](overview#loader-and-script-support).
 
@@ -9,14 +9,14 @@ The KubeJS examples in this guide apply to Forge 1.20.1 and NeoForge 1.21.1; the
 World windows are recommended to use `mode=fixed` with an explicitly declared logical size; otherwise the browser-common 1920 width will turn straight into a gigantic world panel:
 
 ```html
-<meta name="aui-viewport" content="mode=fixed,width=240,height=96,scale=1">
-<meta name="aui-mouse-events" content="intercept">
+<meta name="kui-viewport" content="mode=fixed,width=240,height=96,scale=1">
+<meta name="kui-mouse-events" content="intercept">
 ```
 
 Java creation (KubeJS client scripts use the same API, passing coordinates directly as x, y, z):
 
 ```java
-WorldWindow window = ApricityUI.createWorldWindow(
+WorldWindow window = KltytonUI.createWorldWindow(
         "world/notice.html",
         new Vec3(10.5, 65.0, -4.0),
         32                          // interaction ray distance
@@ -24,10 +24,10 @@ WorldWindow window = ApricityUI.createWorldWindow(
 window.setMaxDisplayDistance(64);   // camera display distance
 window.setDepthTest(true);
 
-ApricityUI.removeWorldWindow(window);   // remove when no longer needed; the Document is destroyed with it
+KltytonUI.removeWorldWindow(window);   // remove when no longer needed; the Document is destroyed with it
 ```
 
-`ApricityUI.createWorldWindow(...)` creates the Document **and registers it**. Manually calling `new WorldWindow(...)` only creates without registering — you must call `WorldWindow.addWindow(window)` yourself. Calling only `Document.createInWorld(path)` gets you just a Document, and nothing will ever show. This is the standard answer to "the resource exists but there is no window in the world."
+`KltytonUI.createWorldWindow(...)` creates the Document **and registers it**. Manually calling `new WorldWindow(...)` only creates without registering — you must call `WorldWindow.addWindow(window)` yourself. Calling only `Document.createInWorld(path)` gets you just a Document, and nothing will ever show. This is the standard answer to "the resource exists but there is no window in the world."
 
 These are client APIs. If the position data lives on the server, sync it to the client yourself first.
 
@@ -84,7 +84,7 @@ Follow does not bind to the camera: it projects the base position onto the view 
 | `maxDistance` (constructor parameter / `setMaxDistance`) | How far the crosshair/mouse ray can reach |
 | `maxDisplayDistance` (`setMaxDisplayDistance`) | Beyond this camera distance the window is neither rendered nor hit |
 
-When no instance-level display distance is set, the global config `config/apricityui-client.toml`'s `[worldWindow] maxDisplayDistance` is used (default 128; set `2147483647` for unlimited). `clearMaxDisplayDistanceOverride()` restores the global value. With Follow enabled, the distance is computed from this frame's followed position.
+When no instance-level display distance is set, the global config `config/kltytonui-client.toml`'s `[worldWindow] maxDisplayDistance` is used (default 128; set `2147483647` for unlimited). `clearMaxDisplayDistanceOverride()` restores the global value. With Follow enabled, the distance is computed from this frame's followed position.
 
 ## Occlusion and Z-Fighting
 
@@ -127,7 +127,7 @@ On every render the framework saves that frame's projection matrices; when input
 
 The event types are the usual set (mousemove/down/up/click/dblclick/contextmenu/wheel/over/out/enter/leave + pointer compatibility). `clientX/clientY` are already unprojected into Document logical coordinates — **don't multiply them by world scale, renderScale, or devicePixelRatio again**.
 
-To consume native input (clickable world buttons usually need this), add `<meta name="aui-mouse-events" content="intercept">` in the HTML; see the [ApricityScreen meta section](apricity-screen#page-meta-configuration) for the rules.
+To consume native input (clickable world buttons usually need this), add `<meta name="kui-mouse-events" content="intercept">` in the HTML; see the [KltytonScreen meta section](kltytonui-screen#page-meta-configuration) for the rules.
 
 Two limitations:
 
@@ -164,7 +164,7 @@ For high-frequency updates only change the necessary elements; don't rebuild the
 
 **Large numbers of windows**: limit the count, keep `maxDisplayDistance` modest, and enable LOD. LOD only saves drawing, not layout — actively remove distant instances.
 
-**Debugging**: the in-game command `/aui worldwindow` creates a test window in front of the crosshair, letting you tune distance, depth, LOD, scale, and Follow/Facing in real time. There's also an acceptance test page: place an armor stand named `auitest` in the world, and the test generator will create a Follow/Facing window above its head.
+**Debugging**: the in-game command `/kui worldwindow` creates a test window in front of the crosshair, letting you tune distance, depth, LOD, scale, and Follow/Facing in real time. There's also an acceptance test page: place an armor stand named `kuitest` in the world, and the test generator will create a Follow/Facing window above its head.
 
 ## FAQ
 

@@ -1,26 +1,26 @@
-# Apricity 外部调试接口
+# Kltyton 外部调试接口
 
-Apricity Debug Protocol（ADP）让外部程序以类似 Playwright 的方式检查和操作正在运行的 Apricity UI。协议第一版使用 WebSocket 承载 JSON-RPC 2.0，不兼容 Chrome DevTools Protocol，也不执行任意 JavaScript。
+Kltyton Debug Protocol（ADP）让外部程序以类似 Playwright 的方式检查和操作正在运行的 Kltyton UI。协议第一版使用 WebSocket 承载 JSON-RPC 2.0，不兼容 Chrome DevTools Protocol，也不执行任意 JavaScript。
 
 ## 启用与连接
 
 开发环境默认启用，生产环境默认关闭。也可以通过 JVM 参数显式控制：
 
 ```text
--Dapricityui.debug.enabled=true
--Dapricityui.debug.enabled=false
+-Dkltytonui.debug.enabled=true
+-Dkltytonui.debug.enabled=false
 ```
 
 服务只监听本机回环地址，端口固定为 `25321`：
 
 ```text
-ws://127.0.0.1:25321/apricity?token=<token>
+ws://127.0.0.1:25321/kltytonui?token=<token>
 ```
 
 每次游戏启动都会生成新的随机 token。服务启动成功后，连接信息会写入：
 
 ```text
-run/apricity/debug.json
+run/kltytonui/debug.json
 ```
 
 文件内容示例：
@@ -28,7 +28,7 @@ run/apricity/debug.json
 ```json
 {
   "protocolVersion": 1,
-  "endpoint": "ws://127.0.0.1:25321/apricity",
+  "endpoint": "ws://127.0.0.1:25321/kltytonui",
   "token": "...",
   "pid": 12345
 }
@@ -37,14 +37,14 @@ run/apricity/debug.json
 自动化环境可以使用固定 token：
 
 ```text
--Dapricityui.debug.token=my-local-token
+-Dkltytonui.debug.token=my-local-token
 ```
 
 token 可以放在 URL 的 `token` 查询参数中，也可以通过 `Authorization: Bearer <token>` 请求头传递。未认证连接会在 WebSocket 握手前被拒绝。
 
 ## 线程模型
 
-网络线程只负责解析请求和发送响应。所有 `Document`、DOM、布局和输入操作都会进入线程安全队列，并在游戏客户端 tick 的开始阶段执行。这保证外部调试不会与 Apricity 的布局或渲染并发访问同一棵节点树。
+网络线程只负责解析请求和发送响应。所有 `Document`、DOM、布局和输入操作都会进入线程安全队列，并在游戏客户端 tick 的开始阶段执行。这保证外部调试不会与 Kltyton 的布局或渲染并发访问同一棵节点树。
 
 客户端停止响应时，请求会保持等待，不会转移到网络线程执行。
 
@@ -79,7 +79,7 @@ token 可以放在 URL 的 `token` 查询参数中，也可以通过 `Authorizat
 
 ## Target
 
-一个 Target 对应一个运行中的 Apricity `Document`。同一路径可以同时存在多个 document，因此 `targetId` 始终使用完整 UUID；路径只用于展示和筛选。
+一个 Target 对应一个运行中的 Kltyton `Document`。同一路径可以同时存在多个 document，因此 `targetId` 始终使用完整 UUID；路径只用于展示和筛选。
 
 | 方法 | 参数 | 结果 |
 | --- | --- | --- |
@@ -115,10 +115,10 @@ token 可以放在 URL 的 `token` 查询参数中，也可以通过 `Authorizat
 
 ## Locator 客户端
 
-仓库中的 `tools/apricity-debug-client.mjs` 提供轻量的 Playwright 风格包装。Node.js 22 可以直接运行，不需要安装依赖：
+仓库中的 `tools/kltytonui-debug-client.mjs` 提供轻量的 Playwright 风格包装。Node.js 22 可以直接运行，不需要安装依赖：
 
 ```js
-import { connect } from "./tools/apricity-debug-client.mjs";
+import { connect } from "./tools/kltytonui-debug-client.mjs";
 
 const client = await connect();
 const documents = await client.documents();
@@ -143,10 +143,10 @@ Locator 不缓存节点 UUID。每次操作前都会重新解析 selector，因�
 
 ## MCP 服务
 
-`tools/apricity-mcp` 提供基于官方 MCP SDK 的 stdio 服务。首次使用时安装依赖：
+`tools/kltytonui-mcp` 提供基于官方 MCP SDK 的 stdio 服务。首次使用时安装依赖：
 
 ```powershell
-cd tools/apricity-mcp
+cd tools/kltytonui-mcp
 npm install
 ```
 
@@ -155,11 +155,11 @@ MCP 客户端配置示例：
 ```json
 {
   "mcpServers": {
-    "apricity": {
+    "kltytonui": {
       "command": "node",
-      "args": ["D:/work/AUI/tools/apricity-mcp/server.mjs"],
+      "args": ["D:/work/KUI/tools/kltytonui-mcp/server.mjs"],
       "env": {
-        "APRICITY_DEBUG_DISCOVERY": "D:/work/AUI/run/apricity/debug.json"
+        "KLTYTONUI_DEBUG_DISCOVERY": "D:/work/KUI/run/kltytonui/debug.json"
       }
     }
   }
@@ -170,16 +170,16 @@ MCP 服务提供以下工具：
 
 | 工具 | 用途 |
 | --- | --- |
-| `apricity_documents` | 列出当前运行的 document 及完整 UUID |
-| `apricity_snapshot` | 获取有深度和节点数限制的 DOM 快照 |
-| `apricity_query` | 批量查询元素摘要 |
-| `apricity_inspect` | 检查首个匹配元素的属性、文本、盒模型和可选计算样式 |
-| `apricity_wait_for` | 等待元素 attached、detached、visible 或 hidden |
-| `apricity_hover` | 移动鼠标到元素中心 |
-| `apricity_click` | 点击元素 |
-| `apricity_fill` | 填写 input 或 textarea |
+| `kltytonui_documents` | 列出当前运行的 document 及完整 UUID |
+| `kltytonui_snapshot` | 获取有深度和节点数限制的 DOM 快照 |
+| `kltytonui_query` | 批量查询元素摘要 |
+| `kltytonui_inspect` | 检查首个匹配元素的属性、文本、盒模型和可选计算样式 |
+| `kltytonui_wait_for` | 等待元素 attached、detached、visible 或 hidden |
+| `kltytonui_hover` | 移动鼠标到元素中心 |
+| `kltytonui_click` | 点击元素 |
+| `kltytonui_fill` | 填写 input 或 textarea |
 
-默认从 discovery 文件读取 endpoint 和 token。也可以同时设置 `APRICITY_DEBUG_ENDPOINT` 与 `APRICITY_DEBUG_TOKEN` 显式连接。MCP 进程只使用 stderr 输出自身错误，stdout 专用于 MCP stdio 消息。
+默认从 discovery 文件读取 endpoint 和 token。也可以同时设置 `KLTYTONUI_DEBUG_ENDPOINT` 与 `KLTYTONUI_DEBUG_TOKEN` 显式连接。MCP 进程只使用 stderr 输出自身错误，stdout 专用于 MCP stdio 消息。
 
 ## 安全边界
 

@@ -1,4 +1,4 @@
-# ApricityUI `container` / `slot` / `item` / `ingredient` Guide
+# KltytonUI `container` / `slot` / `item` / `ingredient` Guide
 
 Last updated: 2026-08-06
 
@@ -45,7 +45,7 @@ An empty `bind="player"` container creates 36 Slots. Other empty bound container
 
 ### 3.2 `interactive`, `pointer`, and `disabled`
 
-Slot interaction capability resolves in this order: recipe-generated Slot → `interactive` → `pointer` → CSS `--aui-slot-interactive` → binding default.
+Slot interaction capability resolves in this order: recipe-generated Slot → `interactive` → `pointer` → CSS `--kui-slot-interactive` → binding default.
 
 - `tooltip`: tooltip only.
 - `slot`: menu operation only.

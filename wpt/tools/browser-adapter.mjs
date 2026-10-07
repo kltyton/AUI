@@ -8,8 +8,8 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
-const SNAPSHOT_ID = '__aui_wpt_browser_snapshot__';
-const BATCH_SNAPSHOT_ID = '__aui_wpt_batch_snapshot__';
+const SNAPSHOT_ID = '__kui_wpt_browser_snapshot__';
+const BATCH_SNAPSHOT_ID = '__kui_wpt_batch_snapshot__';
 
 function chromiumPath() {
   return [
@@ -60,7 +60,7 @@ function batchPage(ids, viewport) {
 const ids=${JSON.stringify(ids)}, results=[], workers=[]; let cursor=0;
 async function run(){while(cursor<ids.length){const id=ids[cursor++], frame=document.createElement('iframe');
 frame.style.cssText='position:absolute;left:-10000px;top:0;border:0';frame.width='${viewport.width}';frame.height='${viewport.height}';document.body.appendChild(frame);
-try{await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('iframe timeout')),4000);frame.onload=()=>{clearTimeout(timer);setTimeout(resolve,100)};frame.src='/'+id+'?__aui_wpt_probe=1'});
+try{await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('iframe timeout')),4000);frame.onload=()=>{clearTimeout(timer);setTimeout(resolve,100)};frame.src='/'+id+'?__kui_wpt_probe=1'});
 const node=frame.contentDocument.getElementById('${SNAPSHOT_ID}');if(!node)throw new Error('layout probe did not produce a snapshot');
 results.push({id,status:'pass',snapshot:JSON.parse(node.textContent)});}catch(error){results.push({id,status:'browser-test-failed',reason:String(error.message||error)});}finally{frame.remove();}}}
 for(let i=0;i<Math.min(8,ids.length);i++)workers.push(run());Promise.all(workers).then(()=>{const out=document.createElement('script');out.id='${BATCH_SNAPSHOT_ID}';out.type='application/json';out.textContent=JSON.stringify(results);document.body.appendChild(out)});
@@ -73,7 +73,7 @@ async function startCorpusServer(corpus) {
     try {
       const requestUrl = new URL(request.url, 'http://127.0.0.1');
       const relative = decodeURIComponent(requestUrl.pathname).replace(/^\/+/, '');
-      if (relative === '__aui_wpt_batch') {
+      if (relative === '__kui_wpt_batch') {
         const batch = batches.get(requestUrl.searchParams.get('id'));
         if (!batch) throw new Error('unknown batch');
         response.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
@@ -86,7 +86,7 @@ async function startCorpusServer(corpus) {
         return;
       }
       const body = await readFile(file);
-      const probe = requestUrl.searchParams.get('__aui_wpt_probe') === '1';
+      const probe = requestUrl.searchParams.get('__kui_wpt_probe') === '1';
       const html = probe && ['.html', '.htm', '.xhtml'].includes(path.extname(file).toLowerCase());
       response.writeHead(200, { 'content-type': contentType(file), 'cache-control': 'no-store' });
       response.end(html ? injectProbe(body.toString('utf8')) : body);
@@ -154,7 +154,7 @@ export async function captureBrowserSnapshots({ corpus, cases, output, viewport,
     for (let index = 0; index < runnable.length; index += 50) batches.push(runnable.slice(index, index + 50));
     const batchResults = await mapConcurrent(batches, Math.min(4, workerCount(workers)), async (batch) => {
       const batchId = registerBatch(batch.map((testCase) => testCase.id), viewport);
-      const url = `${origin}/__aui_wpt_batch?id=${batchId}`;
+      const url = `${origin}/__kui_wpt_batch?id=${batchId}`;
       try {
         const { stdout } = await execFileAsync(chrome, [
           '--headless=new', '--disable-gpu', '--disable-background-networking', '--disable-default-apps',

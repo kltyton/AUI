@@ -1,6 +1,6 @@
-# ApricityUI Web API
+# KltytonUI Web API
 
-AUI is not Chromium and has no browser engine. On supported targets, page JavaScript runs on Rhino, while the Java-side Document, Element, events, and resource pipeline are bridged into browser-style objects. So the APIs here fall into three categories:
+KUI is not Chromium and has no browser engine. On supported targets, page JavaScript runs on Rhino, while the Java-side Document, Element, events, and resource pipeline are bridged into browser-style objects. So the APIs here fall into three categories:
 
 > **Target limitation**: the Forge 1.20.1, NeoForge 1.21.1, and NeoForge 26.1 targets support page scripts. The Fabric 1.20.1, Fabric 1.21.1, and Fabric 26.1 target implementations do not currently execute page scripts. Pages still parse and render, but script-dependent interactions are unavailable on targets that do not execute `<script>`. See the [overview](overview#loader-and-script-support) for the target matrix.
 
@@ -8,7 +8,7 @@ AUI is not Chromium and has no browser engine. On supported targets, page JavaSc
 - **Lightweight compatibility**: same names and common call patterns as the browser, but with reduced return values, timing, or parameter ranges;
 - **Not provided**: not implemented — don't assume they exist.
 
-For CSS properties and layout, see [HTML/CSS Coverage](html-css-coverage); for page-level viewport/font/mouse meta configuration, see the [ApricityScreen documentation](apricity-screen#page-meta-configuration).
+For CSS properties and layout, see [HTML/CSS Coverage](html-css-coverage); for page-level viewport/font/mouse meta configuration, see the [KltytonScreen documentation](kltytonui-screen#page-meta-configuration).
 
 ## Quick Start
 
@@ -29,7 +29,7 @@ For CSS properties and layout, see [HTML/CSS Coverage](html-css-coverage); for p
 </script>
 ```
 
-Page scripts should stick to `var`, plain `function`, and traditional loops. AUI performs compatibility transforms for some modern syntax, but Rhino is not a modern JS engine — don't bet on it.
+Page scripts should stick to `var`, plain `function`, and traditional loops. KUI performs compatibility transforms for some modern syntax, but Rhino is not a modern JS engine — don't bet on it.
 
 ## Global Objects
 
@@ -37,7 +37,7 @@ Each Document has its own `document`, and they share one window compatibility ob
 
 | Global | Status | Notes |
 | --- | --- | --- |
-| window / document / console | Available | console writes to the AUI log |
+| window / document / console | Available | console writes to the KUI log |
 | localStorage / sessionStorage | Available | see the Storage section below |
 | performance | Lightweight | only `now()` |
 | fetch | Lightweight | restricted GET, see below |
@@ -48,7 +48,7 @@ Each Document has its own `document`, and they share one window compatibility ob
 | ResizeObserver / MutationObserver | Lightweight | dispatched per document frame, not at microtask timing |
 | DOMMatrix / Path2D / OffscreenCanvas / createImageBitmap | Lightweight | see the Canvas section |
 
-**Not provided**: KeyboardEvent constructor, navigator.clipboard, Selection/Range, history, matchMedia, XMLHttpRequest, WebSocket, IntersectionObserver, WebGL, Service Worker, full Promise, AbortController, Shadow DOM, postMessage. The `<iframe>` element shell and its offscreen rendering are covered by the [WebView and iframe doc](webview), but `window.parent`/`postMessage` inside the page are not wired to AUI. Text selection and copy is AUI's own implementation — don't write code against Selection/Range.
+**Not provided**: KeyboardEvent constructor, navigator.clipboard, Selection/Range, history, matchMedia, XMLHttpRequest, WebSocket, IntersectionObserver, WebGL, Service Worker, full Promise, AbortController, Shadow DOM, postMessage. The `<iframe>` element shell and its offscreen rendering are covered by the [WebView and iframe doc](webview), but `window.parent`/`postMessage` inside the page are not wired to KUI. Text selection and copy is KUI's own implementation — don't write code against Selection/Range.
 
 ## Window
 
@@ -60,7 +60,7 @@ window.devicePixelRatio    // Minecraft GUI scale
 
 The `clientX/clientY` in events are already logical coordinates — do not multiply them by devicePixelRatio or renderScale again.
 
-**Events**: `addEventListener(type, fn)` / `removeEventListener` / `dispatchEvent`. The third parameter is only treated as a boolean capture flag; the `{passive, signal}` options object is not implemented. AUI internally supports an extra fourth parameter for once: `addEventListener("custom", fn, false, true)`.
+**Events**: `addEventListener(type, fn)` / `removeEventListener` / `dispatchEvent`. The third parameter is only treated as a boolean capture flag; the `{passive, signal}` options object is not implemented. KUI internally supports an extra fourth parameter for once: `addEventListener("custom", fn, false, true)`.
 
 **Timers**:
 
@@ -224,13 +224,13 @@ form.submit();          // dispatches submit directly
 form.reset();           // cancelable; restores default values if not canceled
 ```
 
-AUI does not send HTTP requests for a form's action. After a submit is canceled, formdata is no longer dispatched. Controls outside the form can be associated with `form="id"`.
+KUI does not send HTTP requests for a form's action. After a submit is canceled, formdata is no longer dispatched. Controls outside the form can be associated with `form="id"`.
 
 FormData:
 
 ```javascript
 var data = new FormData(form);
-data.append("tag", "aui");
+data.append("tag", "kui");
 data.get("tag");  data.getAll("tag");  data.set("page", "1");
 data.has("page"); data.delete("page");
 data.forEach(function (v, k) { ... });
@@ -246,7 +246,7 @@ localStorage.getItem("theme");   // also removeItem/clear/key/length
 sessionStorage.setItem("draft", "text");
 ```
 
-localStorage persists to `config/apricityui/localStorage.nbt`; sessionStorage is only valid for the current client run. Empty keys are ignored; passing null may store the string "null"; there are no storage events.
+localStorage persists to `config/kltytonui/localStorage.nbt`; sessionStorage is only valid for the current client run. Empty keys are ignored; passing null may store the string "null"; there are no storage events.
 
 `window.location` is generated from the resource path and exposes `href/protocol/host/hostname/port/origin/pathname/search/hash/searchParams`. `assign/replace/reload` are no-ops; there is no real navigation. To get the string form, read `href` — it has no custom toString.
 
@@ -258,7 +258,7 @@ URLSearchParams only has these methods: `append / getAll / sort / forEach / toSt
 fetch("data.json").then(function (response) {
     console.log(response.ok, response.status, response.url);
     var text = response.text();
-    var json = response.json();     // AUI built-in JSON parsing
+    var json = response.json();     // KUI built-in JSON parsing
     var bytes = response.bytes();   // copy of the byte array
 });
 ```
@@ -303,7 +303,7 @@ Both dispatch in batches per document frame, not at browser microtask timing. Af
     ctx.fillStyle = "#2f7d8c";
     ctx.fillRect(10, 10, 120, 40);
     ctx.font = "16px sans-serif";
-    ctx.fillText("ApricityUI", 18, 36);
+    ctx.fillText("KltytonUI", 18, 36);
 </script>
 ```
 
@@ -337,9 +337,9 @@ createImageBitmapAsync(canvas).then(function (b) { ... });  // async version
 Two entry points, both with browser HTMLAudioElement semantics: the `<audio>` element and the `new Audio()` factory.
 
 ```html
-<audio src="apricityui/sounds/click.ogg" controls autoplay></audio>
+<audio src="kltytonui/sounds/click.ogg" controls autoplay></audio>
 <script>
-    var audio = new Audio("apricityui/sounds/bgm.ogg");  // detached instance, not in the DOM tree
+    var audio = new Audio("kltytonui/sounds/bgm.ogg");  // detached instance, not in the DOM tree
     audio.loop = true;
     audio.volume = 0.6;
     audio.addEventListener("ended", function () { console.log("done"); });
@@ -347,7 +347,7 @@ Two entry points, both with browser HTMLAudioElement semantics: the `<audio>` el
 </script>
 ```
 
-- **Sources**: the same resource chain as images/fonts — dev-environment resource dirs, `<gamedir>/apricity/`, classpath, resource packs; relative `src` resolves against the page path. No remote URLs.
+- **Sources**: the same resource chain as images/fonts — dev-environment resource dirs, `<gamedir>/kltytonui/`, classpath, resource packs; relative `src` resolves against the page path. No remote URLs.
 - **Formats**: OGG Vorbis and WAV/PCM (8/16-bit, mono/stereo). No MP3, no Web Audio API.
 - **API**: `play()` (returns a Promise with `then`/`['catch']`), `pause()`, `load()`; `currentTime` (read/write, write = seek), `duration` (NaN until ready), `volume` (clamped to 0..1), `muted`, `loop`, `paused`, `ended`, `seeking`, `readyState` (0→1→4; full-decode skips 2/3), `networkState` (3 with no src), `preload` (`none` waits for play()/load(); `metadata`/`auto` both load immediately), `autoplay`.
 - **Event sequence**: `loadstart → durationchange → loadedmetadata → canplay → canplaythrough → play → playing → timeupdate (250ms throttle) → pause / ended`; failures dispatch `error`; seeks dispatch `seeking → seeked`. Inline `oncanplay`-style attributes work too.
@@ -377,17 +377,17 @@ document.addEventListener("DOMContentLoaded", installPage);
 
 Don't call `refresh()` every frame — it rebuilds the entire page; it is a reload mechanism, not an update mechanism.
 
-## AUI-Specific Behavior
+## KUI-Specific Behavior
 
 **Dual script content**: a `<script>` with both `src` and inline code executes both (with a warning). Don't rely on the browser behavior of "src ignores inline".
 
-**Log prefixes**: when troubleshooting, search for `[AUI HTML]` / `[AUI CSS]` / `[AUI JS]` / `[AUI Fetch]` / `[AUI Canvas]` / `[AUI Event]`, usually with a resource path attached. In pages, use `console.log/debug/warn/error` and `console.time/timeEnd`.
+**Log prefixes**: when troubleshooting, search for `[KUI HTML]` / `[KUI CSS]` / `[KUI JS]` / `[KUI Fetch]` / `[KUI Canvas]` / `[KUI Event]`, usually with a resource path attached. In pages, use `console.log/debug/warn/error` and `console.time/timeEnd`.
 
 **Top layer**: the host-side `setTopLayer(true)` makes popups and dropdown menus draw last within the current Document and not get clipped by ancestor overflow. It only affects ordering within this Document; it does not lift one Document above another.
 
 **Manual rendering**: the host can set a Document to manual rendering, after which it leaves global drawing and input dispatch, and the caller draws it and forwards events itself. Normal pages should not use this.
 
-**Extension elements**: AUI registers Minecraft-oriented tags such as `<texture>`, `<sprite>`, `<translation>`, `<svg>`, `<canvas>`, `<item>`, `<ingredient>`, `<recipe>`, `<container>`, and `<slot>` — these are not native browser HTML. See [Extension Elements](extension-elements), [Minecraft Item and Recipe Elements](mc-elements), and the [Container guide](container).
+**Extension elements**: KUI registers Minecraft-oriented tags such as `<texture>`, `<sprite>`, `<translation>`, `<svg>`, `<canvas>`, `<item>`, `<ingredient>`, `<recipe>`, `<container>`, and `<slot>` — these are not native browser HTML. See [Extension Elements](extension-elements), [Minecraft Item and Recipe Elements](mc-elements), and the [Container guide](container).
 
 **Hosts**: the page DOM API does not create hosts. Screen, Overlay, Container, and WorldWindow each have their own documentation.
 

@@ -1,6 +1,6 @@
 # Built-in UI Library
 
-`com.sighs.apricityui.ui` is the framework's built-in Java component library: dialogs, context menus, toasts, tooltips, a color picker, a file picker, and translation utilities. DevTools and the resource manager are built with them, and your own code can reuse them directly. Components create ordinary AUI DOM that participates in layout, rendering, and hit testing — no page needs to include any JS library.
+`io.github.kltyton.kltytonui.ui` is the framework's built-in Java component library: dialogs, context menus, toasts, tooltips, a color picker, a file picker, and translation utilities. DevTools and the resource manager are built with them, and your own code can reuse them directly. Components create ordinary KUI DOM that participates in layout, rendering, and hit testing — no page needs to include any JS library.
 
 ## Four General Rules
 
@@ -97,7 +97,7 @@ Three editing modes — HEX / RGB / HSL — plus Alpha; the result format follow
 
 ## FilePicker: Resource File Picker
 
-This is not a system file dialog — it lists the resources scanned by AUI (resource packs, the local apricity directory, the development directory):
+This is not a system file dialog — it lists the resources scanned by KUI (resource packs, the local kltytonui directory, the development directory):
 
 ```java
 FilePicker.pick(FilePicker.Options.html("SELECT HTML", false))   // false=exclude resource pack files
@@ -113,7 +113,7 @@ FilePicker.pick(FilePicker.Options.html("SELECT HTML", false))   // false=exclud
 ## UiTranslations: Java-Side Translation
 
 ```java
-String title = UiTranslations.translate("devtools.apricityui.edit_meta");
+String title = UiTranslations.translate("devtools.kltytonui.edit_meta");
 button.setAttribute("aria-label", title);
 ```
 

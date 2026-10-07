@@ -6,8 +6,8 @@
 
 ## 1. 安装
 
-- CurseForge: https://www.curseforge.com/minecraft/mc-mods/apricityui
-- Modrinth: https://modrinth.com/mod/apricityui
+- CurseForge: https://www.curseforge.com/minecraft/mc-mods/kltytonui
+- Modrinth: https://github.com/kltyton/KltytonUI
 
 官方Maven：
 ```groovy
@@ -17,7 +17,7 @@ repositories {
     }
 }
 dependencies {
-    implementation 'com.sighs:ApricityUI-forge-1.20.1:1.2.5.4'
+    implementation 'io.github.kltyton.kltytonui:KltytonUI-forge-1.20.1:1.2.5.4'
 }
 ```
 
@@ -25,11 +25,11 @@ dependencies {
 
 ## 2. 确认它在工作
 
-首次使用先进入 MC 控制设置，为 ApricityUI 绑定「打开资源管理器」「开关开发者工具」「重载资源」按键。这三个按键默认都未绑定；左 Alt 默认用于按住释放鼠标。
+首次使用先进入 MC 控制设置，为 KltytonUI 绑定「打开资源管理器」「开关开发者工具」「重载资源」按键。这三个按键默认都未绑定；左 Alt 默认用于按住释放鼠标。
 
 绑定后按「打开资源管理器」键进入内置资源管理器。
 
-这个资源管理器本身就是一个 ApricityUI 页面——它能渲染、能点，说明模组已经跑起来了。顺手记住它会反复用到的三个功能：
+这个资源管理器本身就是一个 KltytonUI 页面——它能渲染、能点，说明模组已经跑起来了。顺手记住它会反复用到的三个功能：
 
 - **双击 HTML 文件**：可交互预览，和真实打开效果一致；
 - **空白处右键 → NEW FILE**：新建页面，模板会配好常用设置；
@@ -39,15 +39,15 @@ dependencies {
 
 ## 3. 第一个页面
 
-两种建法：在资源管理器里用 NEW FILE 模板建；或者手动在 `<游戏目录>/apricity/screens/` 下建 `hello.html`（开发环境是 `run/apricity/`），然后触发「重载资源」让模组扫到它。
+两种建法：在资源管理器里用 NEW FILE 模板建；或者手动在 `<游戏目录>/kltytonui/screens/` 下建 `hello.html`（开发环境是 `run/kltytonui/`），然后触发「重载资源」让模组扫到它。
 
 ```html
 <!doctype html>
 <html>
 <head>
     <meta charset="utf-8">
-    <meta name="aui-viewport" content="mode=browser">
-    <meta name="aui-mouse-events" content="intercept">
+    <meta name="kui-viewport" content="mode=browser">
+    <meta name="kui-mouse-events" content="intercept">
     <style>
         body { margin: 0; color: #eee; background: #20242b; font-size: 16px; }
         .panel { width: 360px; margin: 60px auto; padding: 16px; background: #303640; }
@@ -55,7 +55,7 @@ dependencies {
 </head>
 <body>
     <main class="panel">
-        <h2>你好，ApricityUI</h2>
+        <h2>你好，KltytonUI</h2>
         <p id="status">等待点击</p>
         <button id="btn" type="button">点我</button>
     </main>
@@ -70,13 +70,13 @@ dependencies {
 
 就是一段普通网页。只有三件事需要解释：
 
-**两个 meta 是页面配置**：`aui-viewport` 给页面一个浏览器式逻辑视口；`aui-mouse-events=intercept` 让页面拦截鼠标——不加这行，点击可能落不到页面上。完整解释在 [ApricityScreen 的 meta 章节](guide/apricity-screen#页面-meta-配置)，现在知道各管一件事就够。
+**两个 meta 是页面配置**：`kui-viewport` 给页面一个浏览器式逻辑视口；`kui-mouse-events=intercept` 让页面拦截鼠标——不加这行，点击可能落不到页面上。完整解释在 [KltytonScreen 的 meta 章节](guide/kltytonui-screen#页面-meta-配置)，现在知道各管一件事就够。
 
 **没有浏览器默认样式**：`h2`、`p`、`button` 不自带任何外观，字号、颜色、间距全自己写。哪些 CSS 写法能用、哪些会被忽略，见 [HTML/CSS 覆盖面](guide/html-css-coverage)。
 
-**脚本运行取决于 target**：Forge 1.20.1、NeoForge 1.21.1 和 NeoForge 26.1 支持页面脚本；Fabric targets 当前不执行页面脚本。KubeJS 模组绑定只在 Forge 1.20.1 和 NeoForge 1.21.1 提供。能力清单和 target 差异见 [Web API](guide/web-api) 与 [模组 API](guide/apricity-api)。
+**脚本运行取决于 target**：Forge 1.20.1、NeoForge 1.21.1 和 NeoForge 26.1 支持页面脚本；Fabric targets 当前不执行页面脚本。KubeJS 模组绑定只在 Forge 1.20.1 和 NeoForge 1.21.1 提供。能力清单和 target 差异见 [Web API](guide/web-api) 与 [模组 API](guide/kltytonui-api)。
 
-**路径**：模组按**逻辑路径**找文件，不按磁盘位置。文件在 `<游戏目录>/apricity/screens/hello.html`，代码里就写 `screens/hello.html`——不带 `assets/...` 前缀，不写盘符。页面里引 CSS、图片同理。规则见[资源管理](guide/resource-manager)。
+**路径**：模组按**逻辑路径**找文件，不按磁盘位置。文件在 `<游戏目录>/kltytonui/screens/hello.html`，代码里就写 `screens/hello.html`——不带 `assets/...` 前缀，不写盘符。页面里引 CSS、图片同理。规则见[资源管理](guide/resource-manager)。
 
 写完触发「重载资源」（或在资源管理器里刷新），再双击 `screens/hello.html` 预览。脚本可用的 target 上，点击按钮会把文字改成“被点击了”。
 
@@ -85,11 +85,11 @@ dependencies {
 刚写的页面能跑，但样式是裸的。别从零写 CSS——内置的 Ore 主题是现成的 MC 风格：像素边框、深色石材表面、绿紫金强调色，按钮、卡片、表单、表格、徽章、物品栏格子全配好。引一行就能用：
 
 ```html
-<link rel="stylesheet" href="/apricityui/theme/ore/ore.css">
+<link rel="stylesheet" href="/kltytonui/theme/ore/ore.css">
 <body class="ore-theme">
 ```
 
-然后套类名：`<button class="button button-primary">`、`<div class="card">`、`<table class="table">`。展示页 `apricityui/theme/ore/example.html`（在资源管理器里双击打开）把全部组件演示了一遍，照着抄就行。
+然后套类名：`<button class="button button-primary">`、`<div class="card">`、`<table class="table">`。展示页 `kltytonui/theme/ore/example.html`（在资源管理器里双击打开）把全部组件演示了一遍，照着抄就行。
 
 想改配色和间距，直接改 `--ore-*` 变量（见第 9 节的覆写方式）。组件清单：[ore-theme.md](guide/ore-theme)。
 
@@ -101,7 +101,7 @@ dependencies {
 
 | 宿主 | 场景 | 文档 |
 | --- | --- | --- |
-| Screen | 全屏界面：设置页、菜单 | [apricity-screen.md](guide/apricity-screen) |
+| Screen | 全屏界面：设置页、菜单 | [kltytonui-screen.md](guide/kltytonui-screen) |
 | Overlay | 悬浮层：HUD、常驻状态、通知 | [overlay-document.md](guide/overlay-document) |
 | 容器 Screen | 背包、机器——操作真实物品 | [container.md](guide/container) |
 | WorldWindow | 世界里的显示屏、实体头顶标签 | [world-window.md](guide/world-window) |
@@ -114,7 +114,7 @@ HTML 写法四种宿主通用，差别只在页面出现在哪、数据谁来给
 
 ```javascript
 // KubeJS 客户端脚本
-var docs = ApricityUI.getDocument("screens/hello.html");   // 注意：返回列表
+var docs = KltytonUI.getDocument("screens/hello.html");   // 注意：返回列表
 if (docs.length > 0) {
     var status = docs[0].getElementById("status");
     status.textContent = "HP: 20";
@@ -124,7 +124,7 @@ if (docs.length > 0) {
 
 ```java
 // Java
-List<Document> docs = ApricityUI.getDocument("screens/hello.html");   // 同样是列表
+List<Document> docs = KltytonUI.getDocument("screens/hello.html");   // 同样是列表
 if (!docs.isEmpty()) {
     Element status = docs.get(0).getElementById("status");
     status.setTextContent("HP: 20");
@@ -137,9 +137,9 @@ if (!docs.isEmpty()) {
 两个坑：
 
 - **页面得先存在**。没打开过时 `getDocument` 返回空列表，先 `createDocument` 或等页面加载；
-- **刷新后旧引用全部失效**。重载会重建整个页面，异步回调里改 DOM 前先确认代次——见[模组 API 的"线程、空值、刷新"](guide/apricity-api#线程空值刷新)。
+- **刷新后旧引用全部失效**。重载会重建整个页面，异步回调里改 DOM 前先确认代次——见[模组 API 的"线程、空值、刷新"](guide/kltytonui-api#线程空值刷新)。
 
-完整 API：[apricity-api.md](guide/apricity-api)。
+完整 API：[kltytonui-api.md](guide/kltytonui-api)。
 
 ## 7. 日常改动：走 DevTools
 
@@ -151,7 +151,7 @@ if (!docs.isEmpty()) {
 - **改错能撤销**：Ctrl+Z / Ctrl+Shift+Z，编辑历史按文档保存；
 - **满意了点保存，写回源文件**：只改了样式就只写回改过的 CSS 规则（涉及多个 CSS 文件也行）；动了结构就勾"保存 DOM 树"，把当前 DOM 整体序列化回 HTML。资源包里的只读文件会拒绝并说明原因，不会写去奇怪的地方；
 - **控制台**：收页面脚本的 `console.log` 和报错，按级别过滤、按关键字搜；输入框是受限命令（`$("#save")` 查元素、`tree`、`count()` 之类），不是任意 JS 解释器；
-- **Meta 编辑**：直接改当前页面的 charset、三个 aui-* meta 和运行时缩放，不用手编 HTML 头部；
+- **Meta 编辑**：直接改当前页面的 charset、三个 kui-* meta 和运行时缩放，不用手编 HTML 头部；
 - **设置**：面板里直接开关 `autoReload` 等调试配置，不用去翻 toml 文件。
 
 想重跑当前页面用工具栏的“重载文档”按钮；「重载资源」操作会全量重新扫描并刷新页面。
@@ -162,9 +162,9 @@ if (!docs.isEmpty()) {
 
 模组内置了一整套 AI 辅助开发支持，配一次，之后写页面的大部分活可以交给 AI。
 
-**第一步：把 skill 给 AI。** [docs/ai-skill.md](ai-skill) 是给 AI 看的自包含说明书——路径规则、meta、四种宿主、容器、调试流程全在里面。三选一：贴进对话、放到 AI 能读到的目录、或直接给 GitHub 链接（`https://github.com/Tower-of-Sighs/AUI/blob/snow/docs/ai-skill.md`）。给完就不用你再转述规则了。
+**第一步：把 skill 给 AI。** [docs/ai-skill.md](ai-skill) 是给 AI 看的自包含说明书——路径规则、meta、四种宿主、容器、调试流程全在里面。三选一：贴进对话、放到 AI 能读到的目录、或直接给 GitHub 链接（`https://github.com/kltyton/KltytonUI/blob/main/docs/ai-skill.md`）。给完就不用你再转述规则了。
 
-**第二步：打开两个开关**（`config/apricityui-client.toml`）：
+**第二步：打开两个开关**（`config/kltytonui-client.toml`）：
 
 ```toml
 [debug]
@@ -173,9 +173,9 @@ aiAutoScreenshot = true
 ```
 
 - `autoReload`：AI 改完文件保存，游戏内立刻生效——改 CSS 只重挂样式，连页面状态都不丢；改 HTML/JS 只刷新受影响的页面；
-- `aiAutoScreenshot`：每秒自动截一张图到 `<游戏目录>/screenshots/aui/`，AI 自己读图确认渲染结果，不用你描述"长成什么样"。
+- `aiAutoScreenshot`：每秒自动截一张图到 `<游戏目录>/screenshots/kui/`，AI 自己读图确认渲染结果，不用你描述"长成什么样"。
 
-**第三步：正常提需求。** 之后的循环是：你说要改什么 → AI 改 `<游戏目录>/apricity/` 下的文件 → 自动生效 → AI 看截图、翻 `logs/latest.log` 自查。有条件的话 AI 还能接 MCP 直连运行中的页面（工具在 GitHub 仓库 `tools/` 下，不随模组分发，能获取就用），查 DOM、点按钮做交互验证；接不了也不影响主流程。
+**第三步：正常提需求。** 之后的循环是：你说要改什么 → AI 改 `<游戏目录>/kltytonui/` 下的文件 → 自动生效 → AI 看截图、翻 `logs/latest.log` 自查。有条件的话 AI 还能接 MCP 直连运行中的页面（工具在 GitHub 仓库 `tools/` 下，不随模组分发，能获取就用），查 DOM、点按钮做交互验证；接不了也不影响主流程。
 
 ## 9. 用 AI + Ore 主题做界面
 
@@ -184,15 +184,15 @@ Ore 主题有两个文件对 AI 特别重要，给它这两个，它就能写出
 - **`ore.css`**：全部类名和 `--ore-*` 变量的权威定义；
 - **`example.html`**：每个组件的写法示例。
 
-两个文件的逻辑路径分别是 `/apricityui/theme/ore/ore.css` 和 `apricityui/theme/ore/example.html`（在资源管理器里双击 example 能直接看到全部组件效果）。文件内容来源三选一：
+两个文件的逻辑路径分别是 `/kltytonui/theme/ore/ore.css` 和 `kltytonui/theme/ore/example.html`（在资源管理器里双击 example 能直接看到全部组件效果）。文件内容来源三选一：
 
-- GitHub raw：`https://raw.githubusercontent.com/Tower-of-Sighs/AUI/snow/common/src/main/resources/assets/apricityui/apricity/apricityui/theme/ore/ore.css`（example.html 换同目录下的文件名即可）；
-- 模组 jar：jar 本质是 zip，解开后在 `assets/apricityui/apricity/apricityui/theme/ore/`；
-- 本地有仓库克隆：`common/src/main/resources/assets/apricityui/apricity/apricityui/theme/ore/`。
+- GitHub raw：`https://raw.githubusercontent.com/kltyton/KltytonUI/main/common/src/main/resources/assets/kltytonui/kltytonui/kltytonui/theme/ore/ore.css`（example.html 换同目录下的文件名即可）；
+- 模组 jar：jar 本质是 zip，解开后在 `assets/kltytonui/kltytonui/kltytonui/theme/ore/`；
+- 本地有仓库克隆：`common/src/main/resources/assets/kltytonui/kltytonui/kltytonui/theme/ore/`。
 
 给 AI 的说法大概是：
 
-> 按 ai-skill.md 的规则写一个 AUI 页面：某某设置界面。用 Ore 主题，类名和变量参考这份 ore.css，组件结构参考这份 example.html。
+> 按 ai-skill.md 的规则写一个 KUI 页面：某某设置界面。用 Ore 主题，类名和变量参考这份 ore.css，组件结构参考这份 example.html。
 
 一个提醒：**改配色让 AI 覆写变量，别改 ore.css**——在自己的 CSS 文件里写 `--ore-green: ...` 这类覆写（在 ore.css 之后引入）。jar 里的主题文件改了也没用，本地同名覆盖只会把自己绕晕。
 
@@ -201,14 +201,14 @@ Ore 主题有两个文件对 AI 特别重要，给它这两个，它就能写出
 按顺序来：
 
 1. **DevTools**：样式不对就看 Inspector 的“匹配规则”列表——哪条生效、被谁覆盖、来自哪个文件；结构不对用拾取模式点一下元素直接定位到 DOM 树；脚本报错和控制台输出都在控制台页签。功能明细见第 7 节和 [devtools.md](guide/devtools)；
-2. **翻日志**：`logs/latest.log` 搜 `[AUI HTML]`、`[AUI JS]`、`[AUI CSS]` 前缀，报错带资源路径；
+2. **翻日志**：`logs/latest.log` 搜 `[KUI HTML]`、`[KUI JS]`、`[KUI CSS]` 前缀，报错带资源路径；
 3. **游戏外调试**：模组能起本机调试服务，`tools/` 里带了 Node 客户端和 MCP 桥，AI 工具能直连运行中的页面查 DOM、模拟点击。开法和用法见 [tools.md](guide/tools)。
 
 ## 接下来
 
 - 页面做得像样：[Ore 主题](guide/ore-theme) → [HTML/CSS 覆盖面](guide/html-css-coverage) → [Web API](guide/web-api)；
-- 宿主进阶：[Screen](guide/apricity-screen)、[Overlay](guide/overlay-document)、[WorldWindow](guide/world-window)、[容器](guide/container)（最进阶，涉及服务端）；
-- 模组侧完整 API：[apricity-api.md](guide/apricity-api)；
+- 宿主进阶：[Screen](guide/kltytonui-screen)、[Overlay](guide/overlay-document)、[WorldWindow](guide/world-window)、[容器](guide/container)（最进阶，涉及服务端）；
+- 模组侧完整 API：[kltytonui-api.md](guide/kltytonui-api)；
 - MC 物品与配方展示：[mc-elements.md](guide/mc-elements)；
 - 交给 AI 开发：[ai-skill.md](ai-skill)，用法见第 8、9 节；
 - 全部文档的地图：[overview.md](guide/overview)。

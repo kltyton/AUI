@@ -127,13 +127,13 @@ logs/
 !/icon.png
 /IdeaSnapshots/
 /.codex_tmp/
-/apricity/.cache/
+/kltytonui/.cache/
 node_modules/
 
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 !gradle-wrapper.jar
 
-common/src/main/java/com/sighs/apricityui/event/Test.java
+common/src/main/java/io/github/kltyton/kltytonui/event/Test.java
 
 profiler
 

@@ -1,6 +1,6 @@
 # Web API 接口总览
 
-本文档说明 ApricityUI 当前直接提供给页面脚本使用的 Web 风格接口。
+本文档说明 KltytonUI 当前直接提供给页面脚本使用的 Web 风格接口。
 
 说明范围：
 
@@ -10,7 +10,7 @@
 
 ## 总体说明
 
-ApricityUI 会在页面脚本执行前注入一层浏览器兼容包装，因此页面里可以直接写：
+KltytonUI 会在页面脚本执行前注入一层浏览器兼容包装，因此页面里可以直接写：
 
 ```js
 document.querySelector(...)
@@ -762,7 +762,7 @@ mo.disconnect();
 
 如果你要扩展新的浏览器接口，建议同时查看以下实现文件：
 
-- `src/main/java/com/sighs/apricityui/init/Document.java`
-- `src/main/java/com/sighs/apricityui/init/Window.java`
-- `src/main/java/com/sighs/apricityui/init/Element.java`
-- `src/main/java/com/sighs/apricityui/init/Event.java`
+- `src/main/java/io/github/kltyton/kltytonui/init/Document.java`
+- `src/main/java/io/github/kltyton/kltytonui/init/Window.java`
+- `src/main/java/io/github/kltyton/kltytonui/init/Element.java`
+- `src/main/java/io/github/kltyton/kltytonui/init/Event.java`

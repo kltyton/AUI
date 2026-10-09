@@ -59,7 +59,7 @@ Implemented per the CSS 2.1 replaced-element rules, matching a browser:
 
 - the inner page's **CSS viewport equals the element's content box** in CSS pixels: `innerWidth`, `vw`/`vh` and media queries all resolve against it;
 - the raster is captured at the content box's **device pixels** (content box × device scale) and the page's `devicePixelRatio` equals that scale, so it is 1:1 at real resolution and stays crisp at any screen scaling;
-- the raster can be shrunk by three things: `capture-scale`, a 4096 px per-axis cap, and by-area downscaling (past 1.2 million pixels). When that happens WebView2's ZoomFactor (`zoom`, clamped hard to 0.25 – 5) is recomputed in step, so the **page's CSS viewport stays exact** and only sharpness is traded;
+- `auto` / `fast` captures are downscaled by area past 1.2 million pixels; explicit `lossless` / `stream` captures preserve device resolution. All modes still obey `capture-scale` and the 4096 px per-axis cap. When the raster shrinks, WebView2's ZoomFactor (`zoom`, clamped to 0.25 – 5) is recomputed while the CSS viewport keeps its original size;
 - the texture is always painted to the content box, so a smaller raster never misplaces the content — it only softens it.
 
 ## Rendering pipeline

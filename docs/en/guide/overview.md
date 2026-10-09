@@ -25,14 +25,17 @@ The repository currently contains these targets. This table reflects the source 
 
 | Target | Minecraft | Page scripts | KubeJS `KltytonUI` bindings | CI JDK |
 | --- | --- | --- | --- | --- |
+| Forge | 1.18.2 | Supported | Not provided | 21 |
+| Forge | 1.19.2 | Supported | Not provided | 21 |
 | Forge | 1.20.1 | Supported | Provided | 21 |
-| Fabric | 1.20.1 | Not currently executed | Not provided | 17 |
-| Fabric | 1.21.1 | Not currently executed | Not provided | 21 |
+| Fabric | 1.20.1 | Supported | Not provided | 17 |
+| Fabric | 1.21.1 | Supported | Not provided | 21 |
 | NeoForge | 1.21.1 | Supported | Provided | 21 |
-| Fabric | 26.1 | Not currently executed | Not provided | 25 |
+| Fabric | 26.1 | Supported | Not provided | 25 |
 | NeoForge | 26.1 | Supported | Not provided | 25 |
+| NeoForge | 26.2 | Supported | Not provided | 25 |
 
-The Java common API and HTML/CSS rendering are shared across these targets. Fabric targets currently do not execute page scripts; where page-script support is unavailable, pages still render but `<script>` does not run. For Java-side interaction or a target with page-script support, see [Mod-specific API](kltytonui-api).
+The Java common API, HTML/CSS rendering, and standalone Rhino page runtime are shared across these targets, with target-specific version adapters. Page scripts do not depend on KubeJS; install the corresponding Rhino dependency in the runtime environment. See [Mod-specific API](kltytonui-api) for Java integration.
 
 ## What you can use in a page
 
@@ -109,4 +112,5 @@ The repository uses a `common + targets` multi-loader structure: `common/` is lo
 | Custom elements / KJS bindings / frame timing | [secondary-development.md](secondary-development) |
 | External debug protocol, MCP, screenshot tools | [tools.md](tools) |
 | WPT layout comparison | [wpt.md](wpt) |
+| Maven artifacts, signing, and publishing | [maven-publishing.md](maven-publishing) |
 | AI development and debugging rules (skill doc for AI) | [ai-skill.md](../ai-skill) |

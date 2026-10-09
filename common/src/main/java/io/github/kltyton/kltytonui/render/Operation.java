@@ -540,7 +540,7 @@ public class Operation {
      * 如果在某些情况（如窗口拖动等）鼠标位置缓存为空或者是读到旧的缓存值时请参考{@link #getMousePositionDirectly()}
      * 未来建议重构，统一输入源，或在输入更新链中保证鼠标坐标始终同步。
      *
-     * @see Client#getMousePosition()
+     * @see #getMousePositionDirectly()
      */
     public static Position getMousePosition() {
         return cachedMousePosition;

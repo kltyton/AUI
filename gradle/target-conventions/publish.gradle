@@ -1,6 +1,19 @@
 // Applied from an individual target project, not from the aggregate root project.
 apply plugin: 'maven-publish'
 
+tasks.named('javadoc', Javadoc).configure {
+    options.encoding = 'UTF-8'
+    options.docEncoding = 'UTF-8'
+    options.charSet = 'UTF-8'
+}
+
+def mavenJavadocJar = tasks.register('mavenJavadocJar', Jar) {
+    group = 'publishing'
+    description = 'Packages API documentation for Maven publishing.'
+    archiveClassifier = 'javadoc'
+    from tasks.named('javadoc')
+}
+
 repositories {
     flatDir {
         dirs layout.projectDirectory.dir('libs')
@@ -100,6 +113,33 @@ publishing {
             artifactId = base.archivesName.get()
             version = project.version.toString()
 
+            artifact mavenJavadocJar
+
+            pom {
+                name = base.archivesName.get()
+                description = "${mod_name} Web UI for Minecraft ${publishMinecraftVersion.get()} (${publishLoader})"
+                url = 'https://github.com/kltyton/KltytonUI'
+                licenses {
+                    license {
+                        name = 'GNU Lesser General Public License, version 2.1'
+                        url = 'https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html'
+                        distribution = 'repo'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'kltyton'
+                        name = mod_authors
+                        url = 'https://github.com/kltyton'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:https://github.com/kltyton/KltytonUI.git'
+                    developerConnection = 'scm:git:ssh://git@github.com/kltyton/KltytonUI.git'
+                    url = 'https://github.com/kltyton/KltytonUI'
+                }
+            }
+
             // Loader and Minecraft dependencies are supplied by the game runtime,
             // so the published mod POM must not expose the target build classpath.
             pom.withXml {
@@ -141,3 +181,5 @@ tasks.named('publish') {
 tasks.withType(GenerateModuleMetadata).configureEach {
     enabled = false
 }
+
+apply from: file('../../gradle/target-conventions/central.gradle')

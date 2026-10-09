@@ -19,7 +19,7 @@ import io.github.kltyton.kltytonui.render.Rect;
 import io.github.kltyton.kltytonui.style.Text;
 
 /**
- * `<audio>` 元素：HTMLAudioElement 语义的 DOM 包装。
+ * {@code <audio>} 元素：HTMLAudioElement 语义的 DOM 包装。
  * 播放状态机在 {@link AudioPlayer}（纯 Java，headless 可测），本类负责：
  * src/preload/autoplay/loop/muted 属性反射、DOM 事件桥（播放器事件 →
  * Document 事件流，内联 onxxx 经 Element.installInlineEventHandlers 自动绑定）、

@@ -14,7 +14,7 @@
 
 ### 基本内容
 
-晴雪UI用 HTML、CSS 和 Java 构建 Minecraft UI；部分 loader target 还支持页面 JavaScript。Forge 1.20.1、NeoForge 1.21.1 和 NeoForge 26.1 支持页面脚本；Fabric targets 当前不执行页面脚本。KubeJS 的 `KltytonUI` 模组绑定只在 Forge 1.20.1 与 NeoForge 1.21.1 提供。详见[总览](guide/overview#loader-与脚本支持)。
+KltytonUI 用 HTML、CSS、Java 和 JavaScript 构建 Minecraft UI。九个目标均接入独立 Rhino 页面运行时，页面脚本不依赖 KubeJS；KubeJS 的 `KltytonUI` 模组绑定只在 Forge 1.20.1 与 NeoForge 1.21.1 提供。详见[总览](guide/overview#loader-与脚本支持)。
 
 HTML/CSS 页面仍能在没有页面脚本的 target 中渲染；需要交互逻辑时，请确认目标 target 支持页面脚本，或从 Java 侧操作 DOM。
 它的上手门槛很低：你可以用常见的 Web 技术编写页面，也可以借助 AI 生成 HTML/CSS，再按项目需要调整。
@@ -109,15 +109,13 @@ WebView 后端目前仅提供给 Windows x64 + WebView2 Runtime。其他平台�
 
 ### 开发者须知
 
-使用晴雪UI无需了解任何源码，如有需要，可以使用官方Maven：
+使用 KltytonUI 无需了解内部实现。Maven Central 正在准备发布；确认所选版本公开后可使用以下配置。维护者步骤见 [Maven 发布](guide/maven-publishing)。
 ```Groovy
 repositories {
-    maven {
-        url "https://maven.sighs.cc/repository/maven-public/"
-    }
+    mavenCentral()
 }
 dependencies {
-    implementation 'io.github.kltyton.kltytonui:KltytonUI-forge-1.20.1:1.2.6'
+    implementation 'io.github.kltyton.kltytonui:KltytonUI-forge-1.20.1:<已发布版本>'
 }
 ```
 

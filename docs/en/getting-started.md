@@ -2,26 +2,24 @@
 
 From zero to your first actually usable in-game UI.
 
-One thing up front: this mod's pages are plain HTML/CSS/JS, and it ships with a built-in instruction manual for AI plus debugging support — **if you were already planning to have AI write your pages, install the mod in Section 1 and then jump straight to Section 8**; you don't need to read the parts in between. Sections 2–7 are for people who want to understand it themselves: confirm the mod works, write an HTML page, make it look good, open it in game, and drive it from code.
+Pages use plain HTML/CSS/JS, with development documentation and debugging support. Sections 2–7 cover page development and in-game integration; Sections 8–9 cover external development tools and theme resources.
 
 ## 1. Installation
 
 - CurseForge: https://www.curseforge.com/minecraft/mc-mods/kltytonui
 - Modrinth: https://github.com/kltyton/KltytonUI
 
-Official Maven:
+Maven Central publication is being prepared. Use this configuration after the corresponding version is publicly available and its coordinate has been verified. The root `gradle.properties` contains the current source version.
 ```groovy
 repositories {
-    maven {
-        url "https://maven.sighs.cc/repository/maven-public/"
-    }
+    mavenCentral()
 }
 dependencies {
-    implementation 'io.github.kltyton.kltytonui:KltytonUI-forge-1.20.1:1.2.5.4'
+    implementation 'io.github.kltyton.kltytonui:KltytonUI-forge-1.20.1:<published-version>'
 }
 ```
 
-This coordinate is for Forge 1.20.1. The repository also contains Fabric 1.20.1, Fabric 1.21.1, NeoForge 1.21.1, Fabric 26.1, and NeoForge 26.1 targets; choose the artifact for your loader and Minecraft version. The current source version is in the root `gradle.properties`.
+This example is for Forge 1.20.1. The source also provides Forge 1.18.2 / 1.19.2, Fabric 1.20.1 / 1.21.1 / 26.1, and NeoForge 1.21.1 / 26.1 / 26.2. Select the matching loader and Minecraft target. See [Maven publishing](guide/maven-publishing) for maintainer commands, signing, and upload preparation.
 
 ## 2. Confirm It's Working
 
@@ -74,7 +72,7 @@ It's just an ordinary web page. Only three things need explaining:
 
 **There are no browser default styles**: `h2`, `p`, and `button` come with no appearance at all — font size, color, and spacing are all yours to write. For which CSS works and which gets ignored, see [HTML/CSS Coverage](guide/html-css-coverage).
 
-**Script support depends on the target**: Forge 1.20.1, NeoForge 1.21.1, and NeoForge 26.1 support page scripts; Fabric targets currently do not execute page scripts. KubeJS mod bindings are available only on Forge 1.20.1 and NeoForge 1.21.1. See [Web API](guide/web-api) and [Mod API](guide/kltytonui-api) for the capabilities and target differences.
+**Page scripts use the standalone Rhino runtime**: all nine targets provide page-script support and require their corresponding Rhino dependency. KubeJS mod bindings are available only on Forge 1.20.1 and NeoForge 1.21.1. See [Web API](guide/web-api) and [Mod API](guide/kltytonui-api) for the capabilities and target differences.
 
 **Paths**: the mod locates files by **logical path**, not disk location. If the file is at `<game directory>/kltytonui/screens/hello.html`, you write `screens/hello.html` in code — no `assets/...` prefix, no drive letters. Referencing CSS and images from inside a page works the same way. See [Resource Management](guide/resource-manager) for the rules.
 
@@ -162,7 +160,7 @@ Either kind of reload rebuilds the page, and every old element reference in your
 
 The mod ships with a complete set of AI-assisted development support. Set it up once, and most of the work of writing pages can be handed to AI afterwards.
 
-**Step 1: give the skill to the AI.** [docs/ai-skill.md](ai-skill) is a self-contained instruction manual written for AI — path rules, metas, the four hosts, containers, and the debugging workflow are all in there. Three options: paste it into the conversation, put it in a directory the AI can read, or give the GitHub link directly (`https://github.com/kltyton/KltytonUI/blob/main/docs/ai-skill.md`). Once given, you don't need to relay the rules yourself anymore.
+**Step 1: provide the development documentation.** The [page development and debugging guide](ai-skill) and [documentation index](guide/overview) cover resource paths, page metas, the four hosts, containers, and debugging protocols. Provide the documents and resources relevant to the current page to your external development tool.
 
 **Step 2: turn on two switches** (`config/kltytonui-client.toml`):
 
@@ -192,7 +190,7 @@ The logical paths of the two files are `/kltytonui/theme/ore/ore.css` and `kltyt
 
 What to tell the AI, roughly:
 
-> Following the rules in ai-skill.md, write an KUI page: such-and-such settings screen. Use the Ore theme; refer to this ore.css for class names and variables, and this example.html for component structure.
+Use the host and resource-path documentation for the page. Treat `ore.css` as the source for theme classes and variables, and `example.html` as the component reference.
 
 One reminder: **to change colors, have the AI override variables — don't modify ore.css** — write overrides like `--ore-green: ...` in your own CSS file (included after ore.css). Editing the theme files inside the jar does nothing anyway, and shadowing them locally with same-named files will only confuse you.
 
@@ -210,5 +208,5 @@ In this order:
 - Advanced hosts: [Screen](guide/kltytonui-screen), [Overlay](guide/overlay-document), [WorldWindow](guide/world-window), [Containers](guide/container) (most advanced, involves the server side);
 - Full mod-side API: [kltytonui-api.md](guide/kltytonui-api);
 - Minecraft item and recipe displays: [mc-elements.md](guide/mc-elements);
-- Handing development to AI: [ai-skill.md](ai-skill), usage in Sections 8 and 9;
+- External development tools: Sections 8–9 and the [debug protocol](guide/tools);
 - Map of all docs: [overview.md](guide/overview).

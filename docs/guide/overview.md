@@ -25,14 +25,17 @@ KltytonUI 是一个 Minecraft 模组：用 HTML、CSS、JavaScript 写游戏 UI�
 
 | Target | MC | 页面脚本 | KubeJS 的 `KltytonUI` 绑定 | CI JDK |
 | --- | --- | --- | --- | --- |
+| Forge | 1.18.2 | 支持 | 不提供 | 21 |
+| Forge | 1.19.2 | 支持 | 不提供 | 21 |
 | Forge | 1.20.1 | 支持 | 提供 | 21 |
-| Fabric | 1.20.1 | 当前不执行 | 不提供 | 17 |
-| Fabric | 1.21.1 | 当前不执行 | 不提供 | 21 |
+| Fabric | 1.20.1 | 支持 | 不提供 | 17 |
+| Fabric | 1.21.1 | 支持 | 不提供 | 21 |
 | NeoForge | 1.21.1 | 支持 | 提供 | 21 |
-| Fabric | 26.1 | 当前不执行 | 不提供 | 25 |
+| Fabric | 26.1 | 支持 | 不提供 | 25 |
 | NeoForge | 26.1 | 支持 | 不提供 | 25 |
+| NeoForge | 26.2 | 支持 | 不提供 | 25 |
 
-Java 的 common API 与 HTML/CSS 渲染在这些 target 中共用。Fabric target 当前不执行页面脚本；没有页面脚本支持时，页面仍可渲染，但 `<script>` 不运行。依赖脚本的交互可改用 Java 或选择支持页面脚本的 target。游戏内的资源管理器、DevTools 和资源重载按键默认未绑定，需在 MC 控制设置中自行绑定。
+Java common API、HTML/CSS 渲染与独立 Rhino 页面运行时在这些目标中共用，版本适配由各目标实现。页面脚本不依赖 KubeJS；运行环境须安装对应的 Rhino。游戏内的资源管理器、DevTools 和资源重载按键默认未绑定，需在 MC 控制设置中自行绑定。
 
 ## 页面里能用什么
 
@@ -109,4 +112,5 @@ Java 的 common API 与 HTML/CSS 渲染在这些 target 中共用。Fabric targe
 | 自定义元素 / KJS 绑定 / 帧耗时 | [secondary-development.md](secondary-development) |
 | 外部调试协议、MCP、截图工具 | [tools.md](tools) |
 | WPT 布局对比 | [wpt.md](wpt) |
+| Maven 附件、签名与发布 | [maven-publishing.md](maven-publishing) |
 | AI 开发与调试规则（给 AI 的 skill 文档） | [ai-skill.md](../ai-skill) |

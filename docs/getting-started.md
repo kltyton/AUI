@@ -2,26 +2,24 @@
 
 从零到写出第一个真正能用的游戏界面。
 
-先说一句：这个模组的页面就是普通 HTML/CSS/JS，而且自带给 AI 的说明书和调试支持——**如果你本来就打算让 AI 来写页面，第 1 节装好模组后直接跳第 8 节**，不用读中间这些。第 2~7 节是给想自己弄懂的人的：确认模组工作、写一个 HTML 页面、把它变好看、在游戏里打开它、用代码操作它。
+这个模组的页面使用普通 HTML/CSS/JS，提供开发文档和调试支持。第 2~7 节介绍页面开发与游戏内接入；第 8、9 节介绍外部工具辅助开发和主题资源。
 
 ## 1. 安装
 
 - CurseForge: https://www.curseforge.com/minecraft/mc-mods/kltytonui
 - Modrinth: https://github.com/kltyton/KltytonUI
 
-官方Maven：
+Maven Central 正在准备发布。以下配置需在对应版本公开并确认可解析后使用；当前源码版本见根目录 `gradle.properties`。
 ```groovy
 repositories {
-    maven {
-        url "https://maven.sighs.cc/repository/maven-public/"
-    }
+    mavenCentral()
 }
 dependencies {
-    implementation 'io.github.kltyton.kltytonui:KltytonUI-forge-1.20.1:1.2.5.4'
+    implementation 'io.github.kltyton.kltytonui:KltytonUI-forge-1.20.1:<已发布版本>'
 }
 ```
 
-此坐标示例对应 Forge 1.20.1。仓库当前还包含 Fabric 1.20.1、Fabric 1.21.1、NeoForge 1.21.1、Fabric 26.1 和 NeoForge 26.1 target；依赖坐标按实际 loader 和 Minecraft 版本选择。当前源码版本见仓库根目录 `gradle.properties`。
+此示例对应 Forge 1.20.1。源码还提供 Forge 1.18.2 / 1.19.2、Fabric 1.20.1 / 1.21.1 / 26.1、NeoForge 1.21.1 / 26.1 / 26.2；按 Loader 和 Minecraft 版本选择目标。维护者的附件、签名与上传步骤见 [Maven 发布](guide/maven-publishing)。
 
 ## 2. 确认它在工作
 
@@ -74,7 +72,7 @@ dependencies {
 
 **没有浏览器默认样式**：`h2`、`p`、`button` 不自带任何外观，字号、颜色、间距全自己写。哪些 CSS 写法能用、哪些会被忽略，见 [HTML/CSS 覆盖面](guide/html-css-coverage)。
 
-**脚本运行取决于 target**：Forge 1.20.1、NeoForge 1.21.1 和 NeoForge 26.1 支持页面脚本；Fabric targets 当前不执行页面脚本。KubeJS 模组绑定只在 Forge 1.20.1 和 NeoForge 1.21.1 提供。能力清单和 target 差异见 [Web API](guide/web-api) 与 [模组 API](guide/kltytonui-api)。
+**页面脚本使用独立 Rhino 运行时**：九个目标都提供页面脚本支持，运行环境须安装对应的 Rhino 依赖。KubeJS 模组绑定只在 Forge 1.20.1 和 NeoForge 1.21.1 提供。能力清单和 target 差异见 [Web API](guide/web-api) 与 [模组 API](guide/kltytonui-api)。
 
 **路径**：模组按**逻辑路径**找文件，不按磁盘位置。文件在 `<游戏目录>/kltytonui/screens/hello.html`，代码里就写 `screens/hello.html`——不带 `assets/...` 前缀，不写盘符。页面里引 CSS、图片同理。规则见[资源管理](guide/resource-manager)。
 
@@ -162,7 +160,7 @@ if (!docs.isEmpty()) {
 
 模组内置了一整套 AI 辅助开发支持，配一次，之后写页面的大部分活可以交给 AI。
 
-**第一步：把 skill 给 AI。** [docs/ai-skill.md](ai-skill) 是给 AI 看的自包含说明书——路径规则、meta、四种宿主、容器、调试流程全在里面。三选一：贴进对话、放到 AI 能读到的目录、或直接给 GitHub 链接（`https://github.com/kltyton/KltytonUI/blob/main/docs/ai-skill.md`）。给完就不用你再转述规则了。
+**第一步：提供开发文档。** [页面开发与调试手册](ai-skill)和[文档索引](guide/overview)列出资源路径、页面 meta、四种宿主、容器和调试协议。将与当前页面相关的文档及资源提供给外部开发工具。
 
 **第二步：打开两个开关**（`config/kltytonui-client.toml`）：
 
@@ -192,7 +190,7 @@ Ore 主题有两个文件对 AI 特别重要，给它这两个，它就能写出
 
 给 AI 的说法大概是：
 
-> 按 ai-skill.md 的规则写一个 KUI 页面：某某设置界面。用 Ore 主题，类名和变量参考这份 ore.css，组件结构参考这份 example.html。
+页面开发使用对应宿主和资源路径文档，主题类名与变量以 `ore.css` 为准，组件结构参考 `example.html`。
 
 一个提醒：**改配色让 AI 覆写变量，别改 ore.css**——在自己的 CSS 文件里写 `--ore-green: ...` 这类覆写（在 ore.css 之后引入）。jar 里的主题文件改了也没用，本地同名覆盖只会把自己绕晕。
 
@@ -210,5 +208,5 @@ Ore 主题有两个文件对 AI 特别重要，给它这两个，它就能写出
 - 宿主进阶：[Screen](guide/kltytonui-screen)、[Overlay](guide/overlay-document)、[WorldWindow](guide/world-window)、[容器](guide/container)（最进阶，涉及服务端）；
 - 模组侧完整 API：[kltytonui-api.md](guide/kltytonui-api)；
 - MC 物品与配方展示：[mc-elements.md](guide/mc-elements)；
-- 交给 AI 开发：[ai-skill.md](ai-skill)，用法见第 8、9 节；
+- 外部工具辅助开发：用法见第 8、9 节及[调试协议](guide/tools)；
 - 全部文档的地图：[overview.md](guide/overview)。

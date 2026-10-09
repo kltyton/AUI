@@ -2,7 +2,7 @@
 
 KUI 不是 Chromium，也没有浏览器内核。在支持的 target 上，页面 JavaScript 由 Rhino 执行，Java 侧的 Document、Element、事件和资源管线被桥接成浏览器风格的对象。所以这里的 API 分三类：
 
-> **Target 限制**：Forge 1.20.1、NeoForge 1.21.1 和 NeoForge 26.1 target 支持页面脚本；Fabric 1.20.1、Fabric 1.21.1、Fabric 26.1 的 target 实现目前不执行页面脚本。页面仍会解析和渲染，但不执行 `<script>` 的 target 上，依赖脚本的交互不可用。各 target 的说明见[总览](overview#loader-与脚本支持)。
+> **运行时依赖**：九个目标均接入独立 Rhino 页面运行时，页面脚本不要求 KubeJS。安装与 Loader / Minecraft 版本匹配的 Rhino 依赖；各目标与可选 KubeJS 绑定见[总览](overview#loader-与脚本支持)。
 
 - **可用**：按下文示例直接用；
 - **轻量兼容**：名字和常用调法和浏览器一样，但返回值、时机或参数范围有缩减；

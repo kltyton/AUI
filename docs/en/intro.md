@@ -16,7 +16,8 @@ Community:
 
 KltytonUI was built around one goal: a UI framework that is low-friction, convenient, and broadly capable. That is why it takes the classic HTML + CSS + JS trio as its core.
 
-The JS side currently depends on KubeJS (optional), which means modpack authors can draw whatever UI they like with an extremely low learning curve.  
+Page scripts use the standalone Rhino runtime on all nine targets. KubeJS is optional and provides mod bindings on Forge 1.20.1 and NeoForge 1.21.1. Install the matching Rhino dependency for the target.
+
 How low? You can have AI generate everything KltytonUI-related for you. Web frameworks are popular enough that AI knows them well — the result may even look better than what you would draw yourself, and you can still read it.
 
 Mods that need custom UI can also depend on KltytonUI to build highly extensible interfaces; the JS and Java APIs are broadly equivalent.  
@@ -109,17 +110,15 @@ The upside is that WebView partly compensates for KltytonUI's incomplete coverag
 
 ### For developers
 
-Note: All documents and skills are built into the module file, and AI is ready to use.
+The mod JAR includes the English development documentation.
 
-Using KltytonUI requires no knowledge of the source code. If you need it, the official Maven is available:
+Using KltytonUI does not require knowledge of its internals. Maven Central publication is being prepared; use this configuration after the selected version is public. See [Maven publishing](guide/maven-publishing) for maintainer commands.
 ```Groovy
 repositories {
-    maven {
-        url "https://maven.sighs.cc/repository/maven-public/"
-    }
+    mavenCentral()
 }
 dependencies {
-    implementation 'io.github.kltyton.kltytonui:KltytonUI-forge-1.20.1:1.2.7'
+    implementation 'io.github.kltyton.kltytonui:KltytonUI-forge-1.20.1:<published-version>'
 }
 ```
 

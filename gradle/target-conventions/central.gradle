@@ -1,0 +1,22 @@
+publishing.repositories {
+    maven {
+        name = 'centralStaging'
+        url = layout.buildDirectory.dir('central/repository')
+    }
+}
+
+if (providers.gradleProperty('centralSigning').map { it.toBoolean() }.getOrElse(false)) {
+    apply plugin: 'signing'
+
+    signing {
+        useGpgCmd()
+        sign publishing.publications.mavenJava
+    }
+
+    // Forge reobfuscation must finish before signing the production JAR.
+    if (tasks.findByName('verifyReobfuscatedJar') != null) {
+        tasks.named('signMavenJavaPublication').configure {
+            dependsOn tasks.named('verifyReobfuscatedJar')
+        }
+    }
+}

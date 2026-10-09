@@ -10,7 +10,7 @@ package io.github.kltyton.kltytonui.spi;
  * understand.</p>
  *
  * <p>headless default implementation is the unavailable backend:
- * {@link KuiServices.Defaults#WEBVIEW} reports {@code isAvailable() == false} and
+ * The default backend returned by {@link KuiServices#webView()} reports {@code isAvailable() == false} and
  * {@code create(...) == null}, so the element can degrade to a placeholder without
  * a null check at every call site. In game the Windows backend is installed by
  * {@code NativeWebViewService} from each loader's client bootstrap.</p>

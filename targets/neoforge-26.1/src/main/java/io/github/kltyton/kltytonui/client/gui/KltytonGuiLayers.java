@@ -49,7 +49,7 @@ public final class KltytonGuiLayers {
     }
 
     /**
-     * Submits only the document PIP state. {@link KuiLinkedScreen}s call this
+     * Submits only the document PIP state. {@link io.github.kltyton.kltytonui.screen.KuiLinkedScreen}s call this
      * themselves mid-extraction so frame-local floating items can be attached
      * to the same PIP payload.
      */

@@ -1,2 +1,3 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+/scripts/publishing/prepare-central.sh text eol=lf

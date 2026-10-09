@@ -14,7 +14,7 @@ import io.github.kltyton.kltytonui.parser.CSS;
 
 /**
  * Renders a texture already managed by Minecraft's texture manager.
- * The {@code src} attribute is a {@link ResourceLocation}; authors must provide
+ * The {@code src} attribute identifies a Minecraft texture resource; authors must provide
  * the element's rendered width and height through CSS.
  */
 @ElementRegister(Texture.TAG_NAME)

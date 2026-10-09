@@ -6,7 +6,7 @@ import io.github.kltyton.kltytonui.init.Element;
 import io.github.kltyton.kltytonui.parser.JS;
 
 /**
- * {@code <select>}/<option> 的选项收集、选中规整与展示参数。从 Element 拆出；
+ * {@code <select>}/{@code <option>} 的选项收集、选中规整与展示参数。从 Element 拆出；
  * Element 保留同名方法作为薄封装以维持 JS 表面与子类覆写点。
  * 依赖 Element 的 {@code selectedState}（包内可见）与公开访问器。
  */

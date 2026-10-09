@@ -443,13 +443,11 @@ public class Iframe extends Element {
         double scale = Math.max(MIN_CAPTURE_SCALE, Math.min(1.0d, captureScale));
         double rasterWidthExact = boxWidth * deviceScale * scale;
         double rasterHeightExact = boxHeight * deviceScale * scale;
-        // Area ceiling. Every capture, encode, decode and transfer costs area, and a
-        // GUI-scaled full-screen iframe can easily ask for four million pixels — which the
-        // codec path pays for on every frame. Past this the raster is scaled down and the
-        // zoom is derived from what we got, so the page's CSS viewport is still exact and
-        // only sharpness is traded away.
+        // Explicit lossless and raw-stream captures preserve device resolution. Adaptive
+        // modes may reduce the raster area while keeping the page's CSS viewport exact.
         double area = rasterWidthExact * rasterHeightExact;
-        rasterAreaCapped = area > MAX_CAPTURE_PIXELS;
+        rasterAreaCapped = captureQuality != KuiWebViewService.CAPTURE_LOSSLESS
+                && captureQuality != KuiWebViewService.CAPTURE_STREAM && area > MAX_CAPTURE_PIXELS;
         if (rasterAreaCapped) {
             double shrink = Math.sqrt(MAX_CAPTURE_PIXELS / area);
             rasterWidthExact *= shrink;

@@ -45,6 +45,7 @@ public final class RhinoHostObject extends ScriptableObject implements Wrapper {
 
     @Override
     public Object get(String name, Scriptable start) {
+        if ("__kuiHostObject".equals(name)) return true;
         if (host instanceof Element element) {
             if ("scrollHeight".equals(name)) return element.getScrollHeight();
             if ("scrollWidth".equals(name)) return element.getScrollWidth();

@@ -330,8 +330,8 @@ public class RenderElement {
         return (value * 0x9E3779B185EBCA87L) ^ version;
     }
 
+    /** Invalidates layout while retaining the last presented box for input and transitions. */
     public void clearCommittedLayout() {
-        committedRect = null;
         committedWorldTransform = null;
         committedRectDependency = Long.MIN_VALUE;
         committedTransformDependency = Long.MIN_VALUE;

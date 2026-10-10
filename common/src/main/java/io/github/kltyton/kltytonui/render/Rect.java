@@ -43,15 +43,7 @@ public class Rect {
     public static Rect of(Element element) {
         Rect cached = RectFrameCache.get(element);
         if (cached != null) return cached;
-        Rect result = createAndCache(element);
-        if (element != null) {
-            var renderer = element.getRenderer();
-            long dependency = renderer.rectDependency(element.document);
-            if (!renderer.hasCommittedRect(dependency)) {
-                renderer.commitRect(result, dependency);
-            }
-        }
-        return result;
+        return createAndCache(element);
 //        Rect cache = Cache.rect.get(element);
 //        if (cache != null) return cache;
 //        else {

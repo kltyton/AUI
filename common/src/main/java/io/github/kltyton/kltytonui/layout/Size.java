@@ -1021,6 +1021,8 @@ public record Size(double width, double height) {
     private static boolean shouldFillAvailableBlockWidth(Element element, Style style) {
         if (element == null || style == null) return false;
         if (element.parentElement == null) return true;
+        if (isNaturalMeasurementContext() && hasIntrinsicWidthOwnerAncestor(element)
+                && !hasNaturalWidthConstraint(element)) return false;
         if (!Layout.isInFlow(style)) return false;
         // CSS 2.1 §10.3.4：块级替换元素的 width:auto 取固有宽度，不撑满包含块。
         // 浏览器里 <iframe style="display:block"> 不加宽度就是 300px 宽，这里对齐它。

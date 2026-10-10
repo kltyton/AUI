@@ -671,7 +671,15 @@ public class Input extends AbstractText {
         Position mouse = livePointerOrNull();
         if (mouse == null) return;
         Position pointer = document.screenToDocumentPosition(mouse);
-        Element.DOMRect rect = getBoundingClientRect();
+        Rect committed = getRenderer().getCommittedRect();
+        if (committed == null) return;
+        double x = committed.position.x + committed.box.getMarginLeft();
+        double y = committed.position.y + committed.box.getMarginTop();
+        double width = committed.getElementSize().width();
+        double height = committed.getElementSize().height();
+        double[] visual = Base.visualBounds(this, x, y, width, height);
+        Element.DOMRect rect = visual == null ? new Element.DOMRect(x, y, width, height)
+                : new Element.DOMRect(visual[0], visual[1], visual[2], visual[3]);
         if (rect == null || !Double.isFinite(rect.width) || rect.width <= 0.0d) return;
         if (setRangeValueFromFraction((pointer.x - rect.x) / rect.width)) {
             rangeValueChanged = true;

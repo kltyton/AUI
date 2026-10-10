@@ -220,7 +220,10 @@ public record Size(double width, double height) {
         int depth = NATURAL_MEASURE_DEPTH.get();
         NATURAL_MEASURE_DEPTH.set(depth + 1);
         Set<Element> intrinsicOwners = INTRINSIC_WIDTH_OWNERS.get();
-        boolean intrinsicOwner = isIntrinsicWidthKeyword(element.getComputedStyle().width)
+        Style measuredStyle = element.getComputedStyle();
+        boolean intrinsicOwner = (isIntrinsicWidthKeyword(measuredStyle.width)
+                || isAutoWidthPositionedContainer(element, measuredStyle)
+                && !(isInsetSet(measuredStyle.left) && isInsetSet(measuredStyle.right)))
                 && intrinsicOwners.add(element);
         Element previousIntrinsicOwner = ACTIVE_INTRINSIC_WIDTH_OWNER.get();
         if (intrinsicOwner) ACTIVE_INTRINSIC_WIDTH_OWNER.set(element);
@@ -395,6 +398,18 @@ public record Size(double width, double height) {
         boolean hasBottom = isInsetSet(style.bottom);
         boolean insetResolvedHeight = false;
 
+        if (!intrinsicMeasurement && absolutePositioned && unsetWidth
+                && !hasIntrinsicSize(element) && !(hasLeft && hasRight)) {
+            // Percentage children contribute intrinsically before this containing block
+            // gets its used width; resolving them against the viewport would expand a popup.
+            Size preferred = natural(element);
+            double left = hasLeft ? resolveLength(style.left, parentWidth, 0) : 0;
+            double right = hasRight ? resolveLength(style.right, parentWidth, 0) : 0;
+            double available = Math.max(0, parentWidth - left - right - box.getMarginHorizontal() - horizontalBox);
+            contentWidth = Math.min(Math.max(0, preferred.width() - horizontalBox), available);
+            if (unsetHeight) contentHeight = Math.max(0, preferred.height() - verticalBox);
+        }
+
         if (absolutePositioned && unsetWidth && !hasIntrinsicSize(element) && hasLeft && hasRight) {
             double left = resolveLength(style.left, parentWidth, 0);
             double right = resolveLength(style.right, parentWidth, 0);
@@ -548,7 +563,7 @@ public record Size(double width, double height) {
         }
 
         boolean allowWidthPercentResolution = !intrinsicMeasurement
-                || getIntrinsicWidthOwnerContext() != element
+                || getIntrinsicWidthOwnerContext() != element && !hasIntrinsicWidthOwnerAncestor(element)
                 || naturalWidthConstraint != null;
         double constrainedContentWidth = clampContentExtent(contentWidth, horizontalBox,
                 style.minWidthLength(), style.maxWidthLength(), parentWidth, allowWidthPercentResolution);

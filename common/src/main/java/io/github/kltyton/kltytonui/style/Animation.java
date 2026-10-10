@@ -250,15 +250,7 @@ public class Animation {
     }
 
     private static double animationPercentBasis(Element element, String name) {
-        Element containing = element == null ? null : element.parentElement;
-        if (containing == null) {
-            Size viewport = Size.getWindowSize();
-            return isVerticalLengthProperty(name) ? viewport.height() : viewport.width();
-        }
-        if (isVerticalLengthProperty(name)) {
-            return Size.getScaleHeight(containing);
-        }
-        return Size.getScaleWidth(containing);
+        return Transition.transitionPercentBasis(element, name);
     }
 
     private static boolean isVerticalLengthProperty(String name) {

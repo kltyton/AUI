@@ -21,6 +21,78 @@
   }
   repairCollectionIterator(new Map().values());
   repairCollectionIterator(new Set().values());
+
+  // Rhino unwraps Java-backed keys before SameValueZero, which rejects the raw host.
+  // Keep native hashing and iteration while using an opaque JS key for each host.
+  var hostKey = Symbol('kui.collection.key');
+  var keyValue = Symbol('kui.collection.value');
+  function encodeHostKey(value) {
+    if (!value || !value.__kuiHostObject) return value;
+    var key = value[hostKey];
+    if (!key) {
+      key = Object.create(null);
+      Object.defineProperty(key, keyValue, {value: value});
+      Object.defineProperty(value, hostKey, {value: key});
+    }
+    return key;
+  }
+  function decodeHostKey(value) {
+    return value && value[keyValue] !== undefined ? value[keyValue] : value;
+  }
+  function decodeIterator(iterator, entries) {
+    var result = {
+      next: function() {
+        var step = iterator.next();
+        if (step.done) return step;
+        return {done: false, value: entries
+          ? [decodeHostKey(step.value[0]), decodeHostKey(step.value[1])]
+          : decodeHostKey(step.value)};
+      }
+    };
+    result[Symbol.iterator] = function() {return this;};
+    return result;
+  }
+  var setAdd = Set.prototype.add;
+  var setHas = Set.prototype.has;
+  var setDelete = Set.prototype.delete;
+  var setValues = Set.prototype.values;
+  var setEntries = Set.prototype.entries;
+  var setForEach = Set.prototype.forEach;
+  Set.prototype.add = function(value) {setAdd.call(this, encodeHostKey(value)); return this;};
+  Set.prototype.has = function(value) {return setHas.call(this, encodeHostKey(value));};
+  Set.prototype.delete = function(value) {return setDelete.call(this, encodeHostKey(value));};
+  Set.prototype.values = Set.prototype.keys = function() {return decodeIterator(setValues.call(this), false);};
+  Set.prototype.entries = function() {return decodeIterator(setEntries.call(this), true);};
+  Set.prototype[Symbol.iterator] = Set.prototype.values;
+  Set.prototype.forEach = function(callback, receiver) {
+    if (typeof callback !== 'function') throw new TypeError('Set callback must be callable');
+    var set = this;
+    setForEach.call(this, function(value) {var decoded = decodeHostKey(value); callback.call(receiver, decoded, decoded, set);});
+  };
+  var mapSet = Map.prototype.set;
+  var mapGet = Map.prototype.get;
+  var mapHas = Map.prototype.has;
+  var mapDelete = Map.prototype.delete;
+  var mapKeys = Map.prototype.keys;
+  var mapEntries = Map.prototype.entries;
+  var mapForEach = Map.prototype.forEach;
+  Map.prototype.set = function(key, value) {mapSet.call(this, encodeHostKey(key), value); return this;};
+  Map.prototype.get = function(key) {return mapGet.call(this, encodeHostKey(key));};
+  Map.prototype.has = function(key) {return mapHas.call(this, encodeHostKey(key));};
+  Map.prototype.delete = function(key) {return mapDelete.call(this, encodeHostKey(key));};
+  Map.prototype.keys = function() {return decodeIterator(mapKeys.call(this), false);};
+  Map.prototype.entries = function() {
+    var iterator = mapEntries.call(this);
+    var result = {next: function() {var step = iterator.next(); return step.done ? step : {done: false, value: [decodeHostKey(step.value[0]), step.value[1]]};}};
+    result[Symbol.iterator] = function() {return this;};
+    return result;
+  };
+  Map.prototype[Symbol.iterator] = Map.prototype.entries;
+  Map.prototype.forEach = function(callback, receiver) {
+    if (typeof callback !== 'function') throw new TypeError('Map callback must be callable');
+    var map = this;
+    mapForEach.call(this, function(value, key) {callback.call(receiver, value, decodeHostKey(key), map);});
+  };
   host = typeof window !== 'undefined' && window ? window : (root.window || root);
 
   var hostQueueMicrotask = typeof host.queueMicrotask === 'function'

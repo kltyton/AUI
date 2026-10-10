@@ -129,8 +129,8 @@ function Audio(src) {
 try {
   Object.defineProperty(document, 'readyState', { get: () => document.getReadyState() });
   Object.defineProperty(document, 'activeElement', { get: () => document.getActiveElement() });
-  Object.defineProperty(window, 'innerWidth', { get: () => window.getInnerWidth() });
-  Object.defineProperty(window, 'innerHeight', { get: () => window.getInnerHeight() });
+  Object.defineProperty(window, 'innerWidth', { get: () => document.getViewport().layoutWidth() });
+  Object.defineProperty(window, 'innerHeight', { get: () => document.getViewport().layoutHeight() });
   Object.defineProperty(window, 'devicePixelRatio', { get: () => window.getDevicePixelRatio() });
   Object.defineProperty(localStorage, 'length', { get: () => localStorage.getLength() });
   Object.defineProperty(sessionStorage, 'length', { get: () => sessionStorage.getLength() });

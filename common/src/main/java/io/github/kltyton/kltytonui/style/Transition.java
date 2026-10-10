@@ -101,13 +101,27 @@ public record Transition(String name, double start, double end, double duration,
         }
 
         List<Transition> parsed = deferStartTimes(parseTransitions(element, startStyle, endStyle, transitionSpec));
-        // A style change with no matching transition property ends any prior transition.
-        if (parsed.isEmpty()) {
-            cancel(element);
-            return;
-        }
         synchronized (LOCK) {
             List<Transition> existing = workList.get(element.uuid);
+            if (existing != null && Objects.equals(startStyle.transition, endStyle.transition)) {
+                for (Transition active : existing) {
+                    boolean unchangedTarget;
+                    if (active.endTransform != null) {
+                        unchangedTarget = Objects.equals(active.endTransform, endStyle.transform);
+                    } else {
+                        Double target = parseInterpolableStyle(element, active.name, endStyle.get(active.name));
+                        unchangedTarget = target != null && Math.abs(target - active.end) <= 0.0001;
+                    }
+                    if (unchangedTarget) {
+                        parsed.removeIf(replacement -> replacement.name.equals(active.name));
+                        parsed.add(active);
+                    }
+                }
+            }
+            if (parsed.isEmpty()) {
+                cancel(element);
+                return;
+            }
             if (hasSameTransitionTargets(existing, parsed)) {
                 return;
             }
@@ -377,7 +391,28 @@ public record Transition(String name, double start, double end, double duration,
         return parseStyle(name, value);
     }
 
-    private static double transitionPercentBasis(Element element, String name) {
+    static double transitionPercentBasis(Element element, String name) {
+        if (element != null && !"fixed".equals(element.getRawComputedStyle().position)) {
+            Element containing = element.parentElement;
+            boolean positioned = "absolute".equals(element.getRawComputedStyle().position);
+            while (positioned && containing != null
+                    && "static".equals(containing.getRawComputedStyle().position)) {
+                containing = containing.parentElement;
+            }
+            if (containing != null) {
+                io.github.kltyton.kltytonui.render.Rect committed = containing.getRenderer().getCommittedRect();
+                if (committed != null) {
+                    Size size = positioned ? committed.getBodyRectSize() : committed.getElementSize();
+                    double extent = isVerticalLengthProperty(name) ? size.height() : size.width();
+                    if (!positioned) {
+                        extent -= isVerticalLengthProperty(name)
+                                ? committed.box.getBorderVertical() + committed.box.getPaddingVertical()
+                                : committed.box.getBorderHorizontal() + committed.box.getPaddingHorizontal();
+                    }
+                    return Math.max(0, extent);
+                }
+            }
+        }
         if (element != null && isInsetProperty(name)) {
             String position = element.getRawComputedStyle().position;
             if ("fixed".equals(position)) {
@@ -393,14 +428,13 @@ public record Transition(String name, double start, double end, double duration,
                 if (containingBlock != null) return containingBlock;
             }
         }
-        Element containing = element == null ? null : element.parentElement;
-        if (containing == null) {
+        if (element == null) {
             Size viewport = Size.getWindowSize();
             return isVerticalLengthProperty(name) ? viewport.height() : viewport.width();
         }
         return isVerticalLengthProperty(name)
-                ? Size.getScaleHeight(containing)
-                : Size.getScaleWidth(containing);
+                ? Size.getScaleHeight(element)
+                : Size.getScaleWidth(element);
     }
 
     private static boolean isVerticalLengthProperty(String name) {

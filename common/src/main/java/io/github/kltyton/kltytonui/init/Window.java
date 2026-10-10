@@ -379,6 +379,18 @@ public class Window implements io.github.kltyton.kltytonui.script.host.KuiScript
         if (animationTimelinePaused) return;
         if (!Double.isFinite(timestamp) || timestamp < 0.0) timestamp = performance.now();
         animationTimeMillis = (long) Math.floor(timestamp);
+        for (Document document : Document.getAll()) {
+            if (document.getPressedElement() instanceof io.github.kltyton.kltytonui.element.Input input) {
+                try (Document.ContextScope ignored = Document.withContext(document)) {
+                    beginScriptTask();
+                    try {
+                        input.updateRangeInputFrame();
+                    } finally {
+                        endScriptTask();
+                    }
+                }
+            }
+        }
         ArrayList<Map.Entry<Integer, AnimationFrame>> ready = new ArrayList<>(animationFrames.entrySet());
         ready.sort(Map.Entry.comparingByKey());
         for (Map.Entry<Integer, AnimationFrame> entry : ready) {

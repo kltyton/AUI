@@ -15,6 +15,7 @@
 <script src="../../runtime/vue.kui.js"></script>
 <script src="../../runtime/mcui/mcui-oreui.kui.js"></script>
 <script src="../../runtime/mcui/mcui-icons-normal.kui.js"></script>
+<script src="../../runtime/mcui/mcui-sounds-default.kui.js"></script>
 <script src="../../runtime/mcui/gallery.kui.js"></script>
 <script>
     var app = Vue.createApp(McUIVisualGallery.default);
@@ -22,7 +23,7 @@
         locale: { locale: 'en' },
         display: { ssrWidth: 1280 },
         icons: { sets: { mc: McUINormalIcons.mcNormalIconSet } },
-        sounds: { enabled: false }
+        sounds: { enabled: true, sounds: McUIDefaultSounds.mcDefaultSounds }
     }));
     app.mount('#app');
 </script>

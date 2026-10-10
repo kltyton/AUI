@@ -645,7 +645,6 @@ public class Input extends AbstractText {
     }
 
     private void drawRangeInput(PoseStack poseStack, Rect rectRenderer) {
-        updateRangeDragFromLivePointer();
         double width = rectRenderer.box.innerSize().width();
         double centerY = rectRenderer.getContentPosition().y + rectRenderer.box.innerSize().height() / 2.0d;
         double left = rectRenderer.getContentPosition().x;
@@ -664,9 +663,8 @@ public class Input extends AbstractText {
     }
 
     /**
-     * 拖拽期间每帧（绘制时）直读 GLFW 光标换算取值：mousemove 事件由 20Hz tick 派发
-     * 且坐标是轮询缓存，只靠它滑块会卡。这里只静默改值，input 事件攒到 tick 补发
-     * （{@link #tick()}），避免在绘制期执行脚本。世界窗指针坐标系不同，仍走事件路径。
+     * Samples a dragged range before frame callbacks and layout extraction, including
+     * transparent native inputs used under custom controls. World windows use their event coordinates.
      */
     private void updateRangeDragFromLivePointer() {
         if (!rangeDragging || getMode() != Mode.RANGE || isDisabled()) return;
@@ -691,6 +689,11 @@ public class Input extends AbstractText {
         if (!rangeInputEventPending) return;
         rangeInputEventPending = false;
         triggerInputEvent();
+    }
+
+    public void updateRangeInputFrame() {
+        updateRangeDragFromLivePointer();
+        flushRangeInputEvent();
     }
 
     @Override

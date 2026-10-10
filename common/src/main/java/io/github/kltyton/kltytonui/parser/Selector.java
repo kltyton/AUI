@@ -13,6 +13,12 @@ import io.github.kltyton.kltytonui.init.Element;
 public class Selector {
     private static final Map<String, List<CompiledSelector>> SELECTOR_CACHE = new ConcurrentHashMap<>();
     private static final Set<String> SELECTOR_DIAGNOSTICS = ConcurrentHashMap.newKeySet();
+    private static final Pattern ATOM_TOKEN = Pattern.compile(
+            "(#(?<id>(?:\\\\.|[\\w-])+))" +
+                    "|(\\.(?<cls>(?:\\\\.|[\\w-])+))" +
+                    "|(\\[(?<attrName>[\\w-]+)(?:\\s*(?<attrOperator>~=|\\|=|\\^=|\\$=|\\*=|=)\\s*(?<attrValue>\"[^\"]*\"|'[^']*'|[^]]+))?])" +
+                    "|(?<pseudoColon>::?)(?<pseudoName>[\\w-]+)"
+    );
 
     /**
      * 支持的伪类列表，单一来源。新加伪类时需同步：{@link Pseudo#matches}（求值）、
@@ -152,7 +158,14 @@ public class Selector {
         }
     }
 
-    private record Pseudo(String name, String expression) {
+    private record Pseudo(String name, String expression, List<CompiledSelector> selectors) {
+        private Pseudo(String name, String expression) {
+            this(name, expression,
+                    expression != null && !expression.isBlank()
+                            && Set.of("not", "is", "where", "has").contains(name)
+                            ? List.copyOf(parseGroup(expression)) : List.of());
+        }
+
         /**
          * Index.match 的候选预筛：只把“该伪类可能命中”的规则拉进候选集，避免为无关伪类
          * 扫描全部规则。新加伪类时需与 {@link #matches} 同步。
@@ -221,16 +234,15 @@ public class Selector {
                 case "placeholder-shown" -> e.hasAttribute("placeholder") && e.getValue().isEmpty();
                 case "empty" -> e.children.isEmpty();
                 case "checked" -> isChecked(e);
-                case "not" -> !matchesAny(e, expression);
-                case "is", "where" -> matchesAny(e, expression);
+                case "not" -> !matchesAny(e);
+                case "is", "where" -> matchesAny(e);
                 case "has" -> expression != null && !expression.isBlank() && e.querySelector(expression) != null;
                 default -> false;
             };
         }
 
-        private boolean matchesAny(Element element, String selectorList) {
-            if (selectorList == null || selectorList.isBlank()) return false;
-            for (CompiledSelector selector : parseGroup(selectorList)) {
+        private boolean matchesAny(Element element) {
+            for (CompiledSelector selector : selectors) {
                 if (selector.pseudoElement == null && isMatch(element, selector)) return true;
             }
             return false;
@@ -244,8 +256,7 @@ public class Selector {
             if ("where".equals(name)) return SpecificityParts.ZERO;
             if ("is".equals(name) || "not".equals(name) || "has".equals(name)) {
                 SpecificityParts result = SpecificityParts.ZERO;
-                if (expression == null || expression.isBlank()) return result;
-                for (CompiledSelector selector : parseGroup(expression)) {
+                for (CompiledSelector selector : selectors) {
                     SpecificityParts candidate = new SpecificityParts(
                             selector.ids, selector.classesAndPseudos, selector.tags);
                     if (candidate.compareTo(result) > 0) result = candidate;
@@ -876,14 +887,7 @@ public class Selector {
             rest = atom.substring(firstSpecial);
         }
 
-        Pattern token = Pattern.compile(
-                "(#(?<id>(?:\\\\.|[\\w-])+))" +
-                        "|(\\.(?<cls>(?:\\\\.|[\\w-])+))" +
-                        "|(\\[(?<attrName>[\\w-]+)(?:\\s*(?<attrOperator>~=|\\|=|\\^=|\\$=|\\*=|=)\\s*(?<attrValue>\"[^\"]*\"|'[^']*'|[^]]+))?])" +
-                        "|(?<pseudoColon>::?)(?<pseudoName>[\\w-]+)"
-        );
-
-        Matcher m = token.matcher(rest);
+        Matcher m = ATOM_TOKEN.matcher(rest);
         int cursor = 0;
         while (cursor < rest.length() && m.find(cursor)) {
             if (m.start() > cursor && !rest.substring(cursor, m.start()).isBlank()) {

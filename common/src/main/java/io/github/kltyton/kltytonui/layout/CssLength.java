@@ -229,33 +229,37 @@ public final class CssLength {
 
     /** 用根字号作为 em 基准求值；不可解析返回 null。 */
     public Double resolve(double percentBasis) {
-        return resolve(percentBasis, Size.getRootFontSize());
+        return resolve(percentBasis, 0.0d, true);
     }
 
     /** 用显式 em 基准求值；不可解析返回 null。 */
     public Double resolve(double percentBasis, double emBasis) {
+        return resolve(percentBasis, emBasis, false);
+    }
+
+    private Double resolve(double percentBasis, double emBasis, boolean rootEmBasis) {
         return switch (kind) {
-            case KIND_SINGLE -> evalLengthToken(token, percentBasis, emBasis);
+            case KIND_SINGLE -> evalLengthToken(token, percentBasis, emBasis, rootEmBasis);
             case KIND_CALC -> {
                 double result = 0;
                 for (int index = 0; index < terms.size(); index++) {
-                    result += evalLengthToken(terms.get(index), percentBasis, emBasis);
+                    result += evalLengthToken(terms.get(index), percentBasis, emBasis, rootEmBasis);
                 }
                 yield result;
             }
-            case KIND_MATH -> resolveMath(percentBasis, emBasis);
+            case KIND_MATH -> resolveMath(percentBasis, emBasis, rootEmBasis);
             case KIND_EXPRESSION -> CalcLengthExpression.evaluate(expression, value -> {
                 LengthToken length = parseLengthToken(value);
-                return length == INVALID_TOKEN ? null : evalLengthToken(length, percentBasis, emBasis);
+                return length == INVALID_TOKEN ? null : evalLengthToken(length, percentBasis, emBasis, rootEmBasis);
             });
             default -> null;
         };
     }
 
-    private Double resolveMath(double percentBasis, double emBasis) {
+    private Double resolveMath(double percentBasis, double emBasis, boolean rootEmBasis) {
         double[] resolved = new double[mathArgs.length];
         for (int index = 0; index < mathArgs.length; index++) {
-            Double length = mathArgs[index].resolve(percentBasis, emBasis);
+            Double length = mathArgs[index].resolve(percentBasis, emBasis, rootEmBasis);
             if (length == null) return null;
             resolved[index] = length;
         }
@@ -432,11 +436,11 @@ public final class CssLength {
         return new LengthToken(number, unit);
     }
 
-    private static double evalLengthToken(LengthToken token, double percentBasis, double emBasis) {
+    private static double evalLengthToken(LengthToken token, double percentBasis, double emBasis, boolean rootEmBasis) {
         return switch (token.unit()) {
             case UNIT_PERCENT -> percentBasis * (token.value() / 100d);
             case UNIT_REM -> token.value() * Size.getRootFontSize();
-            case UNIT_EM -> token.value() * emBasis;
+            case UNIT_EM -> token.value() * (rootEmBasis ? Size.getRootFontSize() : emBasis);
             case UNIT_VW -> Size.getWindowWidth() * (token.value() / 100d);
             case UNIT_VH -> Size.getWindowHeight() * (token.value() / 100d);
             default -> token.value();

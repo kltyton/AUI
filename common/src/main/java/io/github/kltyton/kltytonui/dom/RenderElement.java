@@ -622,8 +622,7 @@ public class RenderElement {
             renderer.size.clear();
             renderer.box.clear();
             renderer.position.clear();
-            renderer.invalidateLayoutSubtree();
-            dirtyMask |= Drawer.RELAYOUT | Drawer.REPAINT | Drawer.HITTEST;
+            dirtyMask |= Drawer.COMMIT_LAYOUT | Drawer.REPAINT | Drawer.HITTEST;
         } else if (layoutChanged) {
             element.forEachRoute(e -> e.getRenderer().size.clear());
             renderer.box.clear();

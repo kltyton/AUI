@@ -254,10 +254,16 @@ public class Element extends Node {
         if (!normalizedPriority.isEmpty() && !"important".equals(normalizedPriority)) return;
         String declarationValue = normalizedValue
                 + ("important".equals(normalizedPriority) ? " !important" : "");
-        // Vue rewrites scoped CSS variables after each reactive update. An
-        // identical variable must retain its declaration order and style caches.
+        // Vue rewrites scoped variables and layout bindings after each update.
+        // Identical declarations retain their order and style caches.
         // Authored duplicate declarations still use the replacement path below.
-        if (property.startsWith("--") && !normalizedValue.isEmpty()) {
+        boolean independentProperty = switch (property) {
+            case "height", "order", "z-index", "color-scheme" -> true;
+            // The legacy rotate shorthand also writes the transform field.
+            case "transform" -> normalizedValue.equals(inlineStyle.get(property));
+            default -> false;
+        };
+        if ((property.startsWith("--") || independentProperty) && !normalizedValue.isEmpty()) {
             InlineStyleDeclaration.Entry existing = null;
             for (InlineStyleDeclaration.Entry declaration : inlineDeclarations) {
                 if (!property.equals(declaration.property())) continue;
@@ -1055,9 +1061,11 @@ public class Element extends Node {
         if ("INPUT".equalsIgnoreCase(tagName) && checked && "radio".equalsIgnoreCase(getAttribute("type")) && document != null) {
             enforceRadioGroupChecked();
         }
-        invalidateStyle();
-        if (changed && document != null && document.documentElement != null) {
-            requestCheckedScopeRecalc();
+        if (changed) {
+            invalidateStyle();
+            if (document != null && document.documentElement != null) {
+                requestCheckedScopeRecalc();
+            }
         }
     }
 
@@ -1798,6 +1806,9 @@ public class Element extends Node {
             }
         }
         innerText = normalized;
+        // This setter already publishes text/layout invalidation; tick only
+        // detects later writes through the legacy public innerText field.
+        lastInnerText = normalized;
         if (document != null) document.bumpSelectionCache();
         legacyRenderTextNode = null;
         if (!Objects.equals(oldValue, normalized) && isConnected()) FontDrawer.markDynamicTextOwner(this);

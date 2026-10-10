@@ -322,9 +322,8 @@ public class Base {
                             || (motionNeedsGeometryCommit && motionGeometryRoots.isEmpty())) {
                         LayoutCommit.commit(document);
                     } else {
-                        // COMMIT_LAYOUT only invalidates committed world transforms, and a
-                        // transform is computed from the element's own route, so committing
-                        // the affected subtrees is enough. Transform does not affect layout.
+                        // Local geometry commits also refresh affected scroll metrics;
+                        // a gutter change keeps the normal RELAYOUT escalation.
                         if (!motionGeometryRoots.isEmpty()) transformRoots.addAll(motionGeometryRoots);
                         if (scrollChanged) {
                             // Same split as the scroll branch below: the scroll shifts only

@@ -294,6 +294,17 @@ public record Transition(String name, double start, double end, double duration,
         return anyActiveTransitionMatches(element, Transition::isLayoutProperty);
     }
 
+    public static boolean affectsFlowLayout(Element element) {
+        return anyActiveTransitionMatches(element, name -> isLayoutProperty(name)
+                && !isLocalGeometryProperty(name));
+    }
+
+    public static boolean isLocalGeometryProperty(String name) {
+        return "width".equals(name) || "height".equals(name)
+                || "top".equals(name) || "right".equals(name)
+                || "bottom".equals(name) || "left".equals(name);
+    }
+
     public static boolean affectsTransform(Element element) {
         return anyActiveTransitionMatches(element, name -> name.equals("transform"));
     }

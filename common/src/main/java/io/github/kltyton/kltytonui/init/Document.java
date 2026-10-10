@@ -646,6 +646,10 @@ public class Document implements io.github.kltyton.kltytonui.script.host.KuiScri
         render.markHitTestDirty();
     }
 
+    public void markHitTestDirty(Element element) {
+        render.markHitTestDirty(element);
+    }
+
     public Element hitTest(Position documentPosition) {
         if (!isActive()) return null;
         try (ContextScope ignored = withContext(this);
@@ -785,9 +789,9 @@ public class Document implements io.github.kltyton.kltytonui.script.host.KuiScri
     }
 
     /**
-     * 最近一次 {@code commitRenderStateForMotion()} 收集的「仅变换」几何根：
-     * 这些元素的 transformVersion 变了，需要刷新自己与后代的 committed world
-     * transform，但没有任何元素要求重排。返回 {@code null} 表示必须走全量
+     * 最近一次 {@code commitRenderStateForMotion()} 收集的局部几何根：
+     * 更新变换或离流元素尺寸时提交自身、后代及受影响的滚动度量。
+     * 返回 {@code null} 表示必须走全量
      * {@code LayoutCommit.commit(document)}；空集表示无需几何提交。
      */
     public Set<Element> drainStyleTransformRoots() {

@@ -11,6 +11,8 @@ import org.joml.Matrix4f;
 
 import java.util.Collections;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
@@ -264,26 +266,53 @@ public final class LayoutCommit {
 
         RenderBatchStats.recordTransformCommit();
         Set<Element> visited = obtainVisited();
+        Set<Element> scrollports = obtainVisited();
         ArrayDeque<Element> pending = new ArrayDeque<>();
         RectFrameCache.begin();
         TransformFrameCache.begin();
+        LayoutMeasureCache.begin();
         try {
             for (Element root : roots) {
-                if (root != null && root.document == document) pending.addLast(root);
+                if (root == null || root.document != document) continue;
+                boolean covered = false;
+                Element[] route = root.getRouteArray();
+                for (int index = 1; index < route.length; index++) {
+                    if (roots.contains(route[index])) {
+                        covered = true;
+                        break;
+                    }
+                }
+                // Commit each containing block before its descendants; duplicate
+                // roots must not sample the previous ancestor used size first.
+                if (!covered) pending.addLast(root);
             }
             while (!pending.isEmpty()) {
                 Element target = pending.removeFirst();
                 if (!visited.add(target) || !Interaction.isDisplayed(target)) continue;
-                commitTransformElement(target);
+                if (commitTransformElement(target)) {
+                    // Absolute children contribute to scroll overflow even though
+                    // their used sizes do not participate in normal flow.
+                    for (Element ancestor : target.getRouteArray()) {
+                        if (ancestor.mayRenderScrollbar()) scrollports.add(ancestor);
+                    }
+                }
                 List<Element> children = target.getRenderChildren();
                 for (int index = 0; index < children.size(); index++) {
                     Element child = children.get(index);
                     if (child != null && child.document == document) pending.addLast(child);
                 }
             }
+            ArrayList<Element> orderedScrollports = new ArrayList<>(scrollports);
+            orderedScrollports.sort(Comparator.comparingInt(Element::getDepth).reversed());
+            for (Element scrollport : orderedScrollports) {
+                scrollport.commitScrollMetricsAfterLayoutCommit();
+                document.markHitTestDirty(scrollport);
+            }
         } finally {
+            LayoutMeasureCache.end();
             TransformFrameCache.end();
             RectFrameCache.end();
+            releaseVisited(scrollports);
             releaseVisited(visited);
         }
     }
@@ -428,9 +457,9 @@ public final class LayoutCommit {
         }
     }
 
-    private static void commitTransformElement(Element target) {
+    private static boolean commitTransformElement(Element target) {
         RenderNode.ensureRendererLoaded(target);
-        if (!Interaction.isDisplayed(target)) return;
+        if (!Interaction.isDisplayed(target)) return false;
 
         // rectDependency does not mix in transformVersion, so a transform-only change
         // leaves the committed rect valid. If the stamp is stale anyway, some style or
@@ -439,17 +468,18 @@ public final class LayoutCommit {
         long rectDependency = target.getRenderer().rectDependency(target.document);
         if (!target.getRenderer().hasCommittedRect(rectDependency)) {
             commitElement(target);
-            return;
+            return true;
         }
 
         long transformDependency = target.getRenderer().transformDependency(target.document);
-        if (target.getRenderer().hasCommittedWorldTransform(transformDependency)) return;
+        if (target.getRenderer().hasCommittedWorldTransform(transformDependency)) return false;
         try {
             Matrix4f matrix = Base.createAndCacheWorldTransform(target);
             target.getRenderer().commitWorldTransform(matrix, transformDependency);
         } catch (NoClassDefFoundError unavailableRenderRuntime) {
             if (!isOptionalRenderDependency(unavailableRenderRuntime)) throw unavailableRenderRuntime;
         }
+        return false;
     }
 
     private static boolean isOptionalRenderDependency(NoClassDefFoundError error) {

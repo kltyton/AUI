@@ -126,10 +126,13 @@ public final class MotionTrack {
             Style previousBuffer = motionStyles.last;
             animated.copyFrom(base);
             boolean completedLayoutTransition = false;
+            boolean completedLocalLayoutTransition = false;
             boolean completedTransformTransition = false;
             boolean completedRectTransition = false;
             if (hasTransition) {
                 completedLayoutTransition = Transition.affectsLayout(element);
+                completedLocalLayoutTransition = completedLayoutTransition
+                        && !Layout.isInFlow(base) && !Transition.affectsFlowLayout(element);
                 completedTransformTransition = Transition.affectsTransform(element);
                 completedRectTransition = Transition.affectsRect(element);
                 boolean stillActive = Transition.updateStyle(element, animated);
@@ -139,6 +142,7 @@ public final class MotionTrack {
                     requiresGeometryCommit |= invalidateCompletedTransitionCaches(
                             element,
                             completedLayoutTransition,
+                            completedLocalLayoutTransition,
                             completedTransformTransition,
                             completedRectTransition
                     );
@@ -218,7 +222,15 @@ public final class MotionTrack {
         boolean requiresGeometryCommit = false;
 
         if (differsAny(base, animated, LAYOUT_PROPS)) {
-            invalidateLayoutMotion(element, base, animated);
+            boolean localGeometry = !Layout.isInFlow(base) && !Layout.isInFlow(animated);
+            for (String property : LAYOUT_PROPS) {
+                if (!Transition.isLocalGeometryProperty(property)
+                        && !Objects.equals(base.get(property), animated.get(property))) {
+                    localGeometry = false;
+                    break;
+                }
+            }
+            invalidateLayoutMotion(element, localGeometry);
             requiresGeometryCommit = true;
         } else if (differsAny(base, animated, VISUAL_BOX_PROPS)) {
             renderer.clearVisualBoxCache();
@@ -256,11 +268,10 @@ public final class MotionTrack {
         return requiresGeometryCommit;
     }
 
-    private void invalidateLayoutMotion(Element element, Style base, Style animated) {
+    private void invalidateLayoutMotion(Element element, boolean localGeometry) {
         RenderElement renderer = element.getRenderer();
-        layoutRoots.add(element);
-        boolean affectsNormalFlow = Layout.isInFlow(base) || Layout.isInFlow(animated);
-        if (affectsNormalFlow) {
+        if (!localGeometry) {
+            layoutRoots.add(element);
             element.forEachRoute(e -> {
                 RenderElement routeRenderer = e.getRenderer();
                 routeRenderer.invalidateLayoutVersion();
@@ -274,6 +285,7 @@ public final class MotionTrack {
                 hitTestRoots.add(element);
             }
         } else {
+            geometryRoots.add(element);
             renderer.invalidateLayoutVersion();
             renderer.size.clear();
             renderer.box.clear();
@@ -291,13 +303,12 @@ public final class MotionTrack {
         return false;
     }
 
-    private boolean invalidateCompletedTransitionCaches(Element element, boolean affectsLayout,
+    private boolean invalidateCompletedTransitionCaches(Element element, boolean affectsLayout, boolean localGeometry,
                                                         boolean affectsTransform, boolean affectsRect) {
         RenderElement renderer = element.getRenderer();
         boolean requiresGeometryCommit = false;
         if (affectsLayout) {
-            Style style = element.getRawComputedStyle();
-            invalidateLayoutMotion(element, style, style);
+            invalidateLayoutMotion(element, localGeometry);
             requiresGeometryCommit = true;
         } else if (affectsRect) {
             renderer.clearVisualBoxCache();

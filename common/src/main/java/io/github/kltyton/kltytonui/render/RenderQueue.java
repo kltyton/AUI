@@ -27,7 +27,7 @@ public final class RenderQueue {
     private boolean layoutCommitDirty = false;
     private volatile long visualVersion = 1L;
     // Roots collected by commit(boolean) when the pending geometry work is made of
-    // COMMIT_LAYOUT changes only (transform/visual geometry, no relayout). null means
+    // COMMIT_LAYOUT changes only (transform/out-of-flow geometry, no relayout). null means
     // the batch needs the full LayoutCommit.commit(document) path; an empty set means
     // the geometry part of the batch turned out to be a no-op. Consumed by
     // Base.drawDocumentInContext through Document.drainStyleTransformRoots().
@@ -91,8 +91,8 @@ public final class RenderQueue {
         boolean needsLayoutCommit = layoutCommitDirty || globalGeometryDirty;
         // A relayout ripples through ancestors and following siblings, and a paint
         // list rebuild creates nodes without committed geometry, so both keep the
-        // full document commit. A batch made of COMMIT_LAYOUT only changes committed
-        // world transforms, which no sibling can observe.
+        // full document commit. COMMIT_LAYOUT commits the affected subtrees and
+        // their scroll metrics without changing normal-flow allocation.
         boolean needsFullLayoutCommit = layoutCommitDirty || globalGeometryDirty;
         Set<Element> transformRoots = null;
         boolean fullHitTestRebuild = hadGlobalDirty || hitTestDirtyRoots.contains(owner.documentElement);
@@ -109,8 +109,7 @@ public final class RenderQueue {
                 needsFullLayoutCommit = true;
                 incrementalHitRoots.add(element.parentElement == null ? element : element.parentElement);
             } else if (element.hasDirtyFlag(Drawer.COMMIT_LAYOUT)) {
-                // The element's own transformVersion changed, which invalidates the
-                // committed world transform of this element and of its descendants.
+                // Transform or out-of-flow geometry changes affect this subtree.
                 if (transformRoots == null) {
                     transformRoots = Collections.newSetFromMap(new IdentityHashMap<>());
                 }
@@ -131,7 +130,8 @@ public final class RenderQueue {
         applyGlobalDirty();
         Drawer.flushUpdates(owner);
         if (needsLayoutCommit && commitLayoutNow) {
-            LayoutCommit.commit(owner);
+            if (needsFullLayoutCommit) LayoutCommit.commit(owner);
+            else LayoutCommit.commitTransforms(owner, transformRoots);
         }
         if (hadWork) {
             if (needsLayoutCommit && !commitLayoutNow) {
@@ -144,6 +144,9 @@ public final class RenderQueue {
                 hitTestCache.markDirty();
                 hitTestDirtyRoots.clear();
             } else {
+                // Local geometry commits can add ancestor scrollports after the
+                // initial dirty-root snapshot; include their new hit bounds.
+                if (!fullHitTestRebuild) incrementalHitRoots.addAll(hitTestDirtyRoots);
                 if (fullHitTestRebuild) {
                     hitTestCache.markDirty();
                 } else if (!incrementalHitRoots.isEmpty()) {
@@ -158,9 +161,8 @@ public final class RenderQueue {
 
     /**
      * Roots collected by the last {@link #commit(boolean)} for a batch whose geometry
-     * work only consists of COMMIT_LAYOUT changes: those elements had their
-     * transformVersion bumped, so their committed world transforms (and those of their
-     * descendants) must be refreshed, but nothing asked for a relayout.
+     * work only consists of COMMIT_LAYOUT changes. Transform and out-of-flow
+     * geometry changes commit their subtrees and affected scroll metrics.
      * <p>
      * Returns {@code null} when the batch requires the full
      * {@code LayoutCommit.commit(document)} path (relayout or paint list rebuild), in

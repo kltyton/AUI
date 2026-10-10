@@ -120,6 +120,9 @@ public final class RenderQueue {
                 incrementalHitRoots.add(element);
             }
         }
+        // Full layout can move ancestors and following siblings outside the
+        // changed subtree, even when its paint-node order stays unchanged.
+        fullHitTestRebuild |= needsFullLayoutCommit;
         if (!fullHitTestRebuild) {
             incrementalHitRoots.addAll(hitTestDirtyRoots);
         }

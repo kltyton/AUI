@@ -93,6 +93,9 @@ void main() {
 
     vec4 rawColor = texture(Sampler0, texCoord0);
     if (ForceAlpha > 0.5) {
+        bool sampled = rawColor.a > 0.001;
+        if (sampled) rawColor.rgb /= rawColor.a;
+        if (!sampled && max(max(rawColor.r, rawColor.g), rawColor.b) <= 0.002) discard;
         rawColor.a = 1.0;
     }
     if (rawColor.a <= 0.001 && ShadowColor.a <= 0.001) discard;

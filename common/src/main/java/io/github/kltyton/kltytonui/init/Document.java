@@ -34,6 +34,7 @@ import io.github.kltyton.kltytonui.style.StyleScope;
 import io.github.kltyton.kltytonui.render.Drawer;
 import io.github.kltyton.kltytonui.render.Operation;
 import io.github.kltyton.kltytonui.render.Rect;
+import io.github.kltyton.kltytonui.render.GeometryQueryScope;
 import io.github.kltyton.kltytonui.render.RenderQueue;
 import io.github.kltyton.kltytonui.behavior.DocumentSelection;
 import io.github.kltyton.kltytonui.behavior.FocusRing;
@@ -647,7 +648,8 @@ public class Document implements io.github.kltyton.kltytonui.script.host.KuiScri
 
     public Element hitTest(Position documentPosition) {
         if (!isActive()) return null;
-        try (ContextScope ignored = withContext(this)) {
+        try (ContextScope ignored = withContext(this);
+             GeometryQueryScope geometryScope = GeometryQueryScope.open()) {
             // DOM 变更(页面 JS replaceChildren 等)后布局可能尚未提交(布局提交在 20Hz tick),
             // paintList 仍引用被替换的旧节点 —— 点击会命中已移除节点,导致焦点/选区锚在
             // 旧节点上,输入后旧节点被移除触发 clearRemovedFocusState 失焦。命中前提交 pending 布局。

@@ -1,0 +1,265 @@
+package io.github.kltyton.kltytonui.client;
+
+import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.vertex.PoseStack;
+import io.github.kltyton.kltytonui.KltytonUI;
+import io.github.kltyton.kltytonui.dev.DevTools;
+import io.github.kltyton.kltytonui.dev.ResourceManager;
+import io.github.kltyton.kltytonui.event.MouseEvent;
+import io.github.kltyton.kltytonui.init.Document;
+import io.github.kltyton.kltytonui.layout.Position;
+import io.github.kltyton.kltytonui.layout.Size;
+import io.github.kltyton.kltytonui.loader.ClientLoader;
+import io.github.kltyton.kltytonui.client.gui.KltytonGuiLayers;
+import io.github.kltyton.kltytonui.fabric.RenderService;
+import io.github.kltyton.kltytonui.render.FrameTimingHud;
+import io.github.kltyton.kltytonui.render.Operation;
+import io.github.kltyton.kltytonui.screen.KuiLinkedScreen;
+import io.github.kltyton.kltytonui.style.Text;
+import io.github.kltyton.kltytonui.task.FrameScheduler;
+import io.github.kltyton.kltytonui.task.MouseMoveEngine;
+import io.github.kltyton.kltytonui.ui.Tooltip;
+
+import io.github.kltyton.kltytonui.world.WorldWindow;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.MouseHandler;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import org.lwjgl.glfw.GLFW;
+
+import java.util.ArrayList;
+
+/** Shared client facade used by common rendering code. */
+public final class Client {
+    private static int lastWindowWidth = -1;
+    private static int lastWindowHeight = -1;
+    private static int lastFramebufferWidth = -1;
+    private static int lastFramebufferHeight = -1;
+    private static double lastGuiScale = -1;
+
+    private Client() { }
+
+    public static void tick() {
+        Minecraft minecraft = Minecraft.getInstance();
+        CursorReleaseController.tick();
+        FrameScheduler.tick();
+        DevTools.drainLogs();
+        MouseMoveEngine.poll(Client::getMousePosition);
+        Window window = minecraft.getWindow();
+        int width = window.getScreenWidth();
+        int height = window.getScreenHeight();
+        int framebufferWidth = window.getWidth();
+        int framebufferHeight = window.getHeight();
+        double guiScale = window.getGuiScale();
+        if (width != lastWindowWidth || height != lastWindowHeight
+                || framebufferWidth != lastFramebufferWidth || framebufferHeight != lastFramebufferHeight
+                || Double.compare(guiScale, lastGuiScale) != 0) {
+            lastWindowWidth = width;
+            lastWindowHeight = height;
+            lastFramebufferWidth = framebufferWidth;
+            lastFramebufferHeight = framebufferHeight;
+            lastGuiScale = guiScale;
+            for (Document document : Document.getAll()) if (document != null && !document.isDisposed()) document.applyViewport(true);
+            io.github.kltyton.kltytonui.init.Window.window.fireResizeEvent();
+        }
+    }
+
+    public static void drawScreenLike(GuiGraphicsExtractor graphics) {
+        // 渲染帧仅作轮询载具：60Hz 固定节拍由 MouseMoveEngine 调度，未到期零成本返回。
+        MouseMoveEngine.poll(Client::getMousePosition);
+        if (graphics == null) return;
+        Minecraft minecraft = Minecraft.getInstance();
+        // 26.1 的 Screen 只收集渲染状态：文档与伪光标都改由全屏 PIP 层栅格化。
+        // KUI 自己的 Screen 在 extractRenderState 里提交 UI PIP 状态（附带帧内浮动物品），
+        // 这里跳过 UI 只补伪光标，其余 Screen（标题界面、原版容器界面等）统一在这里提交。
+        boolean linkedScreen = minecraft.gui.screen() instanceof KuiLinkedScreen;
+        if (!linkedScreen) {
+            Position mousePosition = getMousePosition();
+            Tooltip.moveActiveFromScreen(mousePosition);
+            DevTools.handleInspectMouseMove(mousePosition);
+        }
+        FrameTimingHud.beginFrame();
+        try {
+            if (!linkedScreen) {
+                KltytonGuiLayers.submitUi(graphics);
+            }
+            KltytonGuiLayers.submitCursor(graphics);
+        } finally {
+            FrameTimingHud.endFrame();
+            drawFrameTimingHud(graphics);
+        }
+    }
+
+    public static void drawOverlayLike(GuiGraphicsExtractor graphics) {
+        // 渲染帧仅作轮询载具：60Hz 固定节拍由 MouseMoveEngine 调度，未到期零成本返回。
+        MouseMoveEngine.poll(Client::getMousePosition);
+        if (graphics == null) return;
+        if (Minecraft.getInstance().gui.screen() != null) return;
+        // F1(hideGui)隐藏原版 HUD 时,overlay 文档一并隐藏
+        if (Minecraft.getInstance().gui.hud.isHidden()) return;
+        Position mousePosition = getMousePosition();
+        Tooltip.moveActiveFromScreen(mousePosition);
+        DevTools.handleInspectMouseMove(mousePosition);
+        FrameTimingHud.beginFrame();
+        try {
+            // submitOverlay = 文档状态 + 伪光标，两者都由 PIP 层按层序合成。
+            KltytonGuiLayers.submitOverlay(graphics);
+        } finally {
+            FrameTimingHud.endFrame();
+            drawFrameTimingHud(graphics);
+        }
+    }
+
+    /** Dispatches a native keyboard event to the common KUI input pipeline. */
+    public static boolean handleKeyInput(int key, int scanCode, int action, int modifiers) {
+        boolean screenEvent = Minecraft.getInstance().gui.screen() != null;
+        return Operation.handleKeyInput(
+                key,
+                scanCode,
+                action,
+                modifiers,
+                action == GLFW.GLFW_REPEAT,
+                screenEvent
+                        ? io.github.kltyton.kltytonui.event.KeyEvent.Source.SCREEN_EVENT
+                        : io.github.kltyton.kltytonui.event.KeyEvent.Source.INPUT_EVENT
+        );
+    }
+
+    /** Dispatches a native mouse button event and reports whether Minecraft should ignore it. */
+    public static boolean handleMouseButton(int button, int action) {
+        boolean nativeConsumed = false;
+        if (action == GLFW.GLFW_PRESS) nativeConsumed = Operation.onMouseDown(button);
+        if (action == GLFW.GLFW_RELEASE) nativeConsumed = Operation.onMouseUp(button);
+        boolean devToolsInspectConsumed = Operation.wasDevToolsInspectConsumed();
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.gui.screen() != null) {
+            return nativeConsumed || devToolsInspectConsumed;
+        }
+        if (devToolsInspectConsumed) return true;
+        for (WorldWindow window : new ArrayList<>(WorldWindow.windows)) {
+            Position realPos = window.getRealPos();
+            if (realPos == null) continue;
+            MouseEvent mouseEvent = action == GLFW.GLFW_PRESS
+                    ? new MouseEvent("mousedown", realPos, button)
+                    : new MouseEvent("mouseup", realPos, button);
+            MouseEvent.tiggerEvent(mouseEvent, window.document);
+            nativeConsumed |= mouseEvent.isNativeConsumed();
+        }
+        return nativeConsumed || CursorReleaseController.isActive();
+    }
+
+    /** Dispatches a native scroll event and reports whether Minecraft should ignore it. */
+    public static boolean handleMouseScroll(double delta) {
+        boolean nativeConsumed = Operation.scroll(delta);
+        if (Minecraft.getInstance().gui.screen() != null) return nativeConsumed;
+        for (WorldWindow window : new ArrayList<>(WorldWindow.windows)) {
+            Position realPos = window.getRealPos();
+            if (realPos == null) continue;
+            MouseEvent mouseEvent = new MouseEvent("wheel", realPos);
+            mouseEvent.deltaY = -delta * 50;
+            mouseEvent.scrollDelta = mouseEvent.deltaY;
+            mouseEvent.cancelable = true;
+            MouseEvent.tiggerEvent(mouseEvent, window.document);
+            nativeConsumed |= mouseEvent.isNativeConsumed();
+        }
+        return nativeConsumed || CursorReleaseController.isActive();
+    }
+
+    public static Position getMousePosition() {
+        Minecraft minecraft = Minecraft.getInstance();
+        MouseHandler mouse = minecraft.mouseHandler;
+        Window window = minecraft.getWindow();
+        return MouseCoordinates.toGui(mouse.xpos(), mouse.ypos(),
+                window.getScreenWidth(), window.getScreenHeight(),
+                window.getGuiScaledWidth(), window.getGuiScaledHeight());
+    }
+
+    public static Position getMousePositionForWorldInteraction() {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.mouseHandler.isMouseGrabbed()) return new Position(getWindow().getGuiScaledWidth() / 2d, getWindow().getGuiScaledHeight() / 2d);
+        return getMousePosition();
+    }
+
+    public static Position getMousePositionDirectly() {
+        Window window = getWindow();
+        double[] x = new double[1], y = new double[1];
+        GLFW.glfwGetCursorPos(window.handle(), x, y);
+        return MouseCoordinates.toGui(x[0], y[0],
+                window.getScreenWidth(), window.getScreenHeight(),
+                window.getGuiScaledWidth(), window.getGuiScaledHeight());
+    }
+
+    public static boolean isKeyPressed(String keyName) {
+        if (keyName == null || keyName.isBlank()) return false;
+        try {
+            InputConstants.Key input = InputConstants.getKey(keyName);
+            if (input == null || input == InputConstants.UNKNOWN) return false;
+            long window = getWindow().handle();
+            if (input.getType() == InputConstants.Type.MOUSE) {
+                return GLFW.glfwGetMouseButton(window, input.getValue()) == GLFW.GLFW_PRESS;
+            }
+            return GLFW.glfwGetKey(window, input.getValue()) == GLFW.GLFW_PRESS;
+        } catch (RuntimeException ignored) {
+            return false;
+        }
+    }
+
+    public static Window getWindow() { return Minecraft.getInstance().getWindow(); }
+    public static Size getWindowSize() { Window window = getWindow(); return new Size(window.getGuiScaledWidth(), window.getGuiScaledHeight()); }
+    public static int getDefaultFontWidth(String text) { return getDefaultFontWidth(text, false, false, 0); }
+    public static int getDefaultFontWidth(String text, boolean bold) { return getDefaultFontWidth(text, bold, false, 0); }
+    public static int getDefaultFontWidth(String text, boolean bold, boolean oblique) { return getDefaultFontWidth(text, bold, oblique, 0); }
+    public static int getDefaultFontWidth(String text, boolean bold, boolean oblique, double strokeWidth) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.font == null) return 0;
+        MutableComponent component = Component.literal(text == null ? "" : text);
+        if (bold) component.withStyle(ChatFormatting.BOLD);
+        if (oblique) component.withStyle(ChatFormatting.ITALIC);
+        return (int) Math.ceil(minecraft.font.width(component) + Math.max(0, strokeWidth) * 2);
+    }
+
+    public static void drawDefaultFont(PoseStack poseStack, Text text, String content, Position position) {
+        poseStack.pushPose();
+        poseStack.translate(position.x, position.y, 0);
+        // 默认字体也要保留 z 轴缩放，避免在容器 Screen 中把文本深度压扁后被后续菜单/物品绘制覆盖。
+        float scale = (float) text.defaultFontScale();
+        poseStack.scale(scale, scale, 1f);
+        MutableComponent renderText = Component.literal(content == null ? "" : content);
+        if (text.isBold()) renderText = renderText.withStyle(ChatFormatting.BOLD);
+        if (text.isOblique()) renderText = renderText.withStyle(ChatFormatting.ITALIC);
+        if (text.isUnderlined()) renderText = renderText.withStyle(ChatFormatting.UNDERLINE);
+        if (text.isStrikethrough()) renderText = renderText.withStyle(ChatFormatting.STRIKETHROUGH);
+        int stroke = Math.max(0, (int) Math.ceil(text.strokeWidth));
+        if (stroke > 0) {
+            int strokeColor = text.strokeColor.getValue();
+            for (int ox = -stroke; ox <= stroke; ox++) {
+                for (int oy = -stroke; oy <= stroke; oy++) {
+                    if (ox == 0 && oy == 0) continue;
+                    if (ox * ox + oy * oy > stroke * stroke) continue;
+                    RenderService.INSTANCE.drawNativeText(Minecraft.getInstance().font,
+                            renderText.getVisualOrderText(), poseStack, ox, oy, strokeColor, false, 15728880);
+                }
+            }
+        }
+        RenderService.INSTANCE.drawNativeText(Minecraft.getInstance().font,
+                renderText.getVisualOrderText(), poseStack, 0, 0, text.color.getValue(), false, 15728880);
+        poseStack.popPose();
+    }
+
+    public static void drawDefaultFont(PoseStack pose, Text text, Position position) { drawDefaultFont(pose, text, text.content, position); }
+
+    public static void drawFrameTimingHud(GuiGraphicsExtractor graphics) {
+        if (graphics == null || !FrameTimingHud.isEnabled()) return;
+        String value = FrameTimingHud.frameStatsText();
+        if (value == null) return;
+        Minecraft minecraft = Minecraft.getInstance();
+        int width = minecraft.font.width(value) + 8;
+        graphics.pose().pushMatrix();
+        graphics.fill(2, 2, 2 + width, 16, 0xCC000000);
+        graphics.text(minecraft.font, value, 6, 6, 0xFF00FF66, false);
+        graphics.pose().popMatrix();
+    }
+}

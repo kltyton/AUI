@@ -1,0 +1,137 @@
+package io.github.kltyton.kltytonui.fabric;
+
+import com.mojang.blaze3d.platform.Lighting;
+import com.mojang.blaze3d.vertex.PoseStack;
+import io.github.kltyton.kltytonui.render.Base;
+import io.github.kltyton.kltytonui.render.Graph;
+import io.github.kltyton.kltytonui.spi.KuiItemRenderRequest;
+import io.github.kltyton.kltytonui.spi.KuiItemRenderService;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.SubmitNodeStorage;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
+
+/** Fabric 26.2 PoseStack item-model backend for common KUI paint nodes. */
+public final class ItemRenderService implements KuiItemRenderService {
+    public static final ItemRenderService INSTANCE = new ItemRenderService();
+
+    private ItemRenderService() {
+    }
+
+    @Override
+    public boolean isEmptyStack(Object stack) {
+        return !(stack instanceof ItemStack itemStack) || itemStack.isEmpty();
+    }
+
+    @Override
+    public void render(KuiItemRenderRequest request) {
+        if (!(request.stack() instanceof ItemStack stack)) return;
+
+        Minecraft minecraft = Minecraft.getInstance();
+        PoseStack poseStack = request.poseStack();
+        boolean hasStack = !stack.isEmpty();
+
+
+        if (hasStack) {
+            ItemStackRenderState renderState = new ItemStackRenderState();
+            minecraft.getItemModelResolver().updateForTopItem(
+                    renderState,
+                    stack,
+                    ItemDisplayContext.GUI,
+                    minecraft.level,
+                    minecraft.player,
+                    request.seed()
+            );
+
+            poseStack.pushPose();
+            try {
+                poseStack.translate(8.0F, 8.0F, Base.getGuiItemModelZ());
+                poseStack.scale(16.0F, -16.0F, 16.0F);
+                Lighting.Entry lighting = renderState.usesBlockLight()
+                        ? Lighting.Entry.ITEMS_3D
+                        : Lighting.Entry.ITEMS_FLAT;
+                minecraft.gameRenderer.lighting().setupFor(lighting);
+                SubmitNodeStorage nodes = new SubmitNodeStorage();
+                renderState.submit(
+                        poseStack,
+                        nodes,
+                        15728880,
+                        OverlayTexture.NO_OVERLAY,
+                        0
+                );
+                RenderService.INSTANCE.dispatchNativeFeatures(nodes);
+            } finally {
+                // Item feature submission changes the shared lighting UBO; restore
+                // the GUI entry before later PIP/document draws use the renderer.
+                minecraft.gameRenderer.lighting().setupFor(Lighting.Entry.ENTITY_IN_UI);
+                poseStack.popPose();
+            }
+        }
+
+        if (request.decorations() && (hasStack || hasOverlayText(request.overlayText()))) {
+            drawDecorations(poseStack, stack, request);
+        }
+    }
+
+    private static boolean hasOverlayText(String text) {
+        return text != null && !text.isBlank();
+    }
+
+    private static void drawDecorations(
+            PoseStack poseStack,
+            ItemStack stack,
+            KuiItemRenderRequest request
+    ) {
+        Minecraft minecraft = Minecraft.getInstance();
+        Font font = minecraft.font;
+
+        poseStack.pushPose();
+        poseStack.translate(0.0F, request.decorationOffsetY(), Base.getGuiItemDecorationZ());
+        try {
+            if (!stack.isEmpty() && stack.isBarVisible()) {
+                int width = Math.max(0, Math.min(13, stack.getBarWidth()));
+                Graph.drawFillRect(poseStack.last().pose(), 2.0F, 13.0F, 15.0F, 15.0F, 0xFF000000);
+                if (width > 0) {
+                    Graph.drawFillRect(
+                            poseStack.last().pose(),
+                            2.0F,
+                            13.0F,
+                            2.0F + width,
+                            14.0F,
+                            0xFF000000 | stack.getBarColor()
+                    );
+                }
+            }
+
+            float cooldown = stack.isEmpty() || minecraft.player == null
+                    ? 0.0F
+                    : minecraft.player.getCooldowns().getCooldownPercent(
+                            stack,
+                            minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(true)
+                    );
+            if (cooldown > 0.0F) {
+                int top = Mth.floor(16.0F * (1.0F - cooldown));
+                int bottom = top + Mth.ceil(16.0F * cooldown);
+                Graph.drawFillRect(poseStack.last().pose(), 0.0F, top, 16.0F, bottom, 0x7FFFFFFF);
+            }
+
+            Graph.endBatch();
+            String text = request.overlayText();
+            if (text == null && !stack.isEmpty() && stack.getCount() != 1) {
+                text = String.valueOf(stack.getCount());
+            }
+            if (hasOverlayText(text)) {
+                RenderService.INSTANCE.drawNativeText(font, Component.literal(text).getVisualOrderText(),
+                        poseStack, 17.0F - font.width(text), 9.0F, 0xFFFFFFFF, true, 15728880);
+            }
+
+        } finally {
+            poseStack.popPose();
+        }
+    }
+}

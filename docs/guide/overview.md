@@ -32,6 +32,7 @@ KltytonUI 是一个 Minecraft 模组：用 HTML、CSS、JavaScript 写游戏 UI�
 | Fabric | 1.21.1 | 支持 | 不提供 | 21 |
 | NeoForge | 1.21.1 | 支持 | 提供 | 21 |
 | Fabric | 26.1 | 支持 | 不提供 | 25 |
+| Fabric | 26.2 | 支持 | 不提供 | 25 |
 | NeoForge | 26.1 | 支持 | 不提供 | 25 |
 | NeoForge | 26.2 | 支持 | 不提供 | 25 |
 
@@ -87,7 +88,7 @@ Java common API、HTML/CSS 渲染与独立 Rhino 页面运行时在这些目标�
 
 ## 工程结构
 
-仓库是 `common + targets` 多加载器结构：`common/` 是 loader 无关的共享代码（可独立编译测试），`targets/<loader>-<mc版本>/` 是独立 Gradle 工程（Forge 1.18.2 / 1.19.2 / 1.20.1、Fabric 1.20.1 / 1.21.1 / 26.1、NeoForge 1.21.1 / 26.1），loader 绑定通过 SPI 下沉。构建命令、CI、发布流程见根目录 [README](../../README)。
+仓库是 `common + targets` 多加载器结构：`common/` 是 loader 无关的共享代码（可独立编译测试），`targets/<loader>-<mc版本>/` 是独立 Gradle 工程（Forge 1.18.2 / 1.19.2 / 1.20.1、Fabric 1.20.1 / 1.21.1 / 26.1 / 26.2、NeoForge 1.21.1 / 26.1 / 26.2），loader 绑定通过 SPI 下沉。构建命令、CI、发布流程见根目录 [README](../../README)。
 
 ## 文档地图
 

@@ -72,7 +72,7 @@ It's just an ordinary web page. Only three things need explaining:
 
 **There are no browser default styles**: `h2`, `p`, and `button` come with no appearance at all — font size, color, and spacing are all yours to write. For which CSS works and which gets ignored, see [HTML/CSS Coverage](guide/html-css-coverage).
 
-**Page scripts use the standalone Rhino runtime**: all nine targets provide page-script support and require their corresponding Rhino dependency. KubeJS mod bindings are available only on Forge 1.20.1 and NeoForge 1.21.1. See [Web API](guide/web-api) and [Mod API](guide/kltytonui-api) for the capabilities and target differences.
+**Page scripts use the standalone Rhino runtime**: all supported targets provide page-script support and require their corresponding Rhino dependency. KubeJS mod bindings are available only on Forge 1.20.1 and NeoForge 1.21.1. See [Web API](guide/web-api) and [Mod API](guide/kltytonui-api) for the capabilities and target differences.
 
 **Paths**: the mod locates files by **logical path**, not disk location. If the file is at `<game directory>/kltytonui/screens/hello.html`, you write `screens/hello.html` in code — no `assets/...` prefix, no drive letters. Referencing CSS and images from inside a page works the same way. See [Resource Management](guide/resource-manager) for the rules.
 

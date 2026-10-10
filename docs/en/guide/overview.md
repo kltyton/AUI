@@ -32,6 +32,7 @@ The repository currently contains these targets. This table reflects the source 
 | Fabric | 1.21.1 | Supported | Not provided | 21 |
 | NeoForge | 1.21.1 | Supported | Provided | 21 |
 | Fabric | 26.1 | Supported | Not provided | 25 |
+| Fabric | 26.2 | Supported | Not provided | 25 |
 | NeoForge | 26.1 | Supported | Not provided | 25 |
 | NeoForge | 26.2 | Supported | Not provided | 25 |
 
@@ -87,7 +88,7 @@ Thread rules, refresh generations, registration details: [Secondary Development]
 
 ## Project structure
 
-The repository uses a `common + targets` multi-loader structure: `common/` is loader-agnostic shared code (compilable and testable standalone), and `targets/<loader>-<mc version>/` are standalone Gradle projects (Forge 1.18.2 / 1.19.2 / 1.20.1, Fabric 1.20.1 / 1.21.1 / 26.1, NeoForge 1.21.1 / 26.1), with loader bindings sunk behind SPI. For build commands, CI, and release workflow, see the root [README](../../../README).
+The repository uses a `common + targets` multi-loader structure: `common/` is loader-agnostic shared code (compilable and testable standalone), and `targets/<loader>-<mc version>/` are standalone Gradle projects (Forge 1.18.2 / 1.19.2 / 1.20.1, Fabric 1.20.1 / 1.21.1 / 26.1 / 26.2, NeoForge 1.21.1 / 26.1 / 26.2), with loader bindings implemented through SPI. For build commands, CI, and release workflow, see the root [README](../../../README).
 
 ## Documentation map
 

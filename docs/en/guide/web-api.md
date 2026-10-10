@@ -2,7 +2,7 @@
 
 KUI is not Chromium and has no browser engine. On supported targets, page JavaScript runs on Rhino, while the Java-side Document, Element, events, and resource pipeline are bridged into browser-style objects. So the APIs here fall into three categories:
 
-> **Runtime dependency**: all nine targets use the standalone Rhino page runtime; page scripts do not require KubeJS. Install the Rhino dependency matching the loader and Minecraft version. See the [overview](overview#loader-and-script-support) for target availability and optional KubeJS bindings.
+> **Runtime dependency**: all supported targets use the standalone Rhino page runtime; page scripts do not require KubeJS. Install the Rhino dependency matching the loader and Minecraft version. See the [overview](overview#loader-and-script-support) for target availability and optional KubeJS bindings.
 
 - **Available**: use them directly as shown in the examples below;
 - **Lightweight compatibility**: same names and common call patterns as the browser, but with reduced return values, timing, or parameter ranges;

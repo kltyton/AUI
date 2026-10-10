@@ -2,6 +2,7 @@ package io.github.kltyton.kltytonui.neoforge;
 
 import io.github.kltyton.kltytonui.registry.Keybindings;
 import io.github.kltyton.kltytonui.spi.KuiKeyService;
+import io.github.kltyton.kltytonui.spi.PhysicalKeyState;
 
 /**
  * Forge implementation of {@link KuiKeyService}, backed by the loader's
@@ -15,7 +16,7 @@ public final class KeyService implements KuiKeyService {
 
     @Override
     public boolean isReleaseMouseDown() {
-        return Keybindings.RELEASE_MOUSE.isDown();
+        return PhysicalKeyState.isDown(Keybindings.RELEASE_MOUSE.getKey());
     }
 
     @Override

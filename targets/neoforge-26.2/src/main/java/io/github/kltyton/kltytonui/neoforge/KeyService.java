@@ -2,6 +2,7 @@ package io.github.kltyton.kltytonui.neoforge;
 
 import io.github.kltyton.kltytonui.registry.Keybindings;
 import io.github.kltyton.kltytonui.spi.KuiKeyService;
+import io.github.kltyton.kltytonui.spi.PhysicalKeyState;
 
 /**
  * Forge implementation of {@link KuiKeyService}, backed by the loader's
@@ -13,9 +14,12 @@ public final class KeyService implements KuiKeyService {
     private KeyService() {
     }
 
+    // 按住释放鼠标直接读物理按键（GLFW），不走 KeyMapping.isDown() 的 Minecraft
+    // 输入通道：默认绑在左 Alt 上的这个快捷键否则会和其它模组的 Alt+字母组合互抢。
+    // 绑定本身仍是 KeyMapping，玩家照常在设置里重新绑定。
     @Override
     public boolean isReleaseMouseDown() {
-        return Keybindings.RELEASE_MOUSE.isDown();
+        return PhysicalKeyState.isDown(Keybindings.RELEASE_MOUSE.getKey());
     }
 
     @Override

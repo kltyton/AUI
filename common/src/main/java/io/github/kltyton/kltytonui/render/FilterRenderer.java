@@ -192,6 +192,9 @@ public class FilterRenderer {
                 KuiServices.render().bindWrite(contentFbo, true);
                 drawMaskBlit(maskFbo, MaskImage.effectiveLuminance(layers));
             }
+            // The identity composite below samples the content group; resolve it so
+            // the sampler reads the masked content rather than the pre-mask pixels.
+            KuiServices.render().resolveTarget(contentFbo);
             KuiServices.render().bindWrite(parentFbo, true);
             drawWithShader(contentFbo, contentFbo, Filter.FilterState.EMPTY, 1.0f);
         } finally {
@@ -341,6 +344,11 @@ public class FilterRenderer {
             FboHandle filteredFbo = prepareFullFilterSource(currentFbo, state.blurRadius());
             FboHandle shadowFbo = state.hasDropShadow()
                     ? prepareFullFilterSource(currentFbo, state.dropShadowBlur()) : currentFbo;
+            // The composite samples the layer that was just drawn into; resolve it
+            // first so the sampler sees this layer's content rather than the pixels
+            // the pooled group held before.
+            KuiServices.render().resolveTarget(filteredFbo);
+            if (shadowFbo != filteredFbo) KuiServices.render().resolveTarget(shadowFbo);
             KuiServices.render().bindWrite(parentFbo, true);
             drawWithShader(filteredFbo, shadowFbo, state, dynamicRangeLimit);
         } finally {
@@ -364,6 +372,10 @@ public class FilterRenderer {
 
         FboHandle reference = compositingReference != null ? compositingReference : parent;
         FboHandle backdrop = snapshotReference(reference);
+        // Both textures are sampled by the blend pass; resolve the freshly written
+        // layer (and the snapshot) so the sampler sees them.
+        KuiServices.render().resolveTarget(source);
+        if (backdrop != null) KuiServices.render().resolveTarget(backdrop);
         KuiServices.render().bindWrite(parent, true);
         drawBlend(source, backdrop, mode);
     }

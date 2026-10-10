@@ -12,35 +12,39 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
-import net.minecraft.client.renderer.rendertype.RenderSetup;
-import net.minecraft.client.renderer.rendertype.RenderType;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Caches immutable 26.1 {@link RenderType}s for KUI's immediate-mode meshes.
+ * Caches immutable 26.1 {@link RenderPipeline}s for KUI's immediate-mode meshes.
  *
  * <p>1.21.5 removed the mutable global render state ({@code RenderSystem}
  * blend/depth/stencil setters) in favour of per-draw {@link RenderPipeline}
  * objects, so the state intent that common code expresses through
- * {@code KuiRenderService} is materialised here as cached pipeline/render-type
+ * {@code KuiRenderService} is materialised here as cached pipeline
  * combinations.</p>
  *
+ * <p>Meshes are submitted through an explicit render pass bound to
+ * {@link OutputTargets#currentTarget()} rather than through a
+ * {@code RenderType}: while the overlay renders into a picture-in-picture
+ * target, vanilla redirects a {@code RenderType} draw to that PIP output, so an
+ * offscreen compositing group that AUI switched to (filter/opacity/mask/blend)
+ * would silently receive nothing and its composite would draw an empty layer.</p>
+ *
  * <p>Stencil is deliberately absent from the key: vanilla 26.1 pipelines cannot
- * carry it (NeoForge patches stencil into {@code DepthStencilState}), so the
- * Fabric render bridge applies the recorded stencil state as raw GL state right
- * before each mesh draw instead — see
- * {@code io.github.kltyton.kltytonui.fabric.RenderService#applyStencilState}.</p>
+ * carry it (NeoForge patches stencil into {@code DepthStencilState}), and the
+ * Fabric backend reports stencil as unavailable, so masks degrade to the
+ * scissor path there.</p>
  */
 public final class PipelineCache {
-    private static final Map<Key, RenderType> TYPES = new ConcurrentHashMap<>();
+    private static final Map<Key, RenderPipeline> PIPELINES = new ConcurrentHashMap<>();
 
     private PipelineCache() {
     }
 
-    public static RenderType renderType(VertexFormat format, VertexFormat.Mode mode,
+    public static RenderPipeline pipeline(VertexFormat format, VertexFormat.Mode mode,
                                         boolean depthTest, int depthFunc, boolean depthMask,
                                         boolean blend, int srcRgb, int dstRgb, int srcAlpha, int dstAlpha,
                                         boolean cull, boolean polygonOffset, float biasScale, float biasUnits,
@@ -48,10 +52,10 @@ public final class PipelineCache {
         Key key = new Key(format, mode, depthTest, depthFunc, depthMask, blend,
                 srcRgb, dstRgb, srcAlpha, dstAlpha, cull, polygonOffset, biasScale, biasUnits,
                 colorWriteMask);
-        return TYPES.computeIfAbsent(key, PipelineCache::build);
+        return PIPELINES.computeIfAbsent(key, PipelineCache::build);
     }
 
-    private static RenderType build(Key key) {
+    private static RenderPipeline build(Key key) {
         String shader = shaderFor(key.format());
         RenderPipeline.Builder builder = RenderPipeline.builder(new Snippet[]{RenderPipelines.MATRICES_PROJECTION_SNIPPET})
                 .withLocation(Identifier.fromNamespaceAndPath("kltytonui", "pipeline/mesh_" + Integer.toHexString(key.hashCode())))
@@ -74,11 +78,7 @@ public final class PipelineCache {
         }
 
         RenderPipeline pipeline = builder.build();
-        return RenderType.create(
-                "kltytonui_mesh_" + Integer.toHexString(key.hashCode()),
-                RenderSetup.builder(pipeline)
-                        .setOutputTarget(OutputTargets.KUI_OUTPUT)
-                        .createRenderSetup());
+        return pipeline;
     }
 
     private static String shaderFor(VertexFormat format) {

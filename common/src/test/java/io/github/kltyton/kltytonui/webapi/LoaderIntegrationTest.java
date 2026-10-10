@@ -21,6 +21,7 @@ class LoaderIntegrationTest {
         assertTrue(globalJs.contains("KltytonUI.getDocumentByUUID(\"__KUI_DOCUMENT_UUID__\")"));
         assertTrue(globalJs.contains("function MutationObserver(callback)"));
         assertTrue(globalJs.contains("var PromisePolyfill = function(executor)"));
+        assertTrue(globalJs.contains("function IntersectionObserver(callback, options)"));
 
         try (InputStream stream = Loader.getResourceStream("global.js")) {
             assertNotNull(stream);

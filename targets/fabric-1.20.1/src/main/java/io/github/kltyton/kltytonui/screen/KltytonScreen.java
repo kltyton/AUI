@@ -4,6 +4,7 @@ import io.github.kltyton.kltytonui.client.Client;
 import io.github.kltyton.kltytonui.init.Document;
 import io.github.kltyton.kltytonui.event.Event;
 import io.github.kltyton.kltytonui.loader.ClientLoader;
+import io.github.kltyton.kltytonui.spi.KuiKeyService;
 import io.github.kltyton.kltytonui.spi.KuiServices;
 import io.github.kltyton.kltytonui.render.Base;
 import io.github.kltyton.kltytonui.render.FrameTimingHud;
@@ -124,7 +125,7 @@ public class KltytonScreen extends Screen implements KuiLinkedScreen {
                 Minecraft.getInstance().renderBuffers().bufferSource().endBatch();
             }
             io.github.kltyton.kltytonui.dev.resource.ResourcePreviewDialog.draw(guiGraphics.pose(), linkedDocument);
-            Client.drawPersistentScreenDocuments(guiGraphics, linkedDocument);
+            Base.drawPersistentScreenDocuments(guiGraphics.pose(), linkedDocument);
             guiGraphics.flush();
             Cursor.drawPseudoCursor(guiGraphics.pose());
             guiGraphics.flush();
@@ -144,7 +145,7 @@ public class KltytonScreen extends Screen implements KuiLinkedScreen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == KuiServices.keys().reloadKey()) {
+        if (KuiKeyService.matches(keyCode, KuiServices.keys().reloadKey())) {
             ClientLoader.reload();
             return true;
         }

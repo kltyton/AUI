@@ -859,6 +859,10 @@ public final class KuiServices {
             }
 
             @Override
+            public void clearDepthBuffer() {
+            }
+
+            @Override
             public void setColorMask(boolean red, boolean green, boolean blue, boolean alpha) {
             }
 

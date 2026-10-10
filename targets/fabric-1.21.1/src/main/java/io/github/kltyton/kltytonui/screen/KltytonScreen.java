@@ -4,6 +4,7 @@ import io.github.kltyton.kltytonui.client.Client;
 import io.github.kltyton.kltytonui.init.Document;
 import io.github.kltyton.kltytonui.event.Event;
 import io.github.kltyton.kltytonui.loader.ClientLoader;
+import io.github.kltyton.kltytonui.spi.KuiKeyService;
 import io.github.kltyton.kltytonui.spi.KuiServices;
 import io.github.kltyton.kltytonui.render.Base;
 import io.github.kltyton.kltytonui.render.FrameTimingHud;
@@ -126,7 +127,7 @@ public class KltytonScreen extends Screen implements KuiLinkedScreen {
             // Draw the resource preview right after its owning document so the
             // previewed HTML stays below the DevTools tool document (and toasts).
             io.github.kltyton.kltytonui.dev.resource.ResourcePreviewDialog.draw(guiGraphics.pose(), linkedDocument);
-            Client.drawPersistentScreenDocuments(guiGraphics, linkedDocument);
+            Base.drawPersistentScreenDocuments(guiGraphics.pose(), linkedDocument);
             guiGraphics.flush();
             Cursor.drawPseudoCursor(guiGraphics.pose());
             guiGraphics.flush();
@@ -146,7 +147,7 @@ public class KltytonScreen extends Screen implements KuiLinkedScreen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == KuiServices.keys().reloadKey()) {
+        if (KuiKeyService.matches(keyCode, KuiServices.keys().reloadKey())) {
             ClientLoader.reload();
             return true;
         }

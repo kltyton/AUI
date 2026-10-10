@@ -12,6 +12,7 @@ import io.github.kltyton.kltytonui.element.RichText;
 import io.github.kltyton.kltytonui.element.Select;
 import io.github.kltyton.kltytonui.event.KeyEvent;
 import io.github.kltyton.kltytonui.event.MouseEvent;
+import io.github.kltyton.kltytonui.spi.KuiKeyService;
 import io.github.kltyton.kltytonui.spi.KuiServices;
 import io.github.kltyton.kltytonui.loader.ClientLoader;
 import io.github.kltyton.kltytonui.layout.Position;
@@ -496,15 +497,17 @@ public class Operation {
     }
 
     private static boolean handleFrameworkShortcut(int key) {
-        if (key == KuiServices.keys().devToolsKey()) {
+        // 未绑定的快捷键（-1）不能和未知按键（同样可能是 -1）匹配，否则未知按键会
+        // 误触发所有未绑定快捷键。
+        if (KuiKeyService.matches(key, KuiServices.keys().devToolsKey())) {
             DevTools.toggle();
             return true;
         }
-        if (key == KuiServices.keys().resourceManagerKey()) {
+        if (KuiKeyService.matches(key, KuiServices.keys().resourceManagerKey())) {
             ResourceManager.toggle();
             return true;
         }
-        if (key == KuiServices.keys().reloadKey()) {
+        if (KuiKeyService.matches(key, KuiServices.keys().reloadKey())) {
             ClientLoader.reload();
             return true;
         }

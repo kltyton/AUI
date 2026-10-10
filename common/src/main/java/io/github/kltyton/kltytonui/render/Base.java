@@ -13,6 +13,7 @@ import io.github.kltyton.kltytonui.layout.LayoutMeasureCache;
 import io.github.kltyton.kltytonui.layout.Position;
 import io.github.kltyton.kltytonui.layout.Size;
 import io.github.kltyton.kltytonui.style.*;
+import io.github.kltyton.kltytonui.init.Window;
 import net.minecraft.client.Minecraft;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -83,6 +84,25 @@ public class Base {
     private static float depthCursor = 0.0f;
     private static boolean depthTestEnabled = true;
     private static float documentZOffset = GLOBAL_DOCUMENT_Z_OFFSET;
+
+    /**
+     * Composites persistent documents over a screen. A null owner denotes a native screen:
+     * finish its queued draws and discard its depth once, retaining its color beneath KUI.
+     * KUI-owned screens retain their document depth so their overlays share the same layers.
+     */
+    public static void drawPersistentScreenDocuments(PoseStack poseStack, Document owner) {
+        boolean nativeDepthPending = owner == null;
+        for (Document document : DocumentLayerOrder.backToFront(Document.getAll())) {
+            if (!isFlatDocument(document) || document == owner || !document.isReloadPersistent()) continue;
+            if (nativeDepthPending) {
+                commitDraws();
+                KuiServices.render().clearDepthBuffer();
+                nativeDepthPending = false;
+            }
+            drawOverlayDocument(poseStack, document);
+            io.github.kltyton.kltytonui.dev.resource.ResourcePreviewDialog.draw(poseStack, document);
+        }
+    }
 
     public static void drawOverlayDocument(PoseStack poseStack, Document document) {
         if (document == null) return;
@@ -199,6 +219,23 @@ public class Base {
             if (isFlatDocument(candidate)) layerCount++;
         }
         return GLOBAL_DOCUMENT_Z_OFFSET + layerCount * FLAT_DOCUMENT_LAYER_STEP;
+    }
+
+    /** Draws a native tooltip above flat documents without depending on GuiGraphics. */
+    public static void drawFlatTooltip(PoseStack poseStack, Runnable drawTooltip) {
+        commitDraws();
+        poseStack.pushPose();
+        try {
+            // Native tooltip depth is relative to this foreground plane, not the screen origin.
+            poseStack.translate(0.0F, 0.0F, getFlatOverlayZ());
+            drawTooltip.run();
+        } finally {
+            try {
+                commitDraws();
+            } finally {
+                poseStack.popPose();
+            }
+        }
     }
 
     private static boolean isFlatDocument(Document document) {
@@ -332,6 +369,9 @@ public class Base {
                 if (!initialCommitIncomplete) {
                     paintDocumentNodes(poseStack, document);
                 }
+                // Sample after all render-frame motion/scroll geometry is committed;
+                // callbacks are queued and delivered by the next logical tick.
+                Window.window.sampleIntersectionObservers(document);
                 pushGuiItemZ(GUI_FLOATING_ITEM_MODEL_Z_OFFSET, GUI_FLOATING_ITEM_DECORATION_Z_OFFSET);
                 try {
                     for (RenderNode overlayNode : overlayNodes) {

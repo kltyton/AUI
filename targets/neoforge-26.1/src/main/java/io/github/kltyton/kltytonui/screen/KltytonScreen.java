@@ -5,6 +5,7 @@ import io.github.kltyton.kltytonui.client.Client;
 import io.github.kltyton.kltytonui.init.Document;
 import io.github.kltyton.kltytonui.event.Event;
 import io.github.kltyton.kltytonui.loader.ClientLoader;
+import io.github.kltyton.kltytonui.spi.KuiKeyService;
 import io.github.kltyton.kltytonui.spi.KuiServices;
 import io.github.kltyton.kltytonui.style.Cursor;
 import io.github.kltyton.kltytonui.layout.Size;
@@ -138,7 +139,7 @@ public class KltytonScreen extends Screen implements KuiLinkedScreen {
         int keyCode = event.key();
         int scanCode = event.scancode();
         int modifiers = event.modifiers();
-        if (keyCode == KuiServices.keys().reloadKey()) {
+        if (KuiKeyService.matches(keyCode, KuiServices.keys().reloadKey())) {
             ClientLoader.reload();
             return true;
         }

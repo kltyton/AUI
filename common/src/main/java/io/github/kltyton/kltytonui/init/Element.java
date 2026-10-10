@@ -252,11 +252,27 @@ public class Element extends Node {
         String normalizedValue = value == null ? "" : value.trim();
         String normalizedPriority = priority == null ? "" : priority.trim().toLowerCase(Locale.ROOT);
         if (!normalizedPriority.isEmpty() && !"important".equals(normalizedPriority)) return;
+        String declarationValue = normalizedValue
+                + ("important".equals(normalizedPriority) ? " !important" : "");
+        // Vue rewrites scoped CSS variables after each reactive update. An
+        // identical variable must retain its declaration order and style caches.
+        // Authored duplicate declarations still use the replacement path below.
+        if (property.startsWith("--") && !normalizedValue.isEmpty()) {
+            InlineStyleDeclaration.Entry existing = null;
+            for (InlineStyleDeclaration.Entry declaration : inlineDeclarations) {
+                if (!property.equals(declaration.property())) continue;
+                if (existing != null) {
+                    existing = null;
+                    break;
+                }
+                existing = declaration;
+            }
+            if (existing != null && declarationValue.equals(existing.value())) return;
+        }
         // CSSOM setProperty 语义：移除该属性的全部声明后追加一条新声明（浏览器同款）。
         InlineStyleDeclaration.removeAll(inlineDeclarations, property);
         if (!normalizedValue.isEmpty()) {
-            inlineDeclarations.add(new InlineStyleDeclaration.Entry(property, normalizedValue
-                    + ("important".equals(normalizedPriority) ? " !important" : "")));
+            inlineDeclarations.add(new InlineStyleDeclaration.Entry(property, declarationValue));
         }
         commitInlineDeclarations();
     }
@@ -1774,6 +1790,7 @@ public class Element extends Node {
     public void setTextContent(String value) {
         String oldValue = getTextContent();
         String normalized = value == null ? "" : value;
+        boolean removedChildren = !childNodes.isEmpty();
         if (!childNodes.isEmpty()) {
             ArrayList<Node> snapshot = new ArrayList<>(childNodes);
             for (Node child : snapshot) {
@@ -1800,7 +1817,11 @@ public class Element extends Node {
             if (parentElement != null) {
                 parentElement.children.forEach(sibling -> sibling.getRenderer().position.clear());
             }
-            document.markDirty(this, Drawer.RELAYOUT | Drawer.REPAINT | Drawer.REORDER | Drawer.HITTEST);
+            // Paint nodes retain their element owner and read its current text.
+            // Rebuild their order only when replacing actual child nodes.
+            int dirtyMask = Drawer.RELAYOUT | Drawer.REPAINT | Drawer.HITTEST;
+            if (removedChildren) dirtyMask |= Drawer.REORDER;
+            document.markDirty(this, dirtyMask);
             document.queueMutation(Document.MutationRecord.characterData(this, oldValue));
         }
     }

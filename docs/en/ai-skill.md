@@ -8,7 +8,7 @@ Setting the tone first: KUI pages are plain HTML/CSS/JS. Most commonly used brow
 
 KUI lets you build Minecraft UIs with HTML/CSS/JS. It is not an embedded browser: HTML parsing, CSS layout, and rendering are a self-built engine. Targets that support page scripts use Rhino (`var` + plain `function` is the safest style). One HTML file is parsed into one Document, which is placed into one of four hosts for display.
 
-**First confirm the loader and Minecraft version**: all nine targets provide standalone Rhino page scripts and require the matching Rhino dependency. KubeJS `KltytonUI` bindings are available only on Forge 1.20.1 and NeoForge 1.21.1; page scripts on the other targets do not require KubeJS. See the [overview](guide/overview#loader-and-script-support) for the full matrix.
+**First confirm the loader and Minecraft version**: all supported targets provide standalone Rhino page scripts and require the matching Rhino dependency. KubeJS `KltytonUI` bindings are available only on Forge 1.20.1 and NeoForge 1.21.1; page scripts on the other targets do not require KubeJS. See the [overview](guide/overview#loader-and-script-support) for the full matrix.
 
 The resource manager, DevTools, and resource reload each have an MC key action, and **all are unbound by default**. Bind them in Minecraft's Controls settings before use; Left Alt is bound by default to release the mouse while held. This guide refers to the actions by name rather than assuming specific keys.
 
